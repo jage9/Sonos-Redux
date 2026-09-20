@@ -12,7 +12,7 @@ from site_scons.site_tools.NVDATool.utils import _
 addon_info = AddonInfo(
 	addon_name="Sonos",
 	addon_summary=_("Sonos"),
-	addon_description=_("Accessibility enhancements for the Sonos Desktop app."),
+	addon_description=_("Accessibility enhancements for the Sonos Desktop app including now playing, track scrubbing, speech feedback for Sonos hotkeys, and much more."),
 	addon_version="2026.1",
 	addon_changelog=_("Updated for NVDA 2026.1 with many new features (see ReadMe)"),
 	addon_author="Ralf Kefferpuetz <novalis7747@live.com>, J.J. Meddaugh <jj@bestmidi.com>",
