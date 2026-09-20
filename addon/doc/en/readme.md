@@ -24,8 +24,8 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Alt+Shift+U | Read elapsed time. |
 | Alt+Shift+I | Read track position, duration, and percentage. |
 | Alt+Shift+O | Read remaining time. |
-| Shift+Left Arrow | Seek backward five seconds. |
-| Shift+Right Arrow | Seek forward five seconds. |
+| Shift+Left Arrow | Seek backward (default five seconds). |
+| Shift+Right Arrow | Seek forward (default five seconds). |
 | Shift+Up Arrow | Focus the track scrubber. |
 
 ## Enhanced Sonos shortcuts
@@ -43,6 +43,8 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 
 ## Settings
 
+**Track seek seconds** sets how far Shift+Left Arrow and Shift+Right Arrow move: 1–999 seconds, default 5.
+
 In NVDA Settings, choose Sonos to turn on **Log track titles** and choose a log filename. These settings apply across all NVDA profiles. Logging is off by default. The default file is `sonos.log` in your Documents folder. Browse lets you choose another location; Open opens the log in your default application.
 
 Logging records the current track title and artist with a timestamp, then appends an entry when they change. It checks every three seconds and continues while you use other apps, as long as Sonos remains open. It follows the selected speaker group. Start and end markers separate logging sessions. Press Alt+Shift+L in Sonos to toggle logging.
@@ -54,7 +56,7 @@ Logging records the current track title and artist with a timestamp, then append
 - Added optional track logging, toggled with Alt+Shift+L.
 - Added a Sonos settings panel. Settings are global.
 - Added Favorites feedback for Sonos Ctrl+8.
-- Added five-second track seeking (Shift+Right Arrow and Shift+Left Arrow) and scrubber focus (Shift+Up Arrow).
+- Added adjustable track seeking (default five seconds) (Shift+Right Arrow and Shift+Left Arrow) and scrubber focus (Shift+Up Arrow).
 - Added Jump to Time (Ctrl+J).
 - Added copying displayed album art to the clipboard (Alt+Shift+A).
 - Added next-track announcements (Alt+Shift+N) and a separate current speaker group command (Alt+Shift+G).

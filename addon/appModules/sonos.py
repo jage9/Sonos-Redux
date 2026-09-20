@@ -263,13 +263,15 @@ class AppModule(appModuleHandler.AppModule):
             ui.message(_format_seconds(pattern.CurrentValue))
         self._run(report)
 
-    @script(description=_("Seek backward five seconds."), gesture="kb:shift+leftArrow", speakOnDemand=True)
+    @script(description=_("Seek backward."), gesture="kb:shift+leftArrow", speakOnDemand=True)
     def script_adjustScrubBackward(self, gesture):
-        self._scrubGesture(gesture, lambda: self._seek(-5))
+        import config
+        self._scrubGesture(gesture, lambda: self._seek(-config.conf["sonos"]["seekSeconds"]))
 
-    @script(description=_("Seek forward five seconds."), gesture="kb:shift+rightArrow", speakOnDemand=True)
+    @script(description=_("Seek forward."), gesture="kb:shift+rightArrow", speakOnDemand=True)
     def script_adjustScrubForward(self, gesture):
-        self._scrubGesture(gesture, lambda: self._seek(5))
+        import config
+        self._scrubGesture(gesture, lambda: self._seek(config.conf["sonos"]["seekSeconds"]))
 
     @script(description=_("Report elapsed track time."), gesture="kb:alt+shift+u", speakOnDemand=True)
     def script_reportCurrent(self, gesture):

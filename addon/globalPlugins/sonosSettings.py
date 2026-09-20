@@ -12,7 +12,7 @@ from comtypes import COMError
 import config
 import extensionPoints
 import globalPluginHandler
-from gui import guiHelper
+from gui import guiHelper, nvdaControls
 from gui.settingsDialogs import NVDASettingsDialog, SettingsPanel
 from logHandler import log
 from NVDAObjects.UIA import UIA
@@ -28,8 +28,9 @@ addonHandler.initTranslation()
 config.conf.spec["sonos"] = {
     "logTracks": "boolean(default=False)",
     "logFile": "string(default='sonos.log')",
+    "seekSeconds": "integer(default=5, min=1, max=999)",
 }
-# Use NVDA's base-only section support so app profiles cannot change logging.
+# Sonos settings apply globally, independent of configuration profiles.
 config.conf.BASE_ONLY_SECTIONS.add("sonos")
 _baseProfile = config.conf.profiles[0]
 if "sonos" not in _baseProfile:
@@ -60,6 +61,10 @@ class SonosSettingsPanel(SettingsPanel):
 
     def makeSettings(self, settingsSizer):
         helper = guiHelper.BoxSizerHelper(self, sizer=settingsSizer)
+        self.seekSeconds = helper.addLabeledControl(
+            _("Track &seek seconds:"), nvdaControls.SelectOnFocusSpinCtrl,
+            min=1, max=999, initial=config.conf["sonos"]["seekSeconds"],
+        )
         self.enabled = helper.addItem(wx.CheckBox(self, label=_("&Log track titles")))
         self.enabled.SetValue(config.conf["sonos"]["logTracks"])
         self.filename = helper.addLabeledControl(_("Log &filename:"), wx.TextCtrl,
@@ -107,6 +112,7 @@ class SonosSettingsPanel(SettingsPanel):
         return True
 
     def onSave(self):
+        config.conf["sonos"]["seekSeconds"] = self.seekSeconds.GetValue()
         config.conf["sonos"]["logTracks"] = self.enabled.IsChecked()
         config.conf["sonos"]["logFile"] = self.filename.GetValue().strip() or "sonos.log"
         settingsChanged.notify()

@@ -33,6 +33,7 @@ class BaseProfile(dict):
     def validate(self, validator, section):
         section.setdefault("logTracks", False)
         section.setdefault("logFile", "sonos.log")
+        section.setdefault("seekSeconds", 5)
         return True
 
 
@@ -65,11 +66,11 @@ class PluginBase:
         pass
 
 
-_module("config", conf=Conf(sonos={"logTracks": False, "logFile": "sonos.log"}),
+_module("config", conf=Conf(sonos={"logTracks": False, "logFile": "sonos.log", "seekSeconds": 5}),
         post_configProfileSwitch=Action(), post_configReset=Action())
 _module("extensionPoints", Action=Action)
 _module("globalPluginHandler", GlobalPlugin=PluginBase)
-_module("gui", guiHelper=types.SimpleNamespace())
+_module("gui", guiHelper=types.SimpleNamespace(), nvdaControls=types.SimpleNamespace())
 _module("gui.settingsDialogs", SettingsPanel=object,
         NVDASettingsDialog=types.SimpleNamespace(categoryClasses=[]))
 _module("NVDAState", WritePaths=types.SimpleNamespace(configDir="."), shouldWriteToDisk=lambda: True)
@@ -90,10 +91,27 @@ class LoggingTests(unittest.TestCase):
             Get=lambda: types.SimpleNamespace(GetDocumentsDir=lambda: self.folder.name)), create=True)
         documents.start()
         self.addCleanup(documents.stop)
-        settings.config.conf.profiles[0]["sonos"] = {"logTracks": False, "logFile": "sonos.log"}
+        settings.config.conf.profiles[0]["sonos"] = {"logTracks": False, "logFile": "sonos.log", "seekSeconds": 5}
         self.plugin = settings.GlobalPlugin()
         self.addCleanup(self.folder.cleanup)
         self.addCleanup(self.plugin.terminate)
+
+    def test_seek_shortcuts_use_saved_step_in_both_directions(self):
+        app = sonos.AppModule()
+        app._scrubGesture = lambda gesture, action: action()
+        steps = []
+        app._seek = steps.append
+        for seconds in (5, 1, 999, 42):
+            panel = settings.SonosSettingsPanel()
+            panel.seekSeconds = types.SimpleNamespace(GetValue=lambda: seconds)
+            panel.enabled = types.SimpleNamespace(IsChecked=lambda: False)
+            panel.filename = types.SimpleNamespace(GetValue=lambda: "sonos.log")
+            panel.onSave()
+            app.script_adjustScrubBackward(None)
+            app.script_adjustScrubForward(None)
+        self.assertEqual(steps, [-5, 5, -1, 1, -999, 999, -42, 42])
+        self.assertEqual(settings.config.conf.spec["sonos"]["seekSeconds"],
+                         "integer(default=5, min=1, max=999)")
 
     def test_default_log_uses_documents_and_preserves_custom_absolute_path(self):
         self.assertEqual(settings.logPath("sonos.log"), Path(self.folder.name) / "sonos.log")

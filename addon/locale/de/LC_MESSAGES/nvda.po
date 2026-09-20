@@ -22,11 +22,11 @@ msgstr "Aktuelle Titelposition ansagen."
 msgid "Focus the track scrubber."
 msgstr "Den Positionsregler fokussieren."
 
-msgid "Seek backward five seconds."
-msgstr "Fünf Sekunden zurückspringen."
+msgid "Seek backward."
+msgstr "Zurückspringen."
 
-msgid "Seek forward five seconds."
-msgstr "Fünf Sekunden vorspringen."
+msgid "Seek forward."
+msgstr "Vorspringen."
 
 msgid "Report elapsed track time."
 msgstr "Verstrichene Titelzeit ansagen."
@@ -207,3 +207,6 @@ msgstr "Noch keine Protokolldatei vorhanden."
 
 msgid "Could not open the track log."
 msgstr "Protokolldatei konnte nicht geöffnet werden."
+
+msgid "Track &seek seconds:"
+msgstr "&Sprungweite in Sekunden:"

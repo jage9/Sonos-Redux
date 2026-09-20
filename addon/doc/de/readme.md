@@ -24,8 +24,8 @@ Aktualisiert von J.J. Meddaugh <jj@bestmidi.com>.
 | Alt+Umschalt+U | Verstrichene Zeit ansagen. |
 | Alt+Umschalt+I | Titelposition, Dauer und Prozentwert ansagen. |
 | Alt+Umschalt+O | Verbleibende Zeit ansagen. |
-| Umschalt+Pfeil links | Fünf Sekunden zurückspringen. |
-| Umschalt+Pfeil rechts | Fünf Sekunden vorspringen. |
+| Umschalt+Pfeil links | Zurückspringen (standardmäßig fünf Sekunden). |
+| Umschalt+Pfeil rechts | Vorspringen (standardmäßig fünf Sekunden). |
 | Umschalt+Pfeil hoch | Positionsregler fokussieren. |
 
 ## Erweiterte Sonos-Tastenkürzel
@@ -43,6 +43,8 @@ Aktualisiert von J.J. Meddaugh <jj@bestmidi.com>.
 
 ## Einstellungen
 
+**Sprungweite in Sekunden** legt die Schrittweite für Umschalt+Pfeil links und Umschalt+Pfeil rechts fest: 1–999 Sekunden, standardmäßig 5.
+
 In den NVDA-Einstellungen unter Sonos lässt sich **Titel protokollieren** einschalten und eine Protokolldatei auswählen. Diese Einstellungen gelten für alle NVDA-Profile. Die Protokollierung ist standardmäßig ausgeschaltet. Die Standarddatei heißt `sonos.log` und liegt im Dokumente-Ordner. Über Durchsuchen lässt sich ein anderer Speicherort wählen; Öffnen öffnet das Protokoll in der Standardanwendung.
 
 Titel und Interpret werden mit einem Zeitstempel aufgezeichnet. Bei Änderungen wird ein neuer Eintrag angehängt. Die Prüfung erfolgt alle drei Sekunden und läuft auch beim Arbeiten in anderen Anwendungen weiter, solange Sonos geöffnet bleibt. Protokolliert wird die ausgewählte Lautsprechergruppe. Start- und Endmarkierungen trennen die Protokollierungssitzungen. Alt+Umschalt+L schaltet die Protokollierung in Sonos um.
@@ -54,7 +56,7 @@ Titel und Interpret werden mit einem Zeitstempel aufgezeichnet. Bei Änderungen 
 - Optionale Titelprotokollierung hinzugefügt, umschaltbar mit Alt+Umschalt+L.
 - Sonos-Einstellungskategorie hinzugefügt. Die Einstellungen gelten global.
 - Rückmeldung für den Sonos-Favoritenbefehl Strg+8 hinzugefügt.
-- Fünf Sekunden vor- und zurückspringen (Umschalt+Pfeil rechts und Umschalt+Pfeil links) und den Positionsregler fokussieren (Umschalt+Pfeil hoch).
+- Einstellbares Vor- und Zurückspringen (standardmäßig fünf Sekunden) (Umschalt+Pfeil rechts und Umschalt+Pfeil links) und den Positionsregler fokussieren (Umschalt+Pfeil hoch).
 - Zu einer Zeit im Titel springen (Strg+J).
 - Angezeigtes Albumcover in die Zwischenablage kopieren (Alt+Umschalt+A).
 - Nächsten Titel ansagen (Alt+Umschalt+N) und die aktuelle Lautsprechergruppe separat ansagen (Alt+Umschalt+G).
