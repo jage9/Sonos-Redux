@@ -2,6 +2,8 @@
 
 Updated support and enhancements for the Sonos desktop app with NVDA. Requires NVDA 2026.1 or later.
 
+[Download the latest add-on](https://github.com/jage9/Sonos-Redux/releases/latest/download/sonos-redux.nvda-addon)
+
 Originally by Ralf Kefferpuetz <novalis7747@live.com>.
 
 Updated by J.J. Meddaugh <jj@bestmidi.com>.
