@@ -1,0 +1,15 @@
+[project]
+name = "sonos-addon"
+version = "2026.1"
+description = "Sonos NVDA add-on build tooling"
+requires-python = ">=3.10"
+dependencies = []
+
+[dependency-groups]
+build = [
+	"scons==4.10.1",
+	"Markdown==3.10",
+]
+
+[tool.uv]
+default-groups = ["build"]

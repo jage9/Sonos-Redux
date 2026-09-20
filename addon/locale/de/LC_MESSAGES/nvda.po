@@ -1,0 +1,161 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Sonos 2026.1\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Sonos"
+msgstr "Sonos"
+
+msgid "Accessibility enhancements for the Sonos Desktop app."
+msgstr "Verbesserte Zugänglichkeit für die Sonos-Desktop-Anwendung."
+
+msgid "- Added five-second track seeking (Shift+Right Arrow and Shift+Left Arrow) and scrubber focus (Shift+Up Arrow).\n- Added Jump to Time (Ctrl+J).\n- Added copying displayed album art to the clipboard (Alt+Shift+A).\n- Added next-track announcements (Alt+Shift+N) and a separate current speaker group command (Alt+Shift+G).\n- Added feedback when switching speaker groups with Ctrl+Comma and Ctrl+Period.\n- Updated for NVDA 2026.1 and later, using modern add-on APIs and translatable messages.\n- Made add-on shortcuts assignable through NVDA's Input Gestures dialog; enhanced native Sonos shortcuts retain their keys.\n- Made the scrubber report minutes and seconds, cleaned up duplicate control labels, and shortened speech.\n- Fixed speaker names in the Music EQ menu and labeled the alarm Enabled checkbox."
+msgstr "- Fünf Sekunden vor- und zurückspringen (Umschalt+Pfeil rechts und Umschalt+Pfeil links) und den Positionsregler fokussieren (Umschalt+Pfeil hoch).\n- Zu einer Zeit im Titel springen (Strg+J).\n- Angezeigtes Albumcover in die Zwischenablage kopieren (Alt+Umschalt+A).\n- Nächsten Titel ansagen (Alt+Umschalt+N) und die aktuelle Lautsprechergruppe separat ansagen (Alt+Umschalt+G).\n- Rückmeldung beim Wechseln der Lautsprechergruppe mit Strg+Komma und Strg+Punkt.\n- Für NVDA ab 2026.1 aktualisiert, mit modernen Erweiterungs-APIs und übersetzbaren Meldungen.\n- Tastenkürzel der Erweiterung lassen sich in NVDAs Dialog für Eingaben zuweisen; erweiterte Sonos-Tastenkürzel behalten ihre Tasten.\n- Der Positionsregler liest Minuten und Sekunden vor; doppelte Beschriftungen wurden bereinigt und Ansagen gekürzt.\n- Lautsprechernamen im Musik-EQ-Menü korrigiert und das Kontrollkästchen zum Aktivieren eines Weckers beschriftet."
+
+msgid "Report the current track position."
+msgstr "Aktuelle Titelposition ansagen."
+
+msgid "Focus the track scrubber."
+msgstr "Den Positionsregler fokussieren."
+
+msgid "Seek backward five seconds."
+msgstr "Fünf Sekunden zurückspringen."
+
+msgid "Seek forward five seconds."
+msgstr "Fünf Sekunden vorspringen."
+
+msgid "Report elapsed track time."
+msgstr "Verstrichene Titelzeit ansagen."
+
+msgid "Report remaining track time."
+msgstr "Verbleibende Titelzeit ansagen."
+
+msgid "Report the active room volume."
+msgstr "Lautstärke des aktiven Raums ansagen."
+
+msgid "Report mute state."
+msgstr "Stummschaltung ansagen."
+
+msgid "Toggle mute and report its state."
+msgstr "Stummschaltung umschalten und Status ansagen."
+
+msgid "Report repeat mode."
+msgstr "Wiederholungsmodus ansagen."
+
+msgid "Toggle repeat and report its mode."
+msgstr "Wiederholungsmodus umschalten und ansagen."
+
+msgid "Report shuffle state."
+msgstr "Zufallswiedergabe ansagen."
+
+msgid "Toggle shuffle and report its state."
+msgstr "Zufallswiedergabe umschalten und Status ansagen."
+
+msgid "Report crossfade state."
+msgstr "Überblendung ansagen."
+
+msgid "Toggle crossfade and report its state."
+msgstr "Überblendung umschalten und Status ansagen."
+
+msgid "Read the current track. Press twice quickly to copy track information."
+msgstr "Aktuellen Titel vorlesen. Zweimal schnell drücken, um Titelinformationen zu kopieren."
+
+msgid "Report the current speaker group."
+msgstr "Aktuelle Lautsprechergruppe ansagen."
+
+msgid "Group {group}"
+msgstr "Gruppe {group}"
+
+msgid "Select the previous speaker group."
+msgstr "Vorherige Lautsprechergruppe auswählen."
+
+msgid "Select the next speaker group."
+msgstr "Nächste Lautsprechergruppe auswählen."
+
+msgid "Show current track information in a browseable message."
+msgstr "Aktuelle Titelinformationen in einem lesbaren Dialog anzeigen."
+
+msgid "Search YouTube for the current track."
+msgstr "Auf YouTube nach dem aktuellen Titel suchen."
+
+msgid "This control is unavailable in the current Sonos view."
+msgstr "Dieses Steuerelement ist in der aktuellen Sonos-Ansicht nicht verfügbar."
+
+msgid "Sonos is not responding or the control is unavailable."
+msgstr "Sonos antwortet nicht oder das Steuerelement ist nicht verfügbar."
+
+msgid "Sonos command failed. See the NVDA log for details."
+msgstr "Der Sonos-Befehl ist fehlgeschlagen. Einzelheiten stehen im NVDA-Protokoll."
+
+msgid "The track scrubber does not accept keyboard focus."
+msgstr "Der Positionsregler kann nicht mit der Tastatur fokussiert werden."
+
+msgid "Now playing"
+msgstr "Aktuelle Wiedergabe"
+
+msgid "No track information is available."
+msgstr "Es sind keine Titelinformationen verfügbar."
+
+msgid "Could not open the web browser."
+msgstr "Der Webbrowser konnte nicht geöffnet werden."
+
+msgid "Copy the displayed album artwork to the clipboard."
+msgstr "Das angezeigte Albumcover in die Zwischenablage kopieren."
+
+msgid "Could not open the clipboard."
+msgstr "Zwischenablage konnte nicht geöffnet werden."
+
+msgid "Album artwork copied."
+msgstr "Albumcover kopiert."
+
+msgid "Could not copy album artwork."
+msgstr "Albumcover konnte nicht kopiert werden."
+
+msgid "{elapsed} of {total}, {percent}%"
+msgstr "{elapsed} von {total}, {percent}%"
+
+msgid "{time} remaining"
+msgstr "{time} verbleibend"
+
+msgid "Volume {percent}%"
+msgstr "Lautstärke {percent}%"
+
+msgid "{time} elapsed"
+msgstr "{time} verstrichen"
+
+msgid "Jump to a time in the current track."
+msgstr "Zu einer Zeit im aktuellen Titel springen."
+
+msgid "Track length {length}. Jump to:"
+msgstr "Titellänge {length}. Springen zu:"
+
+msgid "Jump to time"
+msgstr "Zu einer Zeit springen"
+
+msgid "Enter seconds, minutes:seconds, or hours:minutes:seconds, up to {length}."
+msgstr "Sekunden, Minuten:Sekunden oder Stunden:Minuten:Sekunden eingeben, höchstens {length}."
+
+msgid "The track or room changed. Open Jump to Time again."
+msgstr "Titel oder Raum wurde gewechselt. Den Dialog zum Springen erneut öffnen."
+
+msgid "Group {group}, {milliseconds} milliseconds"
+msgstr "Gruppe {group}, {milliseconds} Millisekunden"
+
+msgid "Report the next track."
+msgstr "Nächsten Titel ansagen."
+
+msgid "Next {track}"
+msgstr "Als Nächstes {track}"
+
+msgid "No next track information is available."
+msgstr "Es sind keine Informationen zum nächsten Titel verfügbar."
+
+msgid "No track slider"
+msgstr "Kein Positionsregler"
+
+msgid "Enabled"
+msgstr "Aktiviert"
