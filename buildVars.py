@@ -14,15 +14,7 @@ addon_info = AddonInfo(
 	addon_summary=_("Sonos"),
 	addon_description=_("Accessibility enhancements for the Sonos Desktop app."),
 	addon_version="2026.1",
-	addon_changelog=_("""- Added five-second track seeking (Shift+Right Arrow and Shift+Left Arrow) and scrubber focus (Shift+Up Arrow).
-- Added Jump to Time (Ctrl+J).
-- Added copying displayed album art to the clipboard (Alt+Shift+A).
-- Added next-track announcements (Alt+Shift+N) and a separate current speaker group command (Alt+Shift+G).
-- Added feedback when switching speaker groups with Ctrl+Comma and Ctrl+Period.
-- Updated for NVDA 2026.1 and later, using modern add-on APIs and translatable messages.
-- Made add-on shortcuts assignable through NVDA's Input Gestures dialog; enhanced native Sonos shortcuts retain their keys.
-- Made the scrubber report minutes and seconds, cleaned up duplicate control labels, and shortened speech.
-- Fixed speaker names in the Music EQ menu and labeled the alarm Enabled checkbox."""),
+	addon_changelog=_("Updated for NVDA 2026.1 with many new features (see ReadMe)"),
 	addon_author="Ralf Kefferpuetz <novalis7747@live.com>, J.J. Meddaugh <jj@bestmidi.com>",
 	addon_url="https://github.com/jage9/Sonos-Redux",
 	addon_sourceURL="https://github.com/jage9/Sonos-Redux",
