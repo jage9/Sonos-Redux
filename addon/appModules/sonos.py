@@ -6,6 +6,7 @@
 from urllib.parse import urlencode
 import webbrowser
 import math
+import re
 from time import perf_counter
 
 import addonHandler
@@ -37,19 +38,26 @@ def _text(obj):
     return (obj.name or "").strip()
 
 
-def _find(root, automationId):
+def _findAll(root, automationId):
     client = UIAHandler.handler.clientObject
     element = root.UIAElement if isinstance(root, UIA) else client.ElementFromHandle(root.windowHandle)
     condition = client.CreatePropertyCondition(UIAHandler.UIA_AutomationIdPropertyId, automationId)
     # Sonos omits some text from bulk searches; a filtered raw-tree walker finds it.
     walker = client.CreateTreeWalker(condition)
     found = walker.GetFirstChildElementBuildCache(element, UIAHandler.handler.baseCacheRequest)
-    if not found:
-        raise ControlUnavailable(automationId)
-    obj = UIA(UIAElement=found)
-    if not obj:
-        raise ControlUnavailable(automationId)
-    return obj
+    while found:
+        obj = UIA(UIAElement=found)
+        if not obj:
+            raise ControlUnavailable(automationId)
+        yield obj
+        found = walker.GetNextSiblingElementBuildCache(found, UIAHandler.handler.baseCacheRequest)
+
+
+def _find(root, automationId):
+    try:
+        return next(_findAll(root, automationId))
+    except StopIteration:
+        raise ControlUnavailable(automationId) from None
 
 
 def _percent(pattern):
@@ -456,7 +464,15 @@ class AppModule(appModuleHandler.AppModule):
 
     @script(description=_("Report the current speaker group."), gesture="kb:alt+shift+g", speakOnDemand=True)
     def script_reportGroup(self, gesture):
-        self._run(lambda: ui.message(_("Group {group}").format(group=self._groupInfo())))
+        def report():
+            group = self._groupInfo()
+            try:
+                members = self._groupMembers()
+            except (ControlUnavailable, COMError):
+                members = ""
+            ui.message(_("Group {group} ({members})").format(group=group, members=members) if members
+                       else _("Group {group}").format(group=group))
+        self._run(report)
 
     @script(description=_("Select the previous speaker group."), gesture="kb:control+,", speakOnDemand=True)
     def script_previousGroup(self, gesture):
@@ -465,6 +481,15 @@ class AppModule(appModuleHandler.AppModule):
     @script(description=_("Select the next speaker group."), gesture="kb:control+.", speakOnDemand=True)
     def script_nextGroup(self, gesture):
         self._changeGroup("control+.")
+
+    def _groupMembers(self):
+        groups = _find(self._root(), "zoneGroupScrollViewer")
+        for group in _findAll(groups, "RadioButton_1"):
+            if controlTypes.State.CHECKED in group.states:
+                names = (_text(room) for room in _findAll(group, "name_1"))
+                # Sonos exposes duplicate labels for collapsed and expanded room layouts.
+                return ", ".join(dict.fromkeys(filter(None, names)))
+        raise ControlUnavailable("No selected speaker group")
 
     def _groupInfo(self, panel=None):
         if panel is None:
@@ -566,6 +591,17 @@ class AppModule(appModuleHandler.AppModule):
             nextTrack = fields[3][1] if len(fields) == 4 else ""
             ui.message(_("Next {track}").format(track=nextTrack) if nextTrack
                        else _("No next track information is available."))
+        self._run(report)
+
+    @script(description=_("Report the number of tracks in the queue."), gesture="kb:alt+shift+q", speakOnDemand=True)
+    def script_reportQueue(self, gesture):
+        def report():
+            label = _text(_find(_find(self._root(), "queuePanel"), "trackCount_1"))
+            match = re.fullmatch(r"(\d+(?:[.,\s]\d{3})*)\s*[^\d]*", label)
+            if not match:
+                raise ControlUnavailable("No queue count")
+            count = int("".join(char for char in match[1] if char.isdecimal()))
+            ui.message(ngettext("{count} track in queue", "{count} tracks in queue", count).format(count=count))
         self._run(report)
 
     def _metadataFields(self, panel, limit):

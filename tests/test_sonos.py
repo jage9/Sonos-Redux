@@ -23,6 +23,7 @@ def _module(name, **attrs):
 
 def _install_nvda_stubs():
     builtins._ = lambda text: text
+    builtins.ngettext = lambda singular, plural, count: singular if count == 1 else plural
     addon = _module("addonHandler", initTranslation=lambda: None)
     api = _module("api", getForegroundObject=lambda: None, getFocusObject=lambda: None, copy_calls=[])
     def copy_to_clip(text, notify=False):
@@ -35,7 +36,7 @@ def _install_nvda_stubs():
     _module("appModuleHandler", AppModule=AppModule)
     _module("comtypes", COMError=type("COMError", (Exception,), {}))
     roles = types.SimpleNamespace(DATAITEM="dataitem", EDITABLETEXT="edit", DIALOG="dialog", SLIDER="slider", GRAPHIC="graphic", TOGGLEBUTTON="toggle", BUTTON="button", MENUITEM="menuitem", CHECKBOX="checkbox")
-    states = types.SimpleNamespace(UNAVAILABLE="unavailable", PRESSED="pressed", EDITABLE="editable", OFFSCREEN="offscreen")
+    states = types.SimpleNamespace(UNAVAILABLE="unavailable", PRESSED="pressed", CHECKED="checked", EDITABLE="editable", OFFSCREEN="offscreen")
     _module("controlTypes", Role=roles, State=states)
 
     _module("inputCore", manager=types.SimpleNamespace(isInputHelpActive=False))
@@ -495,8 +496,9 @@ class SonosTests(unittest.TestCase):
             info, track = app._trackInfo()
             self.assertEqual(app._trackInfo(includeGroup=True)[0], "Office + 2\n" + info)
             nvda["ui"].messages.clear()
+            app._groupMembers = lambda: "Office, Bedroom, Lounge"
             app.script_reportGroup(None)
-            self.assertEqual(nvda["ui"].messages, ["Group Office + 2"])
+            self.assertEqual(nvda["ui"].messages, ["Group Office + 2 (Office, Bedroom, Lounge)"])
             app.script_reportNext(None)
             self.assertEqual(nvda["ui"].messages[-1], "Next Another track")
             del nodes[6:]
@@ -821,6 +823,69 @@ class SonosTests(unittest.TestCase):
             sonos.AppModule().chooseNVDAObjectOverlayClasses(button, classes)
             self.assertEqual(classes, [sonos.ButtonLabels])
 
+
+    def test_group_members_use_only_checked_group_and_remove_duplicate_labels(self):
+        from unittest.mock import patch
+        app = sonos.AppModule()
+        app._root = lambda: object()
+        groups = object()
+        inactive = types.SimpleNamespace(states=set())
+        selected = types.SimpleNamespace(states={nvda["controlTypes"].State.CHECKED})
+        def findAll(root, identifier):
+            if root is groups:
+                self.assertEqual(identifier, "RadioButton_1")
+                return iter((inactive, selected))
+            self.assertIs(root, selected)
+            self.assertEqual(identifier, "name_1")
+            return iter(types.SimpleNamespace(name=name) for name in
+                        ("Office", "Bedroom", "Lounge", "Office", "Bedroom", "Lounge", ""))
+        with patch.object(sonos, "_find", return_value=groups), patch.object(sonos, "_findAll", side_effect=findAll):
+            self.assertEqual(app._groupMembers(), "Office, Bedroom, Lounge")
+        app._groupInfo = lambda: "Office + 2"
+        with patch.object(app, "_groupMembers", side_effect=sonos.ControlUnavailable):
+            app.script_reportGroup(None)
+            self.assertEqual(nvda["ui"].messages[-1], "Group Office + 2")
+
+    def test_filtered_lookup_visits_all_matching_siblings(self):
+        from unittest.mock import patch
+        first, second = object(), object()
+        client = Client(object(), first)
+        client.walker.GetNextSiblingElementBuildCache = lambda node, cache: second if node is first else None
+        root = sonos.UIA(UIAElement=object())
+        with patch.object(nvda["UIAHandler"].handler, "clientObject", client):
+            self.assertEqual([obj.UIAElement for obj in sonos._findAll(root, "name_1")], [first, second])
+            client.walker.result = None
+            with self.assertRaises(sonos.ControlUnavailable):
+                sonos._find(root, "name_1")
+
+    def test_queue_count_reports_singular_plural_and_rejects_missing_counts(self):
+        from unittest.mock import patch
+        app = sonos.AppModule()
+        root, queue = object(), object()
+        app._root = lambda: root
+        label = ["0 songs"]
+        def find(parent, identifier):
+            if identifier == "queuePanel":
+                self.assertIs(parent, root)
+                return queue
+            self.assertIs(parent, queue)
+            self.assertEqual(identifier, "trackCount_1")
+            return types.SimpleNamespace(name=label[0])
+        with patch.object(sonos, "_find", side_effect=find):
+            for text, expected in (("0 songs", "0 tracks in queue"), ("1 song", "1 track in queue"),
+                                   ("50 songs", "50 tracks in queue"), ("1,000 songs", "1000 tracks in queue"),
+                                   ("1.000 Titel", "1000 tracks in queue"), ("1\u202f000 titres", "1000 tracks in queue")):
+                label[0] = text
+                app.script_reportQueue(None)
+                self.assertEqual(nvda["ui"].messages[-1], expected)
+            for text in ("", "No queue", "-1 songs", "1.5 songs", "Song [30/50]"):
+                label[0] = text
+                app.script_reportQueue(None)
+                self.assertEqual(nvda["ui"].messages[-1], "This control is unavailable in the current Sonos view.")
+        with patch.object(sonos, "_find", side_effect=sonos.ControlUnavailable):
+            app.script_reportQueue(None)
+            self.assertEqual(nvda["ui"].messages[-1], "This control is unavailable in the current Sonos view.")
+        self.assertEqual(app.script_reportQueue.scriptMetadata["gesture"], "kb:alt+shift+q")
 
 if __name__ == "__main__":
     unittest.main()

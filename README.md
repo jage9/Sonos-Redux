@@ -15,7 +15,8 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Control+3 | Search YouTube for the current track. |
 | Control+J | Jump to a time in the track. |
 | Alt+Shift+L | Toggle track logging. |
-| Alt+Shift+G | Read the current speaker group. |
+| Alt+Shift+G | Read the current speaker group and its rooms. |
+| Alt+Shift+Q | Read the number of tracks in the queue. |
 | Alt+Shift+N | Read the next track. |
 | Alt+Shift+A | Copy the displayed album artwork. |
 | Alt+Shift+V | Read volume. |
@@ -58,10 +59,11 @@ Logging records the current track title and artist with a timestamp, then append
 - Added optional track logging, toggled with Alt+Shift+L.
 - Added a Sonos settings panel. Settings are global.
 - Added Favorites feedback for Sonos Ctrl+8.
+- Added queue count reporting (Alt+Shift+Q).
 - Added adjustable track seeking (default five seconds) (Shift+Right Arrow and Shift+Left Arrow) and scrubber focus (Shift+Up Arrow).
 - Added Jump to Time (Ctrl+J).
 - Added copying displayed album art to the clipboard (Alt+Shift+A).
-- Added next-track announcements (Alt+Shift+N) and a separate current speaker group command (Alt+Shift+G).
+- Added next-track announcements (Alt+Shift+N) and a separate current speaker group command with room names (Alt+Shift+G).
 - Added feedback when switching speaker groups with Ctrl+Comma and Ctrl+Period.
 - Updated for NVDA 2026.1 and later, using modern add-on APIs and translatable messages.
 - Made add-on shortcuts assignable through NVDA's Input Gestures dialog; enhanced native Sonos shortcuts retain their keys.
