@@ -384,6 +384,31 @@ class SonosTests(unittest.TestCase):
         self.assertTrue(keyboard.created[0].sent)
         self.assertEqual(nvda["core"].calls[-1][0], 250)
 
+    def test_favorites_passes_native_key_speaks_and_skips_input_help_action(self):
+        app = sonos.AppModule()
+        keyboard = nvda["keyboardHandler"].KeyboardInputGesture
+        keyboard.created.clear()
+        nvda["ui"].messages.clear()
+        gesture = types.SimpleNamespace(displayName="control+8")
+
+        app.script_favorites(gesture)
+
+        self.assertEqual([key.name for key in keyboard.created], ["control+8"])
+        self.assertTrue(keyboard.created[0].sent)
+        self.assertEqual(nvda["ui"].messages, ["Favorites"])
+
+        keyboard.created.clear()
+        nvda["ui"].messages.clear()
+        sonos.inputCore.manager.isInputHelpActive = True
+        try:
+            app.script_favorites(gesture)
+        finally:
+            sonos.inputCore.manager.isInputHelpActive = False
+        self.assertEqual(keyboard.created, [])
+        self.assertEqual(nvda["ui"].messages, ["control+8: Favorites"])
+        self.assertFalse(app.script_favorites.__doc__)
+        self.assertTrue(app.script_favorites.scriptMetadata["bypassInputHelp"])
+
     def test_info_commands_work_with_remapped_gesture_and_copy_result(self):
         app = sonos.AppModule()
         app._trackInfo = lambda includeGroup=False: ("Room - Artist - Title", "Artist - Title")

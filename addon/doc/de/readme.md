@@ -12,6 +12,7 @@ Aktualisiert von J.J. Meddaugh <jj@bestmidi.com>.
 | Strg+2 | Titelinformationen anzeigen. |
 | Strg+3 | Auf YouTube nach dem aktuellen Titel suchen. |
 | Strg+J | Zu einer Zeit im Titel springen. |
+| Alt+Umschalt+L | Titelprotokollierung ein- oder ausschalten. |
 | Alt+Umschalt+G | Aktuelle Lautsprechergruppe ansagen. |
 | Alt+Umschalt+N | Nächsten Titel ansagen. |
 | Alt+Umschalt+A | Angezeigtes Albumcover kopieren. |
@@ -35,14 +36,24 @@ Aktualisiert von J.J. Meddaugh <jj@bestmidi.com>.
 | Strg+R | Wiederholungsmodus wechseln und ansagen. |
 | Strg+E | Zufallswiedergabe umschalten und Status ansagen. |
 | Strg+T | Überblendung umschalten und Status ansagen. |
+| Strg+8 | Sonos-Favoriten öffnen und ansagen. |
 | Strg+, | Zur vorherigen Gruppe wechseln und sie ansagen. |
 | Strg+. | Zur nächsten Gruppe wechseln und sie ansagen. |
 | Strg+K | Sonos-Hilfe zu Tastenkürzeln öffnen. |
+
+## Einstellungen
+
+In den NVDA-Einstellungen unter Sonos lässt sich **Titel protokollieren** einschalten und eine Protokolldatei auswählen. Diese Einstellungen gelten für alle NVDA-Profile. Die Protokollierung ist standardmäßig ausgeschaltet. Die Standarddatei heißt `sonos.log` und liegt im Dokumente-Ordner. Über Durchsuchen lässt sich ein anderer Speicherort wählen; Öffnen öffnet das Protokoll in der Standardanwendung.
+
+Titel und Interpret werden mit einem Zeitstempel aufgezeichnet. Bei Änderungen wird ein neuer Eintrag angehängt. Die Prüfung erfolgt alle drei Sekunden und läuft auch beim Arbeiten in anderen Anwendungen weiter, solange Sonos geöffnet bleibt. Protokolliert wird die ausgewählte Lautsprechergruppe. Start- und Endmarkierungen trennen die Protokollierungssitzungen. Alt+Umschalt+L schaltet die Protokollierung in Sonos um.
 
 ## Änderungen
 
 ### 2026.1
 
+- Optionale Titelprotokollierung hinzugefügt, umschaltbar mit Alt+Umschalt+L.
+- Sonos-Einstellungskategorie hinzugefügt. Die Einstellungen gelten global.
+- Rückmeldung für den Sonos-Favoritenbefehl Strg+8 hinzugefügt.
 - Fünf Sekunden vor- und zurückspringen (Umschalt+Pfeil rechts und Umschalt+Pfeil links) und den Positionsregler fokussieren (Umschalt+Pfeil hoch).
 - Zu einer Zeit im Titel springen (Strg+J).
 - Angezeigtes Albumcover in die Zwischenablage kopieren (Alt+Umschalt+A).

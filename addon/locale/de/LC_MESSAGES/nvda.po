@@ -159,3 +159,51 @@ msgstr "Kein Positionsregler"
 
 msgid "Enabled"
 msgstr "Aktiviert"
+
+msgid "Favorites"
+msgstr "Favoriten"
+
+msgid "Toggle track logging."
+msgstr "Titelprotokollierung ein- oder ausschalten."
+
+msgid "Track logging on"
+msgstr "Titelprotokollierung ein"
+
+msgid "Track logging off"
+msgstr "Titelprotokollierung aus"
+
+msgid "&Log track titles"
+msgstr "Titel &protokollieren"
+
+msgid "Log &filename:"
+msgstr "Protokoll&datei:"
+
+msgid "&Browse..."
+msgstr "&Durchsuchen..."
+
+msgid "Choose track log file"
+msgstr "Protokolldatei auswählen"
+
+msgid "Choose a log filename in an existing folder."
+msgstr "Einen Protokolldateinamen in einem vorhandenen Ordner wählen."
+
+msgid "Log filename"
+msgstr "Protokolldatei"
+
+msgid "Could not write the track log. Track logging off."
+msgstr "Protokolldatei konnte nicht geschrieben werden. Titelprotokollierung aus."
+
+msgid "Log started"
+msgstr "Protokollierung gestartet"
+
+msgid "Log ended"
+msgstr "Protokollierung beendet"
+
+msgid "&Open"
+msgstr "&Öffnen"
+
+msgid "No track log file yet."
+msgstr "Noch keine Protokolldatei vorhanden."
+
+msgid "Could not open the track log."
+msgstr "Protokolldatei konnte nicht geöffnet werden."

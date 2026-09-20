@@ -347,6 +347,14 @@ class AppModule(appModuleHandler.AppModule):
     def script_toggleCrossfade(self, gesture):
         self._run(lambda: self._toggle(gesture, _("Toggle crossfade and report its state."), "crossfadeToggleButton", "control+t"))
 
+    @script(gesture="kb:control+8", bypassInputHelp=True, speakOnDemand=True)
+    def script_favorites(self, gesture):
+        if inputCore.manager.isInputHelpActive:
+            ui.message(f"{gesture.displayName}: {_('Favorites')}")
+            return
+        keyboardHandler.KeyboardInputGesture.fromName("control+8").send()
+        ui.message(_("Favorites"))
+
     @script(
         description=_("Read the current track. Press twice quickly to copy track information."),
         gesture="kb:control+1",
@@ -582,8 +590,8 @@ class AppModule(appModuleHandler.AppModule):
             child = walker.GetNextSiblingElementBuildCache(child, cache)
         return fields
 
-    def _trackInfo(self, includeGroup=False):
-        panel = _find(self._root(), "nowPlayingPanel")
+    def _trackInfo(self, includeGroup=False, root=None):
+        panel = _find(root if root is not None else self._root(), "nowPlayingPanel")
         fields = self._metadataFields(panel, 3)
         details = [f"{label}: {value}" if label else value for label, value in fields if value]
         if not details:
@@ -593,3 +601,8 @@ class AppModule(appModuleHandler.AppModule):
         info = "\n".join(details)
         track = " - ".join(value for label, value in fields[:2] if value) if fields and fields[0][1] else ""
         return info, track
+
+    @script(description=_("Toggle track logging."), gesture="kb:alt+shift+l", speakOnDemand=True)
+    def script_toggleTrackLogging(self, gesture):
+        from globalPlugins.sonosSettings import toggleLogging
+        toggleLogging()

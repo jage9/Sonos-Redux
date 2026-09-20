@@ -14,6 +14,7 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Control+2 | Show track information. |
 | Control+3 | Search YouTube for the current track. |
 | Control+J | Jump to a time in the track. |
+| Alt+Shift+L | Toggle track logging. |
 | Alt+Shift+G | Read the current speaker group. |
 | Alt+Shift+N | Read the next track. |
 | Alt+Shift+A | Copy the displayed album artwork. |
@@ -37,14 +38,24 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Control+R | Cycle repeat mode and announce it. |
 | Control+E | Toggle shuffle and announce its state. |
 | Control+T | Toggle crossfade and announce its state. |
+| Control+8 | Open Sonos Favorites and announce it. |
 | Control+, | Switch to the previous group and announce it. |
 | Control+. | Switch to the next group and announce it. |
 | Control+K | Open Sonos keyboard shortcut help. |
+
+## Settings
+
+In NVDA Settings, choose Sonos to turn on **Log track titles** and choose a log filename. These settings apply across all NVDA profiles. Logging is off by default. The default file is `sonos.log` in your Documents folder. Browse lets you choose another location; Open opens the log in your default application.
+
+Logging records the current track title and artist with a timestamp, then appends an entry when they change. It checks every three seconds and continues while you use other apps, as long as Sonos remains open. It follows the selected speaker group. Start and end markers separate logging sessions. Press Alt+Shift+L in Sonos to toggle logging.
 
 ## Changelog
 
 ### 2026.1
 
+- Added optional track logging, toggled with Alt+Shift+L.
+- Added a Sonos settings panel. Settings are global.
+- Added Favorites feedback for Sonos Ctrl+8.
 - Added five-second track seeking (Shift+Right Arrow and Shift+Left Arrow) and scrubber focus (Shift+Up Arrow).
 - Added Jump to Time (Ctrl+J).
 - Added copying displayed album art to the clipboard (Alt+Shift+A).

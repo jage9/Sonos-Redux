@@ -28,7 +28,7 @@ addon_info = AddonInfo(
 )
 
 
-pythonSources: list[str] = ["addon/appModules/*.py"]
+pythonSources: list[str] = ["addon/appModules/*.py", "addon/globalPlugins/*.py"]
 i18nSources: list[str] = pythonSources + ["buildVars.py"]
 excludedFiles: list[str] = ["**/__pycache__/**", "**/*.pyc", "**/*.pyo"]
 baseLanguage: str = "en"
