@@ -3,6 +3,7 @@ summary = "{addon_summary}"
 description = """{addon_description}"""
 author = "{addon_author}"
 url = {addon_url}
+sourceURL = {addon_sourceURL}
 version = {addon_version}
 changelog = """{addon_changelog}"""
 docFileName = {addon_docFileName}

@@ -221,3 +221,6 @@ msgid "{count} track in queue"
 msgid_plural "{count} tracks in queue"
 msgstr[0] "{count} Titel in der Warteschlange"
 msgstr[1] "{count} Titel in der Warteschlange"
+
+msgid "Sonos Redux"
+msgstr "Sonos Redux"

@@ -1,4 +1,4 @@
-# Sonos
+# Sonos Redux
 
 Ursprünglich von Ralf Kefferpuetz <novalis7747@live.com>.
 
