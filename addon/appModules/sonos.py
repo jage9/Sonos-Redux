@@ -38,26 +38,19 @@ def _text(obj):
     return (obj.name or "").strip()
 
 
-def _findAll(root, automationId):
+def _find(root, automationId):
     client = UIAHandler.handler.clientObject
     element = root.UIAElement if isinstance(root, UIA) else client.ElementFromHandle(root.windowHandle)
     condition = client.CreatePropertyCondition(UIAHandler.UIA_AutomationIdPropertyId, automationId)
     # Sonos omits some text from bulk searches; a filtered raw-tree walker finds it.
     walker = client.CreateTreeWalker(condition)
     found = walker.GetFirstChildElementBuildCache(element, UIAHandler.handler.baseCacheRequest)
-    while found:
-        obj = UIA(UIAElement=found)
-        if not obj:
-            raise ControlUnavailable(automationId)
-        yield obj
-        found = walker.GetNextSiblingElementBuildCache(found, UIAHandler.handler.baseCacheRequest)
-
-
-def _find(root, automationId):
-    try:
-        return next(_findAll(root, automationId))
-    except StopIteration:
-        raise ControlUnavailable(automationId) from None
+    if not found:
+        raise ControlUnavailable(automationId)
+    obj = UIA(UIAElement=found)
+    if not obj:
+        raise ControlUnavailable(automationId)
+    return obj
 
 
 def _percent(pattern):
@@ -483,13 +476,23 @@ class AppModule(appModuleHandler.AppModule):
         self._changeGroup("control+.")
 
     def _groupMembers(self):
-        groups = _find(self._root(), "zoneGroupScrollViewer")
-        for group in _findAll(groups, "RadioButton_1"):
-            if controlTypes.State.CHECKED in group.states:
-                names = (_text(room) for room in _findAll(group, "name_1"))
-                # Sonos exposes duplicate labels for collapsed and expanded room layouts.
-                return ", ".join(dict.fromkeys(filter(None, names)))
-        raise ControlUnavailable("No selected speaker group")
+        groups = _find(self._root(), "zoneGroupScrollViewer").UIAElement
+        client = UIAHandler.handler.clientObject
+        selectedCondition = client.CreateAndCondition(
+            client.CreatePropertyCondition(UIAHandler.UIA_AutomationIdPropertyId, "RadioButton_1"),
+            client.CreatePropertyCondition(UIAHandler.UIA_SelectionItemIsSelectedPropertyId, True),
+        )
+        selected = client.CreateTreeWalker(selectedCondition).GetFirstChildElementBuildCache(
+            groups, UIAHandler.handler.baseCacheRequest)
+        if not selected:
+            raise ControlUnavailable("No selected speaker group")
+        condition = client.CreatePropertyCondition(UIAHandler.UIA_AutomationIdPropertyId, "name_1")
+        cache = client.CreateCacheRequest()
+        cache.AddProperty(UIAHandler.UIA_NamePropertyId)
+        # Room labels support bulk lookup. Cache only names; NVDA objects/states made this slow.
+        rooms = selected.FindAllBuildCache(UIAHandler.TreeScope_Descendants, condition, cache)
+        names = ((rooms.GetElement(index).CachedName or "").strip() for index in range(rooms.Length))
+        return ", ".join(dict.fromkeys(filter(None, names)))
 
     def _groupInfo(self, panel=None):
         if panel is None:

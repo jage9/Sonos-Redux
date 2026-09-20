@@ -101,7 +101,9 @@ def _install_nvda_stubs():
         "UIAHandler",
         handler=Handler(),
         TreeScope_Descendants=4,
-        UIA_AutomationIdPropertyId=30005,
+        UIA_AutomationIdPropertyId=30011,
+        UIA_SelectionItemIsSelectedPropertyId=30079,
+        UIA_NamePropertyId=30005,
     )
 
     ui = _module("ui", messages=[])
@@ -178,8 +180,8 @@ class SonosTests(unittest.TestCase):
 
         self.assertIsInstance(result, nvda["NVDAObjects.UIA"].UIA)
         self.assertIs(result.UIAElement, found)
-        self.assertEqual(client.conditions, [(30005, "PART_Scrubber")])
-        self.assertEqual(client.walker.condition, (30005, "PART_Scrubber"))
+        self.assertEqual(client.conditions, [(30011, "PART_Scrubber")])
+        self.assertEqual(client.walker.condition, (30011, "PART_Scrubber"))
         self.assertEqual(
             client.walker.calls[0],
             (element, nvda["UIAHandler"].handler.baseCacheRequest),
@@ -824,39 +826,44 @@ class SonosTests(unittest.TestCase):
             self.assertEqual(classes, [sonos.ButtonLabels])
 
 
-    def test_group_members_use_only_checked_group_and_remove_duplicate_labels(self):
+    def test_group_members_use_selected_raw_group_and_cached_names(self):
         from unittest.mock import patch
         app = sonos.AppModule()
         app._root = lambda: object()
         groups = object()
-        inactive = types.SimpleNamespace(states=set())
-        selected = types.SimpleNamespace(states={nvda["controlTypes"].State.CHECKED})
-        def findAll(root, identifier):
-            if root is groups:
-                self.assertEqual(identifier, "RadioButton_1")
-                return iter((inactive, selected))
-            self.assertIs(root, selected)
-            self.assertEqual(identifier, "name_1")
-            return iter(types.SimpleNamespace(name=name) for name in
-                        ("Office", "Bedroom", "Lounge", "Office", "Bedroom", "Lounge", ""))
-        with patch.object(sonos, "_find", return_value=groups), patch.object(sonos, "_findAll", side_effect=findAll):
+        names = ["Office", "Bedroom", "Lounge", "Office", "Bedroom", "Lounge", ""]
+        cacheProperties = []
+        cache = types.SimpleNamespace(AddProperty=cacheProperties.append)
+        rooms = types.SimpleNamespace(Length=len(names), GetElement=lambda i: types.SimpleNamespace(CachedName=names[i]))
+        def findRooms(scope, condition, request):
+            self.assertEqual(scope, nvda["UIAHandler"].TreeScope_Descendants)
+            self.assertEqual(condition, (nvda["UIAHandler"].UIA_AutomationIdPropertyId, "name_1"))
+            self.assertIs(request, cache)
+            return rooms
+        selected = types.SimpleNamespace(FindAllBuildCache=findRooms)
+        def makeWalker(condition):
+            self.assertEqual(condition, (
+                (nvda["UIAHandler"].UIA_AutomationIdPropertyId, "RadioButton_1"),
+                (nvda["UIAHandler"].UIA_SelectionItemIsSelectedPropertyId, True)))
+            return types.SimpleNamespace(GetFirstChildElementBuildCache=lambda element, request: selected)
+        client = types.SimpleNamespace(
+            CreatePropertyCondition=lambda prop, value: (prop, value),
+            CreateAndCondition=lambda first, second: (first, second),
+            CreateTreeWalker=makeWalker,
+            CreateCacheRequest=lambda: cache,
+        )
+        with patch.object(sonos, "_find", return_value=types.SimpleNamespace(UIAElement=groups)), \
+             patch.object(nvda["UIAHandler"].handler, "clientObject", client), \
+             patch.object(sonos, "UIA", side_effect=AssertionError("Do not wrap room elements")):
             self.assertEqual(app._groupMembers(), "Office, Bedroom, Lounge")
+            self.assertEqual(cacheProperties, [nvda["UIAHandler"].UIA_NamePropertyId])
+            selected = None
+            with self.assertRaises(sonos.ControlUnavailable):
+                app._groupMembers()
         app._groupInfo = lambda: "Office + 2"
         with patch.object(app, "_groupMembers", side_effect=sonos.ControlUnavailable):
             app.script_reportGroup(None)
             self.assertEqual(nvda["ui"].messages[-1], "Group Office + 2")
-
-    def test_filtered_lookup_visits_all_matching_siblings(self):
-        from unittest.mock import patch
-        first, second = object(), object()
-        client = Client(object(), first)
-        client.walker.GetNextSiblingElementBuildCache = lambda node, cache: second if node is first else None
-        root = sonos.UIA(UIAElement=object())
-        with patch.object(nvda["UIAHandler"].handler, "clientObject", client):
-            self.assertEqual([obj.UIAElement for obj in sonos._findAll(root, "name_1")], [first, second])
-            client.walker.result = None
-            with self.assertRaises(sonos.ControlUnavailable):
-                sonos._find(root, "name_1")
 
     def test_queue_count_reports_singular_plural_and_rejects_missing_counts(self):
         from unittest.mock import patch
