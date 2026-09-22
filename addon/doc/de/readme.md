@@ -18,6 +18,11 @@ Aktualisiert von J.J. Meddaugh <jj@bestmidi.com>.
 | Alt+Umschalt+K | Titelansagen umschalten: Aus, Überall, Sonos im Vordergrund. |
 | Alt+Umschalt+S | Status des Schlaf-Timers ansagen. |
 | Alt+Umschalt+J | Zu den letzten 30 Sekunden eines Titels springen (einstellbar). |
+| Alt+Umschalt+F5 | Schleifenanfang setzen. |
+| Alt+Umschalt+F6 | Schleifenende setzen. |
+| Alt+Umschalt+F7 | Schleife starten. |
+| Alt+Umschalt+F8 | Schleife beenden und zum Schleifenende springen. |
+| Alt+Umschalt+F9 | Schleifenanfang, Ende und Dauer ansagen. |
 | Alt+Umschalt+G | Aktuelle Lautsprechergruppe und ihre Räume ansagen. |
 | Alt+Umschalt+Q | Anzahl der Titel in der Warteschlange ansagen. |
 | Alt+Umschalt+N | Nächsten Titel oder bei SiriusXM den Sender ansagen. |
@@ -49,6 +54,8 @@ Aktualisiert von J.J. Meddaugh <jj@bestmidi.com>.
 
 Strg+V öffnet ein Lautstärkefeld von 0 bis 100. Einen Wert eingeben oder mit Pfeil hoch und runter ändern, dann mit Eingabe übernehmen. Strg+Umschalt+V senkt die Lautstärke mit der eingestellten Dauer auf null ab. Sonos muss dabei mit derselben ausgewählten Gruppe im Vordergrund bleiben.
 
+Bei einem Titel mit Positionsregler Anfang und Ende markieren. Alt+Umschalt+F7 springt zum Anfang und wiederholt den Abschnitt. Bei pausierter Wiedergabe mit Sonos Wiedergabe/Pause fortsetzen. Alt+Umschalt+F8 setzt am Schleifenende fort. Beim Verlassen von Sonos endet die Schleife; ein Titel- oder Gruppenwechsel löscht die Marken. Die Schleifenzeit ist nicht exakt.
+
 ## Einstellungen
 
 **Absenkdauer in Sekunden** legt die Dauer für Strg+Umschalt+V fest: 1–999 Sekunden, standardmäßig 5.
@@ -64,6 +71,8 @@ Titel und Interpret werden mit einem Zeitstempel aufgezeichnet. Bei Änderungen 
 ## Änderungen
 
 ### 2026.1
+
+- Temporäre Schleifen-Lesezeichen hinzugefügt (Alt+Umschalt+F5–F9).
 
 - Optionale Titelprotokollierung hinzugefügt, umschaltbar mit Alt+Umschalt+L.
 - Optionale Ansage bei Titelwechseln (Alt+Umschalt+K) und Status des Schlaf-Timers (Alt+Umschalt+S) hinzugefügt.

@@ -293,3 +293,42 @@ msgstr "Lautstärke für {group} wird abgesenkt"
 
 msgid "&Fade seconds:"
 msgstr "Absenk&dauer in Sekunden:"
+
+msgid "No loop bookmark"
+msgstr "Kein Schleifen-Lesezeichen"
+
+msgid "Set loop start."
+msgstr "Schleifenanfang setzen."
+
+msgid "Loop start {time}"
+msgstr "Schleifenanfang {time}"
+
+msgid "Set loop end."
+msgstr "Schleifenende setzen."
+
+msgid "Loop end must be after loop start"
+msgstr "Das Schleifenende muss nach dem Anfang liegen"
+
+msgid "Loop end {time}"
+msgstr "Schleifenende {time}"
+
+msgid "Start looping."
+msgstr "Schleife starten."
+
+msgid "Set loop end first"
+msgstr "Zuerst das Schleifenende setzen"
+
+msgid "Loop on"
+msgstr "Schleife ein"
+
+msgid "Stop looping and jump to loop end."
+msgstr "Schleife beenden und zum Schleifenende springen."
+
+msgid "Loop off"
+msgstr "Schleife aus"
+
+msgid "Report loop start, end, and duration."
+msgstr "Schleifenanfang, Ende und Dauer ansagen."
+
+msgid "Loop start {start}, end {end}, duration {duration}"
+msgstr "Schleifenanfang {start}, Ende {end}, Dauer {duration}"

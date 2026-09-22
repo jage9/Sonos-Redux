@@ -173,9 +173,9 @@ class AppModule(appModuleHandler.AppModule):
             log.exception("Sonos command failed")
             ui.message(_("Sonos command failed. See the NVDA log for details."))
 
-    def _scrubber(self):
+    def _scrubber(self, root=None):
         try:
-            slider = self._transport("PART_Scrubber")
+            slider = self._transport("PART_Scrubber", root=root)
             pattern = slider.UIARangeValuePattern
             if not pattern:
                 raise ControlUnavailable("Scrubber has no range pattern")
@@ -223,8 +223,8 @@ class AppModule(appModuleHandler.AppModule):
             return
         self._run(action)
 
-    def _transport(self, identifier):
-        control = _find(_find(self._root(), "transportBar"), identifier)
+    def _transport(self, identifier, root=None):
+        control = _find(_find(root if root is not None else self._root(), "transportBar"), identifier)
         if controlTypes.State.UNAVAILABLE in control.states:
             raise ControlUnavailable(identifier)
         return control
@@ -233,7 +233,7 @@ class AppModule(appModuleHandler.AppModule):
         slider, pattern = self._scrubber()
         self._setPosition(pattern, pattern.CurrentValue + seconds, self._root().windowHandle)
 
-    def _setPosition(self, pattern, target, windowHandle):
+    def _setPosition(self, pattern, target, windowHandle, report=True):
         if pattern.CurrentIsReadOnly:
             raise NoTrackSlider("Scrubber is read-only")
         _percent(pattern)
@@ -254,7 +254,8 @@ class AppModule(appModuleHandler.AppModule):
             except (COMError, RuntimeError, NotImplementedError):
                 log.debugWarning("Could not restore Sonos focus after seeking", exc_info=True)
         self._seekSequence = getattr(self, "_seekSequence", 0) + 1
-        core.callLater(250, self._reportSeekResult, windowHandle, self._seekSequence)
+        if report:
+            core.callLater(250, self._reportSeekResult, windowHandle, self._seekSequence)
 
     def _reportSeekResult(self, windowHandle, sequence):
         if sequence != self._seekSequence or api.getForegroundObject().windowHandle != windowHandle:
@@ -283,6 +284,123 @@ class AppModule(appModuleHandler.AppModule):
             self._setPosition(pattern, pattern.CurrentMaximum - config.conf["sonos"]["endJumpSeconds"],
                               self._root().windowHandle)
         self._scrubGesture(gesture, jump)
+
+    def _loopContext(self, saved=None):
+        if saved is None:
+            root = self._root()
+        else:
+            element = UIAHandler.handler.clientObject.ElementFromHandleBuildCache(
+                saved["window"], UIAHandler.handler.baseCacheRequest)
+            if not element:
+                raise NoTrackSlider()
+            root = UIA(UIAElement=element)
+        slider, pattern = self._scrubber(root=root)
+        if pattern.CurrentIsReadOnly:
+            raise NoTrackSlider()
+        track = self._trackInfo(includeGroup=True, root=root)
+        if not track[1]:
+            raise ControlUnavailable("No track identity for loop")
+        return root, pattern, (track, pattern.CurrentMaximum)
+
+    def _currentLoop(self):
+        saved = getattr(self, "_loop", None)
+        if saved is not None:
+            root, pattern, track = self._loopContext()
+            if root.windowHandle == saved["window"] and track == saved["track"]:
+                return saved, pattern
+            self._loop = None
+        ui.message(_("No loop bookmark"))
+        return None, None
+
+    @script(description=_("Set loop start."), gesture="kb:alt+shift+f5", speakOnDemand=True)
+    def script_setLoopStart(self, gesture):
+        def mark():
+            root, pattern, track = self._loopContext()
+            saved = self._loop = dict(window=root.windowHandle, track=track,
+                                      start=pattern.CurrentValue, end=None, active=False)
+            ui.message(_("Loop start {time}").format(time=_format_seconds(saved["start"])))
+            core.callLater(1000, self._watchLoop, saved)
+        self._scrubGesture(gesture, mark)
+
+    @script(description=_("Set loop end."), gesture="kb:alt+shift+f6", speakOnDemand=True)
+    def script_setLoopEnd(self, gesture):
+        def mark():
+            saved, pattern = self._currentLoop()
+            if saved is None:
+                return
+            if pattern.CurrentValue <= saved["start"]:
+                ui.message(_("Loop end must be after loop start"))
+                return
+            saved["end"] = pattern.CurrentValue
+            saved["active"] = False
+            ui.message(_("Loop end {time}").format(time=_format_seconds(saved["end"])))
+        self._scrubGesture(gesture, mark)
+
+    @script(description=_("Start looping."), gesture="kb:alt+shift+f7", speakOnDemand=True)
+    def script_startLoop(self, gesture):
+        def start():
+            saved, pattern = self._currentLoop()
+            if saved is None:
+                return
+            if saved["end"] is None:
+                ui.message(_("Set loop end first"))
+                return
+            self._setPosition(pattern, saved["start"], saved["window"], report=False)
+            saved["active"] = True
+            ui.message(_("Loop on"))
+        self._scrubGesture(gesture, start)
+
+    @script(description=_("Stop looping and jump to loop end."),
+            gesture="kb:alt+shift+f8", speakOnDemand=True)
+    def script_stopLoop(self, gesture):
+        def stop():
+            saved, pattern = self._currentLoop()
+            if saved is None:
+                return
+            saved["active"] = False
+            if saved["end"] is not None:
+                self._setPosition(pattern, saved["end"], saved["window"], report=False)
+            ui.message(_("Loop off"))
+        self._scrubGesture(gesture, stop)
+
+    @script(description=_("Report loop start, end, and duration."),
+            gesture="kb:alt+shift+f9", speakOnDemand=True)
+    def script_reportLoop(self, gesture):
+        def report():
+            saved, pattern = self._currentLoop()
+            if saved is None:
+                return
+            if saved["end"] is None:
+                ui.message(_("Loop start {time}").format(time=_format_seconds(saved["start"])))
+            else:
+                ui.message(_("Loop start {start}, end {end}, duration {duration}").format(
+                    start=_format_seconds(saved["start"]), end=_format_seconds(saved["end"]),
+                    duration=_format_seconds(saved["end"] - saved["start"])))
+        self._run(report)
+
+    def _watchLoop(self, saved):
+        if saved is not getattr(self, "_loop", None):
+            return
+        try:
+            root, pattern, track = self._loopContext(saved)
+            if track != saved["track"]:
+                self._loop = None
+                return
+            if saved["active"]:
+                foreground = api.getForegroundObject()
+                if not foreground or foreground.windowHandle != saved["window"]:
+                    saved["active"] = False
+                elif pattern.CurrentValue >= saved["end"]:
+                    self._setPosition(pattern, saved["start"], saved["window"], report=False)
+        except (ControlUnavailable, COMError, RuntimeError, OSError):
+            self._loop = None
+            return
+        # ponytail: UIA polling and network seeks make loops approximate, not sample-accurate.
+        core.callLater(250 if saved["active"] else 1000, self._watchLoop, saved)
+
+    def terminate(self):
+        super().terminate()
+        self._loop = None
 
     @script(description=_("Report elapsed track time."), gesture="kb:alt+shift+u", speakOnDemand=True)
     def script_reportCurrent(self, gesture):

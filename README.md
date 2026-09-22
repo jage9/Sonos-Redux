@@ -22,6 +22,11 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Alt+Shift+K | Cycle track title announcements: Off, Everywhere, Sonos focused. |
 | Alt+Shift+S | Read sleep timer status. |
 | Alt+Shift+J | Jump to the last 30 seconds of a track (configurable). |
+| Alt+Shift+F5 | Set loop start. |
+| Alt+Shift+F6 | Set loop end. |
+| Alt+Shift+F7 | Start looping. |
+| Alt+Shift+F8 | Stop looping and jump to loop end. |
+| Alt+Shift+F9 | Read loop start, end, and duration. |
 | Alt+Shift+G | Read the current speaker group and its rooms. |
 | Alt+Shift+Q | Read the number of tracks in the queue. |
 | Alt+Shift+N | Read the next track, or the SiriusXM channel when playing SiriusXM. |
@@ -53,6 +58,8 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 
 Control+V opens a volume field from 0 to 100. Type a value or use Up and Down Arrow, then press Enter to apply it. Control+Shift+V fades to zero using the configured fade length; keep Sonos in front on the same group until it finishes.
 
+Set loop start and end on a seekable track, then press Alt+Shift+F7 to jump to the start and repeat that section. If playback is paused, use Sonos Play/Pause to resume it. Alt+Shift+F8 continues from the loop end. Leaving Sonos stops looping; changing tracks or groups clears the markers. Loop timing is approximate.
+
 ## Settings
 
 **Fade seconds** sets the fade length for Control+Shift+V: 1–999 seconds, default 5.
@@ -68,6 +75,8 @@ Logging records the current track title and artist with a timestamp, then append
 ## Changelog
 
 ### 2026.1
+
+- Added temporary looping bookmarks (Alt+Shift+F5–F9).
 
 - Added optional track logging, toggled with Alt+Shift+L.
 - Added optional track title announcements (Alt+Shift+K) and sleep timer status (Alt+Shift+S).

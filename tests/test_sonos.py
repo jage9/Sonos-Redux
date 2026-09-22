@@ -465,6 +465,69 @@ class SonosTests(unittest.TestCase):
             self.assertEqual(nvda["core"].calls, [])
         self.assertEqual(app.script_fadeVolume.scriptMetadata["gesture"], "kb:control+shift+v")
 
+    def test_loop_commands_validate_bounds_repeat_and_exit_at_end(self):
+        app = sonos.AppModule()
+        root, pattern = types.SimpleNamespace(windowHandle=99), Pattern(0, 300, 30)
+        identity = (("Office", "Song - Artist"), 300)
+        app._loopContext = lambda saved=None: (root, pattern, identity)
+        app._scrubGesture = lambda gesture, action: action()
+        writes = []
+        app._setPosition = lambda p, target, window, report=True: writes.append((target, report))
+        nvda["ui"].messages.clear()
+        nvda["core"].calls.clear()
+        app.script_setLoopStart(None)
+        saved = app._loop
+        app.script_setLoopEnd(None)
+        self.assertIsNone(saved["end"])
+        self.assertEqual(nvda["ui"].messages[-1], "Loop end must be after loop start")
+        app.script_startLoop(None)
+        self.assertEqual(writes, [])
+        pattern.CurrentValue = 45
+        app.script_setLoopEnd(None)
+        app.script_reportLoop(None)
+        self.assertEqual(nvda["ui"].messages[-1], "Loop start 0:30, end 0:45, duration 0:15")
+        app.script_startLoop(None)
+        self.assertTrue(saved["active"])
+        self.assertEqual(writes, [(30, False)])
+        with patch.object(nvda["api"], "getForegroundObject", return_value=root):
+            app._watchLoop(saved)
+        self.assertEqual(writes, [(30, False), (30, False)])
+        app.script_stopLoop(None)
+        self.assertFalse(saved["active"])
+        self.assertEqual(writes[-1], (45, False))
+        for key, command in enumerate((app.script_setLoopStart, app.script_setLoopEnd,
+                                      app.script_startLoop, app.script_stopLoop, app.script_reportLoop), 5):
+            self.assertEqual(command.scriptMetadata["gesture"], f"kb:alt+shift+f{key}")
+
+    def test_loop_clears_on_track_change_and_never_seeks_in_background(self):
+        app = sonos.AppModule()
+        root, pattern = types.SimpleNamespace(windowHandle=99), Pattern(0, 300, 30)
+        identity = (("Office", "First song"), 300)
+        app._loopContext = lambda saved=None: (root, pattern, identity)
+        app._scrubGesture = lambda gesture, action: action()
+        app.script_setLoopStart(None)
+        saved = app._loop
+        saved.update(end=40, active=True)
+        pattern.CurrentValue = 45
+        with patch.object(app, "_setPosition") as seek, \
+             patch.object(nvda["api"], "getForegroundObject", return_value=None):
+            app._watchLoop(saved)
+            seek.assert_not_called()
+            self.assertFalse(saved["active"])
+            self.assertIs(app._loop, saved)
+            identity = (("Office", "Second song"), 300)
+            app._watchLoop(saved)
+            self.assertIsNone(app._loop)
+            seek.assert_not_called()
+        nvda["core"].calls.clear()
+        app._watchLoop(saved)
+        self.assertEqual(nvda["core"].calls, [])
+        app.script_setLoopStart(None)
+        identity = (("Office", "Third song"), 300)
+        app.script_startLoop(None)
+        self.assertIsNone(app._loop)
+        self.assertEqual(nvda["ui"].messages[-1], "No loop bookmark")
+
     def test_format_seconds_is_readable_for_short_and_long_tracks(self):
         self.assertEqual(sonos._format_seconds(0), "0:00")
         self.assertEqual(sonos._format_seconds(65), "1:05")
@@ -847,7 +910,7 @@ class SonosTests(unittest.TestCase):
 
     def test_missing_slider_has_concise_message_for_all_time_commands(self):
         app = sonos.AppModule()
-        def missing(identifier):
+        def missing(identifier, root=None):
             raise sonos.ControlUnavailable(identifier)
         app._transport = missing
         nvda["ui"].messages.clear()
@@ -855,7 +918,7 @@ class SonosTests(unittest.TestCase):
             command(None)
         app._run(lambda: app._seek(5))
         self.assertEqual(nvda["ui"].messages, ["No track slider"] * 4)
-        app._transport = lambda identifier: types.SimpleNamespace(UIARangeValuePattern=None)
+        app._transport = lambda identifier, root=None: types.SimpleNamespace(UIARangeValuePattern=None)
         app.script_reportScrub(None)
         self.assertEqual(nvda["ui"].messages[-1], "No track slider")
         app._run(lambda: missing("volume"))
