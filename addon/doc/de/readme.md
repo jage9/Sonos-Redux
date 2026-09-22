@@ -9,7 +9,7 @@ Aktualisiert von J.J. Meddaugh <jj@bestmidi.com>.
 | Tastenkürzel | Funktion |
 | --- | --- |
 | Strg+1 | Aktuellen Titel vorlesen; zweimal drücken zum Kopieren. |
-| Strg+2 | Alle Informationen zu „Aktuelle Wiedergabe“ anzeigen, einschließlich Senderdetails, falls vorhanden. |
+| Strg+2 | Informationen zur aktuellen Wiedergabe anzeigen, einschließlich Senderdetails, falls vorhanden. |
 | Strg+3 | Auf YouTube nach dem aktuellen Titel suchen. |
 | Strg+J | Zu einer Zeit im Titel springen. |
 | Alt+Umschalt+L | Titelprotokollierung ein- oder ausschalten. |

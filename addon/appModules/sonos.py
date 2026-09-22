@@ -378,7 +378,7 @@ class AppModule(appModuleHandler.AppModule):
     @script(description=_("Show current track information in a browseable message."), gesture="kb:control+2", speakOnDemand=True)
     def script_browseInfo(self, gesture):
         def show():
-            info, track = self._trackInfo(limit=10)
+            info, track = self._trackInfo(limit=4)
             ui.browseableMessage(info, title=_("Now playing"), isHtml=False)
         self._run(show)
 

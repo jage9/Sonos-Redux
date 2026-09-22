@@ -9,7 +9,7 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Shortcut | Action |
 | --- | --- |
 | Control+1 | Read the current track; press twice to copy. |
-| Control+2 | Show all Now Playing information, including station details when available. |
+| Control+2 | Show Now Playing information, including station details when available. |
 | Control+3 | Search YouTube for the current track. |
 | Control+J | Jump to a time in the track. |
 | Alt+Shift+L | Toggle track logging. |

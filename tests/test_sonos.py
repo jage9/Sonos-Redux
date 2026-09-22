@@ -504,10 +504,10 @@ class SonosTests(unittest.TestCase):
             self.assertEqual(nvda["ui"].messages, ["Group Office + 2 (Office, Bedroom, Lounge)"])
             app.script_reportNext(None)
             self.assertEqual(nvda["ui"].messages[-1], "Next Another track")
-            self.assertIn("Next: Another track", app._trackInfo(limit=10)[0])
+            self.assertIn("Next: Another track", app._trackInfo(limit=4)[0])
             nodes[-2].CachedName = "SiriusXM"
             nodes[-1].CachedName = "CH 53 - Diplo's Revolution"
-            self.assertIn("SiriusXM: CH 53 - Diplo's Revolution", app._trackInfo(limit=10)[0])
+            self.assertIn("SiriusXM: CH 53 - Diplo's Revolution", app._trackInfo(limit=4)[0])
             app.script_reportNext(None)
             self.assertEqual(nvda["ui"].messages[-1], "No next track information is available.")
             del nodes[6:]
