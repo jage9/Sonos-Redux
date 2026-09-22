@@ -378,7 +378,7 @@ class AppModule(appModuleHandler.AppModule):
     @script(description=_("Show current track information in a browseable message."), gesture="kb:control+2", speakOnDemand=True)
     def script_browseInfo(self, gesture):
         def show():
-            info, track = self._trackInfo()
+            info, track = self._trackInfo(limit=10)
             ui.browseableMessage(info, title=_("Now playing"), isHtml=False)
         self._run(show)
 
@@ -586,12 +586,22 @@ class AppModule(appModuleHandler.AppModule):
             wx.TheClipboard.Close()
         ui.message(_("Album artwork copied.") if copied else _("Could not copy album artwork."))
 
+    @script(description=_("Report sleep timer status."), gesture="kb:alt+shift+s", speakOnDemand=True)
+    def script_reportSleepTimer(self, gesture):
+        def report():
+            label = _text(_find(self._root(), "sleepTimerButton_1"))
+            time = re.search(r"\b\d+(?::\d{2}){1,2}\b", label)
+            ui.message(_("Sleep timer {time}").format(time=time.group()) if time
+                       else _("Sleep timer off"))
+        self._run(report)
+
     @script(description=_("Report the next track."), gesture="kb:alt+shift+n", speakOnDemand=True)
     def script_reportNext(self, gesture):
         def report():
             panel = _find(self._root(), "nowPlayingPanel")
             fields = self._metadataFields(panel, 4)
-            nextTrack = fields[3][1] if len(fields) == 4 else ""
+            nextTrack = (fields[3][1] if len(fields) == 4
+                         and fields[3][0].casefold() != "siriusxm" else "")
             ui.message(_("Next {track}").format(track=nextTrack) if nextTrack
                        else _("No next track information is available."))
         self._run(report)
@@ -618,8 +628,7 @@ class AppModule(appModuleHandler.AppModule):
         child = walker.GetFirstChildElementBuildCache(panel.UIAElement, cache)
         fields = []
         label = ""
-        # ponytail: Sonos reuses metadata IDs; its first three rows describe the current
-        # source and the fourth is Next. Revisit row selection if that layout changes.
+        # Sonos reuses metadata IDs; a fourth row can be Next or a station.
         while child:
             value = (child.CachedName or "").strip()
             if child.CachedAutomationId == "PART_Header":
@@ -631,9 +640,9 @@ class AppModule(appModuleHandler.AppModule):
             child = walker.GetNextSiblingElementBuildCache(child, cache)
         return fields
 
-    def _trackInfo(self, includeGroup=False, root=None):
+    def _trackInfo(self, includeGroup=False, root=None, limit=3):
         panel = _find(root if root is not None else self._root(), "nowPlayingPanel")
-        fields = self._metadataFields(panel, 3)
+        fields = self._metadataFields(panel, limit)
         details = [f"{label}: {value}" if label else value for label, value in fields if value]
         if not details:
             details = [_("No track information is available.")]
@@ -642,6 +651,12 @@ class AppModule(appModuleHandler.AppModule):
         info = "\n".join(details)
         track = " - ".join(value for label, value in fields[:2] if value) if fields and fields[0][1] else ""
         return info, track
+
+    @script(description=_("Toggle track title announcements."), gesture="kb:alt+shift+k", speakOnDemand=True)
+    def script_toggleTrackAnnouncements(self, gesture):
+        from globalPlugins.sonosSettings import toggleAnnouncements
+
+        toggleAnnouncements()
 
     @script(description=_("Toggle track logging."), gesture="kb:alt+shift+l", speakOnDemand=True)
     def script_toggleTrackLogging(self, gesture):

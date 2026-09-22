@@ -27,6 +27,7 @@ addonHandler.initTranslation()
 
 config.conf.spec["sonos"] = {
     "logTracks": "boolean(default=False)",
+    "announceTracks": "boolean(default=False)",
     "logFile": "string(default='sonos.log')",
     "seekSeconds": "integer(default=5, min=1, max=999)",
 }
@@ -56,6 +57,15 @@ def toggleLogging():
         ui.message(_("Track logging on") if enabled else _("Track logging off"))
 
 
+def toggleAnnouncements():
+    if not shouldWriteToDisk():
+        return
+    enabled = not config.conf["sonos"]["announceTracks"]
+    config.conf["sonos"]["announceTracks"] = enabled
+    settingsChanged.notify()
+    ui.message(_("Track title announcements on") if enabled else _("Track title announcements off"))
+
+
 class SonosSettingsPanel(SettingsPanel):
     title = _("Sonos")
 
@@ -67,6 +77,8 @@ class SonosSettingsPanel(SettingsPanel):
         )
         self.enabled = helper.addItem(wx.CheckBox(self, label=_("&Log track titles")))
         self.enabled.SetValue(config.conf["sonos"]["logTracks"])
+        self.announce = helper.addItem(wx.CheckBox(self, label=_("&Announce track title changes")))
+        self.announce.SetValue(config.conf["sonos"]["announceTracks"])
         self.filename = helper.addLabeledControl(_("Log &filename:"), wx.TextCtrl,
                                                 value=config.conf["sonos"]["logFile"])
         self.browse = helper.addItem(wx.Button(self, label=_("&Browse...")))
@@ -114,6 +126,7 @@ class SonosSettingsPanel(SettingsPanel):
     def onSave(self):
         config.conf["sonos"]["seekSeconds"] = self.seekSeconds.GetValue()
         config.conf["sonos"]["logTracks"] = self.enabled.IsChecked()
+        config.conf["sonos"]["announceTracks"] = self.announce.IsChecked()
         config.conf["sonos"]["logFile"] = self.filename.GetValue().strip() or "sonos.log"
         settingsChanged.notify()
 
@@ -133,16 +146,20 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
     def _applySettings(self):
         state = (config.conf["sonos"]["logTracks"], config.conf["sonos"]["logFile"])
-        if state == self._state:
-            return
-        if not self._endSession():
-            return
-        self._state = state
-        self._lastTrack = None
-        if state[0] and shouldWriteToDisk():
-            if self._writeLog(state[1], "### " + _("Log started") + " ###"):
-                # ponytail: Polling can miss changes shorter than three seconds; use events if needed.
-                self._timer.Start(3000)
+        if state != self._state:
+            if not self._endSession():
+                return
+            self._state = state
+            self._lastTrack = None
+            if state[0] and shouldWriteToDisk():
+                if not self._writeLog(state[1], "### " + _("Log started") + " ###"):
+                    return
+        if state[0] or config.conf["sonos"]["announceTracks"]:
+            # ponytail: Polling can miss changes shorter than three seconds; use events if needed.
+            self._timer.Start(3000)
+        else:
+            self._timer.Stop()
+            self._lastTrack = None
 
     def _endSession(self):
         state = self._state
@@ -170,17 +187,25 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         return app._trackInfo(root=root)[1]
 
     def _poll(self):
-        if not config.conf["sonos"]["logTracks"] or not shouldWriteToDisk() or isLockScreenModeActive():
+        if not (config.conf["sonos"]["logTracks"] or config.conf["sonos"]["announceTracks"]):
+            return
+        if not shouldWriteToDisk() or isLockScreenModeActive():
             return
         from appModules.sonos import ControlUnavailable
         try:
             track = self._readTrack()
         except (ControlUnavailable, COMError, RuntimeError, OSError):
             return  # Sonos may be closed, restarting, or temporarily unable to expose metadata.
-        if not track or track == self._lastTrack:
+        if not track:
+            self._lastTrack = ""
             return
-        if self._writeLog(config.conf["sonos"]["logFile"], track):
-            self._lastTrack = track
+        if track == self._lastTrack:
+            return
+        if config.conf["sonos"]["logTracks"] and not self._writeLog(config.conf["sonos"]["logFile"], track):
+            return
+        if config.conf["sonos"]["announceTracks"] and self._lastTrack is not None:
+            ui.message(track)
+        self._lastTrack = track
 
     def _writeLog(self, filename, text):
         try:
@@ -193,6 +218,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             self._timer.Stop()
             self._state = (False, config.conf["sonos"]["logFile"])
             self._lastTrack = None
+            if config.conf["sonos"]["announceTracks"]:
+                self._timer.Start(3000)
             ui.message(_("Could not write the track log. Track logging off."))
             return False
         return True

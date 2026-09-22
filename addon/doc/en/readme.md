@@ -9,10 +9,12 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Shortcut | Action |
 | --- | --- |
 | Control+1 | Read the current track; press twice to copy. |
-| Control+2 | Show track information. |
+| Control+2 | Show all Now Playing information, including station details when available. |
 | Control+3 | Search YouTube for the current track. |
 | Control+J | Jump to a time in the track. |
 | Alt+Shift+L | Toggle track logging. |
+| Alt+Shift+K | Toggle track title announcements. |
+| Alt+Shift+S | Read sleep timer status. |
 | Alt+Shift+G | Read the current speaker group and its rooms. |
 | Alt+Shift+Q | Read the number of tracks in the queue. |
 | Alt+Shift+N | Read the next track. |
@@ -50,11 +52,15 @@ In NVDA Settings, choose Sonos to turn on **Log track titles** and choose a log 
 
 Logging records the current track title and artist with a timestamp, then appends an entry when they change. It checks every three seconds and continues while you use other apps, as long as Sonos remains open. It follows the selected speaker group. Start and end markers separate logging sessions. Press Alt+Shift+L in Sonos to toggle logging.
 
+**Announce track title changes** speaks a new title and artist when the selected group changes tracks, including while another app has focus. It is off by default and works without logging. Toggle it with Alt+Shift+K in Sonos. The first check establishes the current track; changes shorter than three seconds may be missed.
+
 ## Changelog
 
 ### 2026.1
 
 - Added optional track logging, toggled with Alt+Shift+L.
+- Added optional track title announcements (Alt+Shift+K) and sleep timer status (Alt+Shift+S).
+- Expanded detailed Now Playing information and corrected Next Track feedback for SiriusXM.
 - Added a Sonos settings panel. Settings are global.
 - Added Favorites feedback for Sonos Ctrl+8.
 - Added queue count reporting (Alt+Shift+Q).

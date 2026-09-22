@@ -7,6 +7,7 @@ import importlib.util
 import sys
 import types
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
@@ -414,7 +415,7 @@ class SonosTests(unittest.TestCase):
 
     def test_info_commands_work_with_remapped_gesture_and_copy_result(self):
         app = sonos.AppModule()
-        app._trackInfo = lambda includeGroup=False: ("Room - Artist - Title", "Artist - Title")
+        app._trackInfo = lambda includeGroup=False, limit=3: ("Room - Artist - Title", "Artist - Title")
         gesture = types.SimpleNamespace(mainKeyName="q")
         ui = nvda["ui"]
         ui.messages.clear()
@@ -503,6 +504,12 @@ class SonosTests(unittest.TestCase):
             self.assertEqual(nvda["ui"].messages, ["Group Office + 2 (Office, Bedroom, Lounge)"])
             app.script_reportNext(None)
             self.assertEqual(nvda["ui"].messages[-1], "Next Another track")
+            self.assertIn("Next: Another track", app._trackInfo(limit=10)[0])
+            nodes[-2].CachedName = "SiriusXM"
+            nodes[-1].CachedName = "CH 53 - Diplo's Revolution"
+            self.assertIn("SiriusXM: CH 53 - Diplo's Revolution", app._trackInfo(limit=10)[0])
+            app.script_reportNext(None)
+            self.assertEqual(nvda["ui"].messages[-1], "No next track information is available.")
             del nodes[6:]
             app.script_reportNext(None)
             self.assertEqual(nvda["ui"].messages[-1], "No next track information is available.")
@@ -511,6 +518,18 @@ class SonosTests(unittest.TestCase):
             nvda["UIAHandler"].handler.clientObject = original_client
         self.assertEqual(info, "Song [19/50]: Video\nArtist: India.Arie\nAlbum: Acoustic Soul")
         self.assertEqual(track, "Video - India.Arie")
+
+    def test_sleep_timer_reports_off_or_displayed_time(self):
+        app = sonos.AppModule()
+        app._root = lambda: object()
+        nvda["ui"].messages.clear()
+        with patch.object(sonos, "_find", return_value=types.SimpleNamespace(name="Sleep Timer")) as find:
+            app.script_reportSleepTimer(None)
+            find.return_value.name = "Sleep Timer (04:22)"
+            app.script_reportSleepTimer(None)
+        self.assertEqual(nvda["ui"].messages, ["Sleep timer off", "Sleep timer 04:22"])
+        self.assertEqual(app.script_reportSleepTimer.scriptMetadata["gesture"], "kb:alt+shift+s")
+        self.assertEqual(app.script_toggleTrackAnnouncements.scriptMetadata["gesture"], "kb:alt+shift+k")
 
     def test_shift_commands_pass_through_edits_and_other_windows(self):
         app = sonos.AppModule()

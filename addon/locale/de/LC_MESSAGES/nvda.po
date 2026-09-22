@@ -145,6 +145,15 @@ msgstr "Titel oder Raum wurde gewechselt. Den Dialog zum Springen erneut öffnen
 msgid "Group {group}, {milliseconds} milliseconds"
 msgstr "Gruppe {group}, {milliseconds} Millisekunden"
 
+msgid "Report sleep timer status."
+msgstr "Status des Schlaf-Timers ansagen."
+
+msgid "Sleep timer {time}"
+msgstr "Schlaf-Timer {time}"
+
+msgid "Sleep timer off"
+msgstr "Schlaf-Timer aus"
+
 msgid "Report the next track."
 msgstr "Nächsten Titel ansagen."
 
@@ -171,6 +180,18 @@ msgstr "Titelprotokollierung ein"
 
 msgid "Track logging off"
 msgstr "Titelprotokollierung aus"
+
+msgid "Toggle track title announcements."
+msgstr "Ansage bei Titelwechseln ein- oder ausschalten."
+
+msgid "Track title announcements on"
+msgstr "Ansage bei Titelwechseln ein"
+
+msgid "Track title announcements off"
+msgstr "Ansage bei Titelwechseln aus"
+
+msgid "&Announce track title changes"
+msgstr "Titelwechsel &ansagen"
 
 msgid "&Log track titles"
 msgstr "Titel &protokollieren"

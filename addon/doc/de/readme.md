@@ -9,10 +9,12 @@ Aktualisiert von J.J. Meddaugh <jj@bestmidi.com>.
 | Tastenkürzel | Funktion |
 | --- | --- |
 | Strg+1 | Aktuellen Titel vorlesen; zweimal drücken zum Kopieren. |
-| Strg+2 | Titelinformationen anzeigen. |
+| Strg+2 | Alle Informationen zu „Aktuelle Wiedergabe“ anzeigen, einschließlich Senderdetails, falls vorhanden. |
 | Strg+3 | Auf YouTube nach dem aktuellen Titel suchen. |
 | Strg+J | Zu einer Zeit im Titel springen. |
 | Alt+Umschalt+L | Titelprotokollierung ein- oder ausschalten. |
+| Alt+Umschalt+K | Ansage bei Titelwechseln ein- oder ausschalten. |
+| Alt+Umschalt+S | Status des Schlaf-Timers ansagen. |
 | Alt+Umschalt+G | Aktuelle Lautsprechergruppe und ihre Räume ansagen. |
 | Alt+Umschalt+Q | Anzahl der Titel in der Warteschlange ansagen. |
 | Alt+Umschalt+N | Nächsten Titel ansagen. |
@@ -50,11 +52,15 @@ In den NVDA-Einstellungen unter Sonos lässt sich **Titel protokollieren** einsc
 
 Titel und Interpret werden mit einem Zeitstempel aufgezeichnet. Bei Änderungen wird ein neuer Eintrag angehängt. Die Prüfung erfolgt alle drei Sekunden und läuft auch beim Arbeiten in anderen Anwendungen weiter, solange Sonos geöffnet bleibt. Protokolliert wird die ausgewählte Lautsprechergruppe. Start- und Endmarkierungen trennen die Protokollierungssitzungen. Alt+Umschalt+L schaltet die Protokollierung in Sonos um.
 
+**Titelwechsel ansagen** spricht den neuen Titel und Interpreten der ausgewählten Lautsprechergruppe, auch wenn eine andere Anwendung im Vordergrund ist. Die Funktion ist standardmäßig ausgeschaltet und funktioniert ohne Protokollierung. Alt+Umschalt+K schaltet sie in Sonos um. Die erste Prüfung merkt sich den aktuellen Titel; Wechsel innerhalb von drei Sekunden können übersehen werden.
+
 ## Änderungen
 
 ### 2026.1
 
 - Optionale Titelprotokollierung hinzugefügt, umschaltbar mit Alt+Umschalt+L.
+- Optionale Ansage bei Titelwechseln (Alt+Umschalt+K) und Status des Schlaf-Timers (Alt+Umschalt+S) hinzugefügt.
+- Ausführliche Informationen zur aktuellen Wiedergabe erweitert und die Ansage des nächsten Titels bei SiriusXM korrigiert.
 - Sonos-Einstellungskategorie hinzugefügt. Die Einstellungen gelten global.
 - Rückmeldung für den Sonos-Favoritenbefehl Strg+8 hinzugefügt.
 - Ansage der Titelanzahl in der Warteschlange hinzugefügt (Alt+Umschalt+Q).

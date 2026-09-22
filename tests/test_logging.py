@@ -32,6 +32,7 @@ class BaseProfile(dict):
         super().__setitem__(key, Section(value))
     def validate(self, validator, section):
         section.setdefault("logTracks", False)
+        section.setdefault("announceTracks", False)
         section.setdefault("logFile", "sonos.log")
         section.setdefault("seekSeconds", 5)
         return True
@@ -66,7 +67,7 @@ class PluginBase:
         pass
 
 
-_module("config", conf=Conf(sonos={"logTracks": False, "logFile": "sonos.log", "seekSeconds": 5}),
+_module("config", conf=Conf(sonos={"logTracks": False, "announceTracks": False, "logFile": "sonos.log", "seekSeconds": 5}),
         post_configProfileSwitch=Action(), post_configReset=Action())
 _module("extensionPoints", Action=Action)
 _module("globalPluginHandler", GlobalPlugin=PluginBase)
@@ -91,7 +92,7 @@ class LoggingTests(unittest.TestCase):
             Get=lambda: types.SimpleNamespace(GetDocumentsDir=lambda: self.folder.name)), create=True)
         documents.start()
         self.addCleanup(documents.stop)
-        settings.config.conf.profiles[0]["sonos"] = {"logTracks": False, "logFile": "sonos.log", "seekSeconds": 5}
+        settings.config.conf.profiles[0]["sonos"] = {"logTracks": False, "announceTracks": False, "logFile": "sonos.log", "seekSeconds": 5}
         self.plugin = settings.GlobalPlugin()
         self.addCleanup(self.folder.cleanup)
         self.addCleanup(self.plugin.terminate)
@@ -105,6 +106,7 @@ class LoggingTests(unittest.TestCase):
             panel = settings.SonosSettingsPanel()
             panel.seekSeconds = types.SimpleNamespace(GetValue=lambda: seconds)
             panel.enabled = types.SimpleNamespace(IsChecked=lambda: False)
+            panel.announce = types.SimpleNamespace(IsChecked=lambda: False)
             panel.filename = types.SimpleNamespace(GetValue=lambda: "sonos.log")
             panel.onSave()
             app.script_adjustScrubBackward(None)
@@ -157,6 +159,37 @@ class LoggingTests(unittest.TestCase):
         with patch.object(self.plugin, "_readTrack") as read:
             self.plugin._poll()
             read.assert_not_called()
+
+    def test_track_announcements_use_background_poll_without_logging(self):
+        path = Path(self.folder.name) / "sonos.log"
+        self.assertFalse(settings.config.conf["sonos"]["announceTracks"])
+        settings.toggleAnnouncements()
+        self.assertTrue(self.plugin._timer.running)
+        self.assertEqual(nvda["ui"].messages[-1], "Track title announcements on")
+        nvda["ui"].messages.clear()
+        with patch.object(self.plugin, "_readTrack",
+                          side_effect=["First - Artist", "First - Artist", "", "Second - Artist", "Third - Artist"]):
+            for _ in range(5):
+                self.plugin._poll()
+        self.assertEqual(nvda["ui"].messages, ["Second - Artist", "Third - Artist"])
+        self.assertFalse(path.exists())
+        settings.toggleAnnouncements()
+        self.assertFalse(self.plugin._timer.running)
+        self.assertEqual(nvda["ui"].messages[-1], "Track title announcements off")
+
+    def test_toggling_announcements_does_not_restart_log_session(self):
+        path = Path(self.folder.name) / "sonos.log"
+        settings.toggleLogging()
+        settings.toggleAnnouncements()
+        with patch.object(self.plugin, "_readTrack", side_effect=["First - Artist", "Second - Artist"]):
+            self.plugin._poll()
+            self.plugin._poll()
+        settings.toggleAnnouncements()
+        settings.toggleLogging()
+        entries = [line.split("\t", 1)[1] for line in path.read_text(encoding="utf-8").splitlines()]
+        self.assertEqual(entries, ["### Log started ###", "First - Artist",
+                                   "Second - Artist", "### Log ended ###"])
+        self.assertEqual(nvda["ui"].messages.count("Second - Artist"), 1)
 
     def test_background_lookup_never_uses_foreground_and_passes_root(self):
         root = object()
