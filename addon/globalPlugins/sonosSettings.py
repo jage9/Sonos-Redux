@@ -116,7 +116,35 @@ class SonosSettingsPanel(SettingsPanel):
         self.enabled.Bind(wx.EVT_CHECKBOX, self._enableFilename)
         self.browse.Bind(wx.EVT_BUTTON, self._browse)
         self.openLog.Bind(wx.EVT_BUTTON, self._openLog)
+        self._lyricsKey = None
+        self.advanced = helper.addItem(wx.Button(self, label=_("Ad&vanced...")))
+        self.advanced.Bind(wx.EVT_BUTTON, self._advanced)
         self._enableFilename()
+
+    def _advanced(self, event):
+        from gui.message import displayDialogAsModal
+        current = self._lyricsKey if self._lyricsKey is not None else config.conf["sonos"]["lyricsInstallationId"]
+        dialog = wx.TextEntryDialog(self,
+            _("Lyrics key (random installation ID). Leave blank to generate a new key:"),
+            _("Advanced Sonos settings"), current or str(uuid4()))
+        key = None
+        try:
+            def validate(event):
+                nonlocal key
+                if not dialog.TransferDataFromWindow():
+                    return
+                value = dialog.GetValue().strip()
+                try:
+                    key = str(UUID(value)) if value else str(uuid4())
+                except ValueError:
+                    ui.message(_("Enter a valid lyrics key, or leave it blank to generate one."))
+                    return
+                event.Skip()
+            dialog.Bind(wx.EVT_BUTTON, validate, id=wx.ID_OK)
+            if displayDialogAsModal(dialog) == wx.ID_OK and key is not None:
+                self._lyricsKey = key
+        finally:
+            dialog.Destroy()
 
     def _enableFilename(self, event=None):
         self.filename.Enable(self.enabled.IsChecked())
@@ -154,6 +182,8 @@ class SonosSettingsPanel(SettingsPanel):
         return True
 
     def onSave(self):
+        if self._lyricsKey is not None:
+            config.conf["sonos"]["lyricsInstallationId"] = self._lyricsKey
         config.conf["sonos"]["seekSeconds"] = self.seekSeconds.GetValue()
         config.conf["sonos"]["endJumpSeconds"] = self.endJumpSeconds.GetValue()
         config.conf["sonos"]["fadeSeconds"] = self.fadeSeconds.GetValue()

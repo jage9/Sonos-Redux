@@ -929,11 +929,42 @@ class AppModule(appModuleHandler.AppModule):
             for window in wx.GetTopLevelWindows():
                 if window not in windowsBefore and window.GetTitle() == title:
                     window._sonosLyricsTrack = metadata.copy()
+                    window.Bind(wx.EVT_MENU, lambda event: self._saveLyrics(window, record), id=wx.ID_SAVE)
+                    window.Bind(wx.EVT_MENU, lambda event: window.Close(), id=wx.ID_CANCEL)
+                    # Keep the viewer's Escape accelerator while adding Ctrl+S.
+                    window.SetAcceleratorTable(wx.AcceleratorTable([
+                        (wx.ACCEL_CTRL, ord("S"), wx.ID_SAVE),
+                        (wx.ACCEL_NORMAL, wx.WXK_ESCAPE, wx.ID_CANCEL),
+                    ]))
                     break
         finally:
             if dialog is not None:
                 dialog.Destroy()
             self._lyricsDialogOpen = False
+
+    def _saveLyrics(self, parent, record):
+        import wx
+        from fileUtils import FaultTolerantFile
+        from gui.message import displayDialogAsModal
+        name = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "_", f"{record['artistName']} - {record['trackName']}")
+        name = name[:100].rstrip(" .") or "Lyrics"
+        with wx.FileDialog(parent, _("Save lyrics"),
+                           defaultDir=wx.StandardPaths.Get().GetDocumentsDir(), defaultFile=name + ".txt",
+                           wildcard=_("Text files (*.txt)|*.txt"),
+                           style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dialog:
+            if displayDialogAsModal(dialog) != wx.ID_OK:
+                return
+            title = _("Lyrics for {title} by {artist}").format(title=record["trackName"], artist=record["artistName"])
+            text = (f"{title}\n{record['albumName']}\n\n{_lyricsText(record)}\n\n"
+                    f"{_('Lyrics provided by LRCLIB')}\nhttps://lrclib.net/\n")
+            try:
+                with FaultTolerantFile(dialog.GetPath()) as output:
+                    output.write(text.encode("utf-8"))
+            except (OSError, ValueError):
+                log.debugWarning("Could not save Sonos lyrics", exc_info=True)
+                ui.message(_("Could not save lyrics. Check the filename and folder."))
+                return
+        ui.message(_("Lyrics saved"))
 
     @script(description=_("Jump to a time in the current track."), gesture="kb:control+j", speakOnDemand=True)
     def script_jumpToTime(self, gesture):

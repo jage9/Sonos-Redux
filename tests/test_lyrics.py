@@ -1,5 +1,6 @@
 """Regression checks for lyrics matching, safe display and request lifecycle."""
 import io
+from contextlib import contextmanager, nullcontext
 import json
 import sys
 import types
@@ -63,6 +64,9 @@ class LyricsTests(unittest.TestCase):
     def test_open_lyrics_window_is_reused_and_closed_one_is_recreated(self):
         app = sonos.AppModule()
         wx = types.ModuleType("wx")
+        wx.EVT_MENU, wx.ID_SAVE, wx.ID_CANCEL = "menu", 1, 2
+        wx.ACCEL_CTRL, wx.ACCEL_NORMAL, wx.WXK_ESCAPE = 4, 0, 27
+        wx.AcceleratorTable = lambda entries: entries
         windows = []
         wx.GetTopLevelWindows = lambda: windows[:]
         message = types.ModuleType("gui.message")
@@ -76,6 +80,12 @@ class LyricsTests(unittest.TestCase):
             app._showLyrics(self.metadata, [self.record], True)
             window = windows[0]
             self.assertEqual(window._sonosLyricsTrack, self.metadata)
+            self.assertEqual(window.SetAcceleratorTable.call_args.args[0], [(4, ord("S"), 1), (0, 27, 2)])
+            with patch.object(app, "_saveLyrics") as save:
+                window.Bind.call_args_list[0].args[1](None)
+                save.assert_called_once_with(window, self.record)
+            window.Bind.call_args_list[1].args[1](None)
+            window.Close.assert_called_once_with()
             # Reuse also skips the recording picker on a search result.
             app._showLyrics(self.metadata.copy(), [self.record], False)
             self.assertEqual(show.call_count, 1)
@@ -87,6 +97,39 @@ class LyricsTests(unittest.TestCase):
             windows.clear()
             app._showLyrics(self.metadata, [self.record], True)
             self.assertEqual(show.call_count, 2)
+
+    def test_save_lyrics_cancel_success_and_failure(self):
+        app, parent = sonos.AppModule(), object()
+        wx = types.ModuleType("wx")
+        wx.ID_OK, wx.FD_SAVE, wx.FD_OVERWRITE_PROMPT = 1, 2, 4
+        wx.StandardPaths = types.SimpleNamespace(Get=lambda: types.SimpleNamespace(GetDocumentsDir=lambda: "Documents"))
+        dialog = Mock()
+        dialog.GetPath.return_value = "chosen.txt"
+        wx.FileDialog = Mock(side_effect=lambda *args, **kwargs: nullcontext(dialog))
+        message = types.ModuleType("gui.message")
+        message.displayDialogAsModal = Mock(return_value=0)
+        files = types.ModuleType("fileUtils")
+        saved = []
+        @contextmanager
+        def writer(path):
+            output = io.BytesIO()
+            yield output
+            saved.append((path, output.getvalue().decode("utf-8")))
+        files.FaultTolerantFile = Mock(side_effect=writer)
+        record = {**self.record, "artistName": "Artist/Name", "trackName": "Test: title", "plainLyrics": "Example café"}
+        with patch.dict(sys.modules, {"wx": wx, "gui.message": message, "fileUtils": files}):
+            app._saveLyrics(parent, record)
+            files.FaultTolerantFile.assert_not_called()
+            message.displayDialogAsModal.return_value = 1
+            app._saveLyrics(parent, record)
+            self.assertEqual(wx.FileDialog.call_args.kwargs["defaultFile"], "Artist_Name - Test_ title.txt")
+            self.assertEqual(wx.FileDialog.call_args.kwargs["style"], 6)
+            self.assertEqual(saved[0][0], "chosen.txt")
+            self.assertIn("Example café", saved[0][1])
+            self.assertIn("https://lrclib.net/", saved[0][1])
+            files.FaultTolerantFile.side_effect = PermissionError("Denied")
+            app._saveLyrics(parent, record)
+            self.assertEqual(nvda["ui"].messages[-1], "Could not save lyrics. Check the filename and folder.")
 
     def test_lyrics_uses_duration_from_disabled_scrubber(self):
         app = sonos.AppModule()

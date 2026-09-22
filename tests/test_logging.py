@@ -5,7 +5,7 @@ import sys
 import tempfile
 import types
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from test_sonos import ROOT, sonos, nvda, _module, Pattern
 
@@ -89,6 +89,46 @@ spec.loader.exec_module(settings)
 
 
 class LoggingTests(unittest.TestCase):
+    def test_advanced_lyrics_key_validates_and_waits_for_settings_save(self):
+        from uuid import UUID, uuid4
+        panel = settings.SonosSettingsPanel()
+        panel._lyricsKey = None
+        original = str(uuid4())
+        section = settings.config.conf["sonos"]
+        message = types.ModuleType("gui.message")
+        dialog = Mock()
+        dialog.TransferDataFromWindow.return_value = True
+        def submit(current):
+            event = Mock()
+            current.GetValue.return_value = "invalid"
+            current.Bind.call_args.args[1](event)
+            event.Skip.assert_not_called()
+            current.GetValue.return_value = ""
+            current.Bind.call_args.args[1](event)
+            event.Skip.assert_called_once_with()
+            return 1
+        message.displayDialogAsModal = submit
+        with patch.dict(section, {"lyricsInstallationId": original}), \
+                patch.dict(sys.modules, {"gui.message": message}), \
+                patch.dict(settings.wx.__dict__, {"TextEntryDialog": Mock(return_value=dialog), "EVT_BUTTON": "button", "ID_OK": 1}):
+            panel._advanced(None)
+            self.assertEqual(UUID(panel._lyricsKey).version, 4)
+            self.assertNotEqual(panel._lyricsKey, original)
+            self.assertEqual(section["lyricsInstallationId"], original)
+            dialog.Destroy.assert_called_once_with()
+            pending = panel._lyricsKey
+            message.displayDialogAsModal = lambda current: 0
+            panel._advanced(None)
+            self.assertEqual(panel._lyricsKey, pending)
+            for name in ("seekSeconds", "endJumpSeconds", "fadeSeconds"):
+                setattr(panel, name, types.SimpleNamespace(GetValue=lambda: 5))
+            panel.enabled = types.SimpleNamespace(IsChecked=lambda: False)
+            panel.announce = types.SimpleNamespace(GetSelection=lambda: 0)
+            panel.filename = types.SimpleNamespace(GetValue=lambda: "sonos.log")
+            with patch.object(settings.settingsChanged, "notify"):
+                panel.onSave()
+            self.assertEqual(section["lyricsInstallationId"], pending)
+
     def test_lyrics_identifier_is_random_and_reused(self):
         from uuid import UUID
         section = settings.config.conf["sonos"]
@@ -120,6 +160,7 @@ class LoggingTests(unittest.TestCase):
         app._seek = steps.append
         for seconds in (5, 1, 999, 42):
             panel = settings.SonosSettingsPanel()
+            panel._lyricsKey = None
             panel.seekSeconds = types.SimpleNamespace(GetValue=lambda: seconds)
             panel.endJumpSeconds = types.SimpleNamespace(GetValue=lambda: 42)
             panel.fadeSeconds = types.SimpleNamespace(GetValue=lambda: seconds)
