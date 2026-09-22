@@ -4,10 +4,16 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
 from urllib.parse import urlencode
+from urllib.request import Request, urlopen
+from urllib.error import HTTPError
+from html import escape
+import json
+from threading import Thread
 import webbrowser
 import math
 import re
-from time import perf_counter
+from time import perf_counter, sleep, time
+from email.utils import parsedate_to_datetime
 
 import addonHandler
 import api
@@ -117,6 +123,52 @@ def _parse_time(text):
     for number in numbers:
         seconds = seconds * 60 + number
     return seconds
+
+
+def _fetchLyrics(metadata, userAgent):
+    """Look up a recording, then offer search candidates if no match exists."""
+    def request(endpoint, params):
+        req = Request("https://lrclib.net/api/" + endpoint + "?" + urlencode(params),
+                      headers={"User-Agent": userAgent, "Accept": "application/json"})
+        with urlopen(req, timeout=15) as response:
+            payload = response.read(1024 * 1024 + 1)
+        if len(payload) > 1024 * 1024:
+            raise ValueError("Lyrics response is too large")
+        return json.loads(payload)
+
+    try:
+        records = [request("get", metadata)]
+        matched = True
+    except HTTPError as error:
+        if error.code != 404:
+            raise
+        error.close()
+        sleep(.5)
+        records = request("search", {key: metadata[key] for key in ("track_name", "artist_name")})
+        matched = False
+    if not isinstance(records, list) or len(records) > 20:
+        raise ValueError("Invalid lyrics results")
+    for record in records:
+        if (not isinstance(record, dict)
+                or any(not isinstance(record.get(key), str) for key in ("trackName", "artistName", "albumName"))
+                or not isinstance(record.get("duration"), (int, float))
+                or not math.isfinite(record["duration"]) or record["duration"] < 0
+                or any(record.get(key) is not None and not isinstance(record[key], str)
+                       for key in ("plainLyrics", "syncedLyrics"))
+                or not isinstance(record.get("instrumental", False), bool)):
+            raise ValueError("Invalid lyrics record")
+    return records, matched
+
+
+def _lyricsText(record):
+    if record.get("plainLyrics"):
+        return record["plainLyrics"].strip()
+    lines = []
+    for line in (record.get("syncedLyrics") or "").splitlines():
+        if re.match(r"^\[[A-Za-z]+:", line):
+            continue
+        lines.append(re.sub(r"^(?:\[\d+:\d+(?:\.\d+)?\])+", "", line).strip())
+    return "\n".join(lines).strip()
 
 
 class ShortcutItem(UIA):
@@ -438,6 +490,7 @@ class AppModule(appModuleHandler.AppModule):
     def terminate(self):
         super().terminate()
         self._loop = None
+        self._lyricsRequestToken = None
 
     @script(description=_("Report elapsed track time."), gesture="kb:alt+shift+u", speakOnDemand=True)
     def script_reportCurrent(self, gesture):
@@ -743,6 +796,124 @@ class AppModule(appModuleHandler.AppModule):
             if not webbrowser.open_new_tab(url):
                 ui.message(_("Could not open the web browser."))
         self._run(search)
+
+    @script(description=_("Fetch lyrics for the current track."), gesture="kb:alt+shift+y", speakOnDemand=True)
+    def script_lyrics(self, gesture):
+        if getattr(self, "_lyricsDialogOpen", False):
+            return
+        def fetch():
+            import wx
+            from globalPlugins.sonosSettings import lyricsUserAgent
+            if getattr(self, "_lyricsRequestToken", None) is not None:
+                ui.message(_("Fetching lyrics"))
+                return
+            panel = _find(self._root(), "nowPlayingPanel")
+            fields = self._metadataFields(panel, 3)
+            if len(fields) < 2 or not fields[0][1] or not fields[1][1]:
+                ui.message(_("No track title or artist is available."))
+                return
+            metadata = {"track_name": fields[0][1], "artist_name": fields[1][1]}
+            if len(fields) > 2 and fields[2][1]:
+                metadata["album_name"] = fields[2][1]
+            try:
+                duration = self._scrubber()[1].CurrentMaximum
+                if 1 <= duration <= 3600:
+                    metadata["duration"] = round(duration)
+            except (ControlUnavailable, COMError):
+                pass
+            cached = getattr(self, "_lyricsCache", None)
+            if cached and cached[0] == metadata:
+                wx.CallAfter(self._run, lambda: self._showLyrics(metadata, *cached[1]))
+                return
+            wait = getattr(self, "_lyricsRetryAt", 0) - perf_counter()
+            if wait > 0:
+                ui.message(_("Lyrics service is busy. Try again in {seconds} seconds.").format(seconds=math.ceil(wait)))
+                return
+            userAgent = lyricsUserAgent()
+            token = self._lyricsRequestToken = object()
+            ui.message(_("Fetching lyrics"))
+            Thread(target=self._fetchLyricsWorker, args=(token, metadata, userAgent), daemon=True).start()
+        self._run(fetch)
+
+    def _fetchLyricsWorker(self, token, metadata, userAgent):
+        import wx
+        result, errorMessage, retry = None, None, 0
+        try:
+            result = _fetchLyrics(metadata, userAgent)
+        except HTTPError as error:
+            if error.code in (429, 503):
+                header = error.headers.get("Retry-After", "60")
+                try:
+                    retry = float(header)
+                except ValueError:
+                    try:
+                        retry = parsedate_to_datetime(header).timestamp() - time()
+                    except (TypeError, ValueError, OverflowError):
+                        retry = 60
+                retry = max(1, retry) if math.isfinite(retry) else 60
+                errorMessage = _("Lyrics service is busy. Try again in {seconds} seconds.").format(seconds=math.ceil(retry))
+            else:
+                errorMessage = _("Could not fetch lyrics. Try again later.")
+            error.close()
+        except Exception:
+            log.debugWarning("Sonos lyrics lookup failed", exc_info=True)
+            errorMessage = _("Could not fetch lyrics. Try again later.")
+        wx.CallAfter(self._lyricsFetched, token, metadata, result, errorMessage, retry)
+
+    def _lyricsFetched(self, token, metadata, result, errorMessage, retry):
+        if getattr(self, "_lyricsRequestToken", None) is not token:
+            return
+        self._lyricsRequestToken = None
+        self._lyricsRetryAt = perf_counter() + retry
+        if errorMessage:
+            ui.message(errorMessage)
+            return
+        self._lyricsCache = (metadata, result)
+        foreground = api.getForegroundObject()
+        if not foreground or foreground.processID != self.processID:
+            ui.message(_("Lyrics lookup finished. Press the lyrics command in Sonos to view the results."))
+            return
+        self._run(lambda: self._showLyrics(metadata, *result))
+
+    def _showLyrics(self, metadata, records, matched):
+        import wx
+        from gui.message import displayDialogAsModal
+        if not records:
+            ui.message(_("No lyrics found."))
+            return
+        self._lyricsDialogOpen = True
+        dialog = None
+        try:
+            if matched:
+                record = records[0]
+            else:
+                choices = [_("{title} - {artist} - {album} - {duration}").format(
+                    title=record["trackName"], artist=record["artistName"],
+                    album=record["albumName"], duration=_format_seconds(record["duration"]),
+                ) for record in records]
+                dialog = wx.SingleChoiceDialog(None,
+                    _("Choose a recording for {title} by {artist}. Results from LRCLIB.").format(
+                        title=metadata["track_name"], artist=metadata["artist_name"]),
+                    _("Lyrics matches"), choices)
+                if displayDialogAsModal(dialog) != wx.ID_OK:
+                    return
+                record = records[dialog.GetSelection()]
+                dialog.Destroy()
+                dialog = None
+            lyrics = _lyricsText(record)
+            if not lyrics:
+                ui.message(_("This recording is marked as instrumental.") if record.get("instrumental")
+                           else _("No lyrics found for this recording."))
+                return
+            title = _("Lyrics for {title} by {artist}").format(title=record["trackName"], artist=record["artistName"])
+            content = (f"<h1>{escape(title)}</h1><p>{escape(record['albumName'])}</p>"
+                       f"<pre>{escape(lyrics)}</pre>"
+                       f'<p><a href="https://lrclib.net/">{escape(_("Lyrics provided by LRCLIB"))}</a></p>')
+            ui.browseableMessage(content, title=title, isHtml=True)
+        finally:
+            if dialog is not None:
+                dialog.Destroy()
+            self._lyricsDialogOpen = False
 
     @script(description=_("Jump to a time in the current track."), gesture="kb:control+j", speakOnDemand=True)
     def script_jumpToTime(self, gesture):

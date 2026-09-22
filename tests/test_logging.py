@@ -31,6 +31,7 @@ class BaseProfile(dict):
     def __setitem__(self, key, value):
         super().__setitem__(key, Section(value))
     def validate(self, validator, section):
+        section.setdefault("lyricsInstallationId", "")
         section.setdefault("logTracks", False)
         section.setdefault("announcementMode", 0)
         section.setdefault("logFile", "sonos.log")
@@ -88,6 +89,19 @@ spec.loader.exec_module(settings)
 
 
 class LoggingTests(unittest.TestCase):
+    def test_lyrics_identifier_is_random_and_reused(self):
+        from uuid import UUID
+        section = settings.config.conf["sonos"]
+        with patch.dict(section, {"lyricsInstallationId": ""}):
+            first = settings.lyricsUserAgent()
+            identifier = section["lyricsInstallationId"]
+            self.assertEqual(UUID(identifier).version, 4)
+            self.assertIn(identifier, first)
+            self.assertEqual(settings.lyricsUserAgent(), first)
+            section["lyricsInstallationId"] = "invalid"
+            self.assertNotEqual(settings.lyricsUserAgent(), first)
+            self.assertEqual(UUID(section["lyricsInstallationId"]).version, 4)
+
     def setUp(self):
         self.folder = tempfile.TemporaryDirectory()
         documents = patch.object(settings.wx, "StandardPaths", types.SimpleNamespace(

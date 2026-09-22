@@ -15,6 +15,7 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Control+1 | Read the current track; press twice to copy. |
 | Control+2 | Show Now Playing information, including station details when available. |
 | Control+3 | Search YouTube for the current track. |
+| Alt+Shift+Y | Fetch lyrics for the current track. |
 | Control+J | Jump to a time or seek by a signed amount. |
 | Control+V | Set the selected speaker group's volume. |
 | Control+Shift+V | Fade out, pause, and restore volume (default five seconds). |
@@ -62,6 +63,12 @@ Set loop start and end on a seekable track, then press Alt+Shift+F7 to jump to t
 
 Control+J accepts seconds, minutes:seconds, or hours:minutes:seconds. Start with + or - for a relative jump, such as +30 or -1:15. Relative jumps use the current position when confirmed and stop at the track boundaries.
 
+## Lyrics
+
+Press Alt+Shift+Y to fetch lyrics from [LRCLIB](https://lrclib.net/). A matching recording opens directly; otherwise, choose from the available recordings by title, artist, album, and length. Lyrics open in an accessible window where you can read and copy them. Timed lyrics are displayed as ordinary text for now.
+
+The lookup sends the current title, artist, album and track length when available, along with the add-on version and a random installation ID. This ID contains no personal or device information but lets LRCLIB recognize requests from the same installation. It is saved with NVDA's global settings. No account or API key is needed. Only requesting lyrics contacts the service; repeated requests for the same track reuse the last result while Sonos remains open.
+
 ## Settings
 
 **Fade seconds** sets the fade length for Control+Shift+V: 1–999 seconds, default 5.
@@ -77,6 +84,8 @@ Logging records the current track title and artist with a timestamp, then append
 ## Changelog
 
 ### 2026.1
+
+- Added lyrics lookup from LRCLIB (Alt+Shift+Y).
 
 - Added signed relative times in Jump to Time (+30, -1:15).
 - Added temporary looping bookmarks (Alt+Shift+F5–F9).

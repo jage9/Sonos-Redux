@@ -5,6 +5,7 @@
 from datetime import datetime
 from pathlib import Path
 import os
+from uuid import UUID, uuid4
 
 import addonHandler
 import api
@@ -27,6 +28,7 @@ import wx
 addonHandler.initTranslation()
 
 config.conf.spec["sonos"] = {
+    "lyricsInstallationId": "string(default='')",
     "logTracks": "boolean(default=False)",
     "announcementMode": "integer(default=0, min=0, max=2)",
     "logFile": "string(default='sonos.log')",
@@ -43,6 +45,16 @@ _baseSection = _baseProfile["sonos"]
 _baseSection.configspec = config.conf.spec["sonos"]
 _baseProfile.validate(config.conf.validator, section=_baseSection)
 settingsChanged = extensionPoints.Action()
+
+
+def lyricsUserAgent():
+    settings = config.conf["sonos"]
+    try:
+        identifier = str(UUID(settings["lyricsInstallationId"]))
+    except ValueError:
+        identifier = str(uuid4())
+        settings["lyricsInstallationId"] = identifier
+    return f"Sonos-Redux/2026.1 (https://github.com/jage9/Sonos-Redux; installation={identifier})"
 
 
 def logPath(filename):
