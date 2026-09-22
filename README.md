@@ -15,9 +15,9 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Control+1 | Read the current track; press twice to copy. |
 | Control+2 | Show Now Playing information, including station details when available. |
 | Control+3 | Search YouTube for the current track. |
-| Control+J | Jump to a time in the track. |
+| Control+J | Jump to a time or seek by a signed amount. |
 | Control+V | Set the selected speaker group's volume. |
-| Control+Shift+V | Fade out the selected group (default five seconds). |
+| Control+Shift+V | Fade out, pause, and restore volume (default five seconds). |
 | Alt+Shift+L | Toggle track logging. |
 | Alt+Shift+K | Cycle track title announcements: Off, Everywhere, Sonos focused. |
 | Alt+Shift+S | Read sleep timer status. |
@@ -56,9 +56,11 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Control+. | Switch to the next group and announce it. |
 | Control+K | Open Sonos keyboard shortcut help. |
 
-Control+V opens a volume field from 0 to 100. Type a value or use Up and Down Arrow, then press Enter to apply it. Control+Shift+V fades to zero using the configured fade length; keep Sonos in front on the same group until it finishes.
+Control+V opens a volume field from 0 to 100. Type a value or use Up and Down Arrow, then press Enter to apply it. Control+Shift+V fades to zero, pauses playback, and restores the original volume. Keep Sonos in front with the Play/Pause button visible until it finishes. An unclear starting icon is treated as playing; if pause cannot be confirmed afterward, volume stays at zero.
 
 Set loop start and end on a seekable track, then press Alt+Shift+F7 to jump to the start and repeat that section. If playback is paused, use Sonos Play/Pause to resume it. Alt+Shift+F8 turns looping off and continues from the current position. Leaving Sonos stops looping; changing tracks or groups clears the markers. Loop timing is approximate.
+
+Control+J accepts seconds, minutes:seconds, or hours:minutes:seconds. Start with + or - for a relative jump, such as +30 or -1:15. Relative jumps use the current position when confirmed and stop at the track boundaries.
 
 ## Settings
 
@@ -76,6 +78,7 @@ Logging records the current track title and artist with a timestamp, then append
 
 ### 2026.1
 
+- Added signed relative times in Jump to Time (+30, -1:15).
 - Added temporary looping bookmarks (Alt+Shift+F5–F9).
 
 - Added optional track logging, toggled with Alt+Shift+L.
@@ -86,7 +89,7 @@ Logging records the current track title and artist with a timestamp, then append
 - Added Favorites feedback for Sonos Ctrl+8.
 - Added queue count reporting (Alt+Shift+Q).
 - Added adjustable track seeking (default five seconds) (Shift+Right Arrow and Shift+Left Arrow) and scrubber focus (Shift+Up Arrow).
-- Added Jump to Time (Ctrl+J), a numeric volume dialog (Ctrl+V), and an adjustable fade out (Ctrl+Shift+V).
+- Added Jump to Time (Ctrl+J), a numeric volume dialog (Ctrl+V), and an adjustable fade out with pause and volume restoration (Ctrl+Shift+V).
 - Added copying displayed album art to the clipboard (Alt+Shift+A).
 - Added next-track announcements (Alt+Shift+N) and a separate current speaker group command with room names (Alt+Shift+G).
 - Added feedback when switching speaker groups with Ctrl+Comma and Ctrl+Period.

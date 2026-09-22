@@ -13,7 +13,7 @@ Aktualisiert von J.J. Meddaugh <jj@bestmidi.com>.
 | Strg+3 | Auf YouTube nach dem aktuellen Titel suchen. |
 | Strg+J | Zu einer Zeit im Titel springen. |
 | Strg+V | Lautstärke der ausgewählten Lautsprechergruppe einstellen. |
-| Strg+Umschalt+V | Lautstärke der ausgewählten Gruppe absenken (standardmäßig fünf Sekunden). |
+| Strg+Umschalt+V | Lautstärke absenken, pausieren und wiederherstellen (standardmäßig fünf Sekunden). |
 | Alt+Umschalt+L | Titelprotokollierung ein- oder ausschalten. |
 | Alt+Umschalt+K | Titelansagen umschalten: Aus, Überall, Sonos im Vordergrund. |
 | Alt+Umschalt+S | Status des Schlaf-Timers ansagen. |
@@ -52,9 +52,11 @@ Aktualisiert von J.J. Meddaugh <jj@bestmidi.com>.
 | Strg+. | Zur nächsten Gruppe wechseln und sie ansagen. |
 | Strg+K | Sonos-Hilfe zu Tastenkürzeln öffnen. |
 
-Strg+V öffnet ein Lautstärkefeld von 0 bis 100. Einen Wert eingeben oder mit Pfeil hoch und runter ändern, dann mit Eingabe übernehmen. Strg+Umschalt+V senkt die Lautstärke mit der eingestellten Dauer auf null ab. Sonos muss dabei mit derselben ausgewählten Gruppe im Vordergrund bleiben.
+Strg+V öffnet ein Lautstärkefeld von 0 bis 100. Einen Wert eingeben oder mit Pfeil hoch und runter ändern, dann mit Eingabe übernehmen. Strg+Umschalt+V senkt die Lautstärke auf null ab, pausiert die Wiedergabe und stellt die ursprüngliche Lautstärke wieder her. Sonos und die Wiedergabe/Pause-Schaltfläche müssen sichtbar bleiben. Bei unklarem Startsymbol wird laufende Wiedergabe angenommen. Lässt sich die Pause danach nicht bestätigen, bleibt die Lautstärke bei null.
 
 Bei einem Titel mit Positionsregler Anfang und Ende markieren. Alt+Umschalt+F7 springt zum Anfang und wiederholt den Abschnitt. Bei pausierter Wiedergabe mit Sonos Wiedergabe/Pause fortsetzen. Alt+Umschalt+F8 beendet die Schleife und setzt an der aktuellen Position fort. Beim Verlassen von Sonos endet die Schleife; ein Titel- oder Gruppenwechsel löscht die Marken. Die Schleifenzeit ist nicht exakt.
+
+Strg+J akzeptiert Sekunden, Minuten:Sekunden oder Stunden:Minuten:Sekunden. Mit + oder - wird relativ gesprungen, etwa +30 oder -1:15. Maßgeblich ist die Position beim Bestätigen; Sprünge enden spätestens am Titelanfang oder -ende.
 
 ## Einstellungen
 
@@ -72,6 +74,7 @@ Titel und Interpret werden mit einem Zeitstempel aufgezeichnet. Bei Änderungen 
 
 ### 2026.1
 
+- Relative Zeitsprünge mit Vorzeichen hinzugefügt (+30, -1:15).
 - Temporäre Schleifen-Lesezeichen hinzugefügt (Alt+Umschalt+F5–F9).
 
 - Optionale Titelprotokollierung hinzugefügt, umschaltbar mit Alt+Umschalt+L.

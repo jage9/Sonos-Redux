@@ -151,8 +151,8 @@ msgstr "Titellänge {length}. Springen zu:"
 msgid "Jump to time"
 msgstr "Zu einer Zeit springen"
 
-msgid "Enter seconds, minutes:seconds, or hours:minutes:seconds, up to {length}."
-msgstr "Sekunden, Minuten:Sekunden oder Stunden:Minuten:Sekunden eingeben, höchstens {length}."
+msgid "Enter seconds, minutes:seconds, or hours:minutes:seconds, up to {length}. Use + or - for a relative jump."
+msgstr "Sekunden, Minuten:Sekunden oder Stunden:Minuten:Sekunden eingeben, höchstens {length}. Mit + oder - relativ springen."
 
 msgid "The track or room changed. Open Jump to Time again."
 msgstr "Titel oder Raum wurde gewechselt. Den Dialog zum Springen erneut öffnen."
@@ -332,3 +332,9 @@ msgstr "Schleifenanfang, Ende und Dauer ansagen."
 
 msgid "Loop start {start}, end {end}, duration {duration}"
 msgstr "Schleifenanfang {start}, Ende {end}, Dauer {duration}"
+
+msgid "Playback is already paused"
+msgstr "Die Wiedergabe ist bereits pausiert"
+
+msgid "Could not confirm pause. Volume remains at zero."
+msgstr "Pause konnte nicht bestätigt werden. Die Lautstärke bleibt bei null."

@@ -304,13 +304,19 @@ class SonosTests(unittest.TestCase):
         sys.modules.update({"wx": wx, "gui": gui, "gui.message": gui_message})
         app = sonos.AppModule()
         jumps = []
-        app._jumpTo = lambda *args: jumps.append(args)
+        app._jumpTo = lambda *args, **kwargs: jumps.append((args, kwargs))
         nvda["core"].calls.clear()
         try:
             app._showJumpDialog(99, ("room", "track"), 300, 12)
             scheduled = nvda["core"].calls[-1]
             scheduled[1](*scheduled[2], **scheduled[3])
-            self.assertEqual(jumps, [(104, 99, ("room", "track"), 300)])
+            self.assertEqual(jumps, [((104, 99, ("room", "track"), 300), {"relative": False})])
+            for typed, expected in (("+30", 30), ("-0:45", -45), ("+1:20", 80), ("-1:02:30", -3750)):
+                mode["typed"] = typed
+                app._showJumpDialog(99, ("room", "track"), 300, 12)
+                scheduled = nvda["core"].calls[-1]
+                scheduled[1](*scheduled[2], **scheduled[3])
+                self.assertEqual(jumps[-1], ((expected, 99, ("room", "track"), 300), {"relative": True}))
 
             mode.update(typed="1:60", result=wx.ID_OK, validate=True)
             nvda["core"].calls.clear()
@@ -421,6 +427,8 @@ class SonosTests(unittest.TestCase):
         app = sonos.AppModule()
         root = types.SimpleNamespace(windowHandle=99)
         app._root = lambda: root
+        app._playbackState = lambda: "playing"
+        app._clickPlayPause = lambda: None
         app._groupInfo = lambda: "Office + 2"
         app._scrubGesture = lambda gesture, action: action()
         pattern = Pattern(10, 210, 110)
@@ -445,8 +453,8 @@ class SonosTests(unittest.TestCase):
             clock.return_value = 20
             tick()
             self.assertEqual(pattern.set_values, [60, 10])
-            self.assertEqual(nvda["core"].calls, [])
-            self.assertEqual(nvda["ui"].messages[-1], "Volume for Office + 2: 0%")
+            self.assertEqual(len(nvda["core"].calls), 1)  # Pause confirmation follows the fade.
+            nvda["core"].calls.clear()
             app.script_fadeVolume(None)
             app._groupInfo = lambda: "Bedroom"
             tick()
@@ -464,6 +472,75 @@ class SonosTests(unittest.TestCase):
             tick()
             self.assertEqual(nvda["core"].calls, [])
         self.assertEqual(app.script_fadeVolume.scriptMetadata["gesture"], "kb:control+shift+v")
+
+    def test_fade_restores_only_after_confirmed_pause(self):
+        for states, clicks, restores in (
+            ([None, None, "paused", "paused"], 1, [50]),
+            (["playing", "paused", "paused"], 0, [50]),
+            (["playing"] * 30, 1, []),
+            (["paused"], 0, []),
+        ):
+            with self.subTest(states=states[:3]):
+                app = sonos.AppModule()
+                root, pattern = types.SimpleNamespace(windowHandle=99), Pattern(0, 100, 50)
+                app._root = lambda: root
+                app._groupInfo = lambda: "Office"
+                app._scrubGesture = lambda gesture, action: action()
+                app._transport = lambda identifier: types.SimpleNamespace(UIARangeValuePattern=pattern)
+                restored = []
+                app._setVolume = lambda value, *args: restored.append(value)
+                nvda["core"].calls.clear()
+                clockValue = [0]
+                config = types.SimpleNamespace(conf={"sonos": {"fadeSeconds": 1}})
+                with patch.dict(sys.modules, {"config": config}), \
+                     patch.object(sonos, "perf_counter", side_effect=lambda: clockValue[0]), \
+                     patch.object(nvda["api"], "getForegroundObject", return_value=root), \
+                     patch.object(nvda["api"], "getFocusObject", return_value=None), \
+                     patch.object(app, "_playbackState", side_effect=states), \
+                     patch.object(app, "_clickPlayPause") as click:
+                    app.script_fadeVolume(None)
+                    for _ in range(40):
+                        if not nvda["core"].calls:
+                            break
+                        delay, callback, args, kwargs = nvda["core"].calls.pop(0)
+                        clockValue[0] += delay / 1000
+                        callback(*args, **kwargs)
+                    self.assertFalse(nvda["core"].calls)
+                    self.assertEqual(click.call_count, clicks)
+                    self.assertEqual(restored, restores)
+                if states[0] == "paused":
+                    self.assertEqual(pattern.set_values, [])
+                else:
+                    self.assertEqual(pattern.CurrentValue, 0)
+
+    def test_playback_icon_shapes_and_unknown_images(self):
+        for size in (32, 44, 66, 100, 132):
+            for shape, expected in (("bars", "playing"), ("triangle", "paused"), ("blank", None), ("block", None)):
+                pixels = bytearray([40] * size * size * 3)
+                for y in range(size):
+                    for x in range(size):
+                        u, v = x / size, y / size
+                        lit = ((shape == "bars" and .31 <= v <= .69
+                                and (.36 <= u <= .415 or .59 <= u <= .645))
+                               or (shape == "triangle" and .26 <= v <= .74
+                                   and .32 <= u <= .73 - abs(v - .5) * 1.7)
+                               or shape == "block")
+                        if lit:
+                            offset = (y * size + x) * 3
+                            pixels[offset:offset + 3] = bytes([240] * 3)
+                with self.subTest(size=size, shape=shape):
+                    self.assertEqual(sonos._playbackIconState(size, size, pixels), expected)
+        self.assertIsNone(sonos._playbackIconState(66, 66, b""))
+
+    def test_relative_jump_uses_live_position_and_clamps(self):
+        app, pattern = sonos.AppModule(), Pattern(0, 300, 100)
+        app._root = lambda: types.SimpleNamespace(windowHandle=99)
+        app._scrubber = lambda: (None, pattern)
+        app._trackInfo = lambda includeGroup=False: ("Office", "Song")
+        with patch.object(nvda["api"], "getFocusObject", return_value=None):
+            for offset, expected in ((30, 130), (-45, 85), (999, 300), (-999, 0)):
+                app._jumpTo(offset, 99, ("Office", "Song"), 300, relative=True)
+                self.assertEqual(pattern.CurrentValue, expected)
 
     def test_loop_commands_validate_bounds_repeat_and_continue_on_stop(self):
         app = sonos.AppModule()

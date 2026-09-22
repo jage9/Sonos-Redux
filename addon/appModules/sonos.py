@@ -60,6 +60,45 @@ def _percent(pattern):
     return round(100 * (current - minimum) / (maximum - minimum))
 
 
+def _playbackIconState(width, height, pixels):
+    """Recognize the white Sonos play triangle or pause bars; reject unclear images."""
+    if width < 16 or height < 16 or len(pixels) != width * height * 3:
+        return None
+    rows = []
+    for fraction in (.35, .5, .65):
+        y = round((height - 1) * fraction)
+        spans = []
+        for x in range(round((width - 1) * .2), round((width - 1) * .8) + 1):
+            offset = (y * width + x) * 3
+            if min(pixels[offset:offset + 3]) >= 200:
+                if spans and spans[-1][1] == x:
+                    spans[-1][1] = x + 1
+                else:
+                    spans.append([x, x + 1])
+        rows.append(spans)
+    tolerance = max(1, width * .04)
+    if all(len(row) == 1 for row in rows):
+        lefts = [row[0][0] for row in rows]
+        lengths = [row[0][1] - row[0][0] for row in rows]
+        if (max(lefts) - min(lefts) <= tolerance
+                and .25 * width <= min(lefts) <= .4 * width
+                and .25 * width <= lengths[1] <= .5 * width
+                and min(lengths) >= .1 * width
+                and lengths[1] > 1.5 * max(lengths[0], lengths[2])):
+            return "paused"
+    if all(len(row) == 2 for row in rows):
+        lengths = [end - start for row in rows for start, end in row]
+        stable = all(
+            max(row[bar][edge] for row in rows) - min(row[bar][edge] for row in rows) <= tolerance
+            for bar in (0, 1) for edge in (0, 1)
+        )
+        if (stable and min(lengths) >= .025 * width and max(lengths) <= .13 * width
+                and max(lengths) <= 2 * min(lengths)
+                and all(.15 * width <= row[1][0] - row[0][1] <= .3 * width for row in rows)):
+            return "playing"
+    return None
+
+
 def _format_seconds(value):
     seconds = max(0, round(value))
     hours, seconds = divmod(seconds, 3600)
@@ -490,6 +529,50 @@ class AppModule(appModuleHandler.AppModule):
             ui.message(_("Volume for {group}: {percent}%").format(group=group, percent=_percent(pattern)))
         self._run(report)
 
+    def _visiblePlayButton(self):
+        button = self._transport("playButton")
+        if not button.location or controlTypes.State.OFFSCREEN in button.states:
+            raise ControlUnavailable("Play button is not visible")
+        x, y, width, height = button.location
+        if width < 16 or height < 16:
+            raise ControlUnavailable("Play button has invalid bounds")
+        hit = api.getDesktopObject().objectFromPoint(x + width // 2, y + height // 2)
+        if not hit or hit.processID != self.processID or not any(
+            getattr(obj, "UIAAutomationId", None) == "playButton" for obj in (hit, hit.parent)
+        ):
+            raise ControlUnavailable("Play button is covered")
+        return button
+
+    def _playbackState(self):
+        import wx
+        try:
+            button = self._visiblePlayButton()
+            x, y, width, height = button.location
+            bitmap = wx.Bitmap(width, height)
+            memory = wx.MemoryDC(bitmap)
+            try:
+                if not memory.Blit(0, 0, width, height, wx.ScreenDC(), x, y):
+                    return None
+            finally:
+                memory.SelectObject(wx.NullBitmap)
+            image = bitmap.ConvertToImage()
+            return _playbackIconState(width, height, image.GetData())
+        except (ControlUnavailable, COMError, RuntimeError, OSError):
+            return None
+
+    def _clickPlayPause(self):
+        import mouseHandler
+        import winUser
+        button = self._visiblePlayButton()
+        x, y, width, height = button.location
+        oldPosition = winUser.getCursorPos()
+        try:
+            winUser.setCursorPos(x + width // 2, y + height // 2)
+            mouseHandler.executeMouseEvent(winUser.MOUSEEVENTF_LEFTDOWN, 0, 0)
+            mouseHandler.executeMouseEvent(winUser.MOUSEEVENTF_LEFTUP, 0, 0)
+        finally:
+            winUser.setCursorPos(*oldPosition)
+
     @script(description=_("Fade out the selected speaker group."),
             gesture="kb:control+shift+v", speakOnDemand=True)
     def script_fadeVolume(self, gesture):
@@ -502,15 +585,42 @@ class AppModule(appModuleHandler.AppModule):
             if not pattern or pattern.CurrentIsReadOnly:
                 raise ControlUnavailable("Volume cannot be adjusted")
             initial = _percent(pattern)
+            if self._playbackState() == "paused":
+                ui.message(_("Playback is already paused"))
+                return
+            # An unclear starting icon is treated as playing, as with the fade command.
+            focusBeforeFade = api.getFocusObject()
             self._volumeSequence = getattr(self, "_volumeSequence", 0) + 1
             sequence = self._volumeSequence
             duration = config.conf["sonos"]["fadeSeconds"]
             started = perf_counter()
 
-            def step():
+            def stillCurrent():
                 foreground = api.getForegroundObject()
-                if (sequence != self._volumeSequence or not foreground
-                        or foreground.windowHandle != windowHandle or self._groupInfo() != group):
+                return (sequence == self._volumeSequence and foreground
+                        and foreground.windowHandle == windowHandle and self._groupInfo() == group)
+
+            def finish(deadline, clicked=False, pausedChecks=0):
+                if not stillCurrent():
+                    return
+                state = self._playbackState()
+                if state == "paused":
+                    pausedChecks += 1
+                    if pausedChecks >= 2:
+                        self._setVolume(initial, windowHandle, group, focusBeforeFade)
+                        return
+                else:
+                    pausedChecks = 0
+                    if not clicked:
+                        self._clickPlayPause()
+                        clicked = True
+                if perf_counter() < deadline:
+                    core.callLater(250, self._run, lambda: finish(deadline, clicked, pausedChecks))
+                else:
+                    ui.message(_("Could not confirm pause. Volume remains at zero."))
+
+            def step():
+                if not stillCurrent():
                     return
                 pattern = self._transport("PART_VolumeSlider").UIARangeValuePattern
                 if not pattern or pattern.CurrentIsReadOnly:
@@ -529,7 +639,7 @@ class AppModule(appModuleHandler.AppModule):
                 if remaining:
                     core.callLater(max(1, min(250, round(remaining * 1000))), self._run, step)
                 else:
-                    ui.message(_("Volume for {group}: {percent}%").format(group=group, percent=0))
+                    core.callLater(250, self._run, lambda: finish(perf_counter() + 5))
 
             ui.message(_("Fading out {group}").format(group=group))
             core.callLater(250, self._run, step)
@@ -664,28 +774,33 @@ class AppModule(appModuleHandler.AppModule):
                 _format_seconds(current),
             )
             target = None
+            relative = False
             def validate(event):
-                nonlocal target
+                nonlocal target, relative
                 try:
                     # GetValue uses the stored value; transfer the edit before validating OK.
                     if not dialog.TransferDataFromWindow():
                         raise ValueError("Could not read the entered time")
-                    target = _parse_time(dialog.GetValue())
-                    if target > maximum:
+                    value = dialog.GetValue().strip()
+                    relative = value.startswith(("+", "-"))
+                    target = _parse_time(value[1:] if relative else value)
+                    if value.startswith("-"):
+                        target = -target
+                    if not relative and target > maximum:
                         raise ValueError("Beyond the end of the track")
                 except ValueError:
-                    ui.message(_("Enter seconds, minutes:seconds, or hours:minutes:seconds, up to {length}.").format(length=_format_seconds(maximum)))
+                    ui.message(_("Enter seconds, minutes:seconds, or hours:minutes:seconds, up to {length}. Use + or - for a relative jump.").format(length=_format_seconds(maximum)))
                     return
                 event.Skip()
             dialog.Bind(wx.EVT_BUTTON, validate, id=wx.ID_OK)
             if displayDialogAsModal(dialog) == wx.ID_OK and target is not None:
-                core.callLater(100, self._run, lambda: self._jumpTo(target, windowHandle, trackInfo, maximum))
+                core.callLater(100, self._run, lambda: self._jumpTo(target, windowHandle, trackInfo, maximum, relative=relative))
         finally:
             if dialog is not None:
                 dialog.Destroy()
             self._jumpDialogOpen = False
 
-    def _jumpTo(self, target, windowHandle, trackInfo, maximum):
+    def _jumpTo(self, target, windowHandle, trackInfo, maximum, relative=False):
         root = self._root()
         if root.windowHandle != windowHandle:
             raise ControlUnavailable("Sonos window changed")
@@ -693,6 +808,8 @@ class AppModule(appModuleHandler.AppModule):
         if self._trackInfo(includeGroup=True) != trackInfo or pattern.CurrentMaximum != maximum:
             ui.message(_("The track or room changed. Open Jump to Time again."))
             return
+        if relative:
+            target += pattern.CurrentValue
         self._setPosition(pattern, target, windowHandle)
 
     @script(description=_("Report the current speaker group."), gesture="kb:alt+shift+g", speakOnDemand=True)
