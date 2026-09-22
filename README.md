@@ -63,6 +63,8 @@ Set loop start and end on a seekable track, then press Alt+Shift+F7 to jump to t
 
 Control+J accepts seconds, minutes:seconds, or hours:minutes:seconds. Start with + or - for a relative jump, such as +30 or -1:15. Relative jumps use the current position when confirmed and stop at the track boundaries.
 
+Time announcements and lyrics matching also use timing from non-seekable tracks when Sonos provides it. Seeking remains unavailable for those tracks.
+
 ## Lyrics
 
 Press Alt+Shift+Y to fetch lyrics from [LRCLIB](https://lrclib.net/). A matching recording opens directly; otherwise, choose from the available recordings by title, artist, album, and length. Lyrics open in an accessible window where you can read and copy them. Timed lyrics are displayed as ordinary text for now.

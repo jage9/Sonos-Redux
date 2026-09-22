@@ -207,6 +207,30 @@ class SonosTests(unittest.TestCase):
         item.firstChild = None
         self.assertEqual(item._get_name(), "fallback")
 
+    def test_disabled_scrubber_reports_time_but_rejects_actions(self):
+        app, pattern = sonos.AppModule(), Pattern(0, 403, 330, read_only=True)
+        slider = types.SimpleNamespace(states={nvda["controlTypes"].State.UNAVAILABLE}, UIARangeValuePattern=pattern)
+        app._root = lambda: object()
+        app._scrubGesture = lambda gesture, action: app._run(action)
+        nvda["ui"].messages.clear()
+        with patch.object(sonos, "_find", return_value=slider):
+            app.script_reportCurrent(None)
+            app.script_reportRemaining(None)
+            app.script_reportScrub(None)
+            self.assertEqual(nvda["ui"].messages, ["5:30 elapsed", "1:13 remaining", "5:30 of 6:43, 82%"])
+            for read_only in (True, False):
+                pattern.CurrentIsReadOnly = read_only
+                with self.assertRaises(sonos.NoTrackSlider):
+                    app._seek(5)
+                with self.assertRaises(sonos.NoTrackSlider):
+                    app._loopContext()
+            app.script_focusScrub(None)
+            self.assertEqual(nvda["ui"].messages[-1], "No track slider")
+            pattern.CurrentMaximum = 0
+            with self.assertRaises(sonos.NoTrackSlider):
+                app._scrubber(readOnly=True)
+        self.assertEqual(pattern.set_values, [])
+
     def test_seek_clamps_in_both_directions(self):
         app, pattern = sonos.AppModule(), Pattern(0, 100, 2)
         app._scrubber = lambda: (object(), pattern)
@@ -249,7 +273,7 @@ class SonosTests(unittest.TestCase):
 
     def test_rapid_seek_callbacks_only_report_latest_request(self):
         app, pattern = sonos.AppModule(), Pattern(0, 300, 12)
-        app._scrubber = lambda: (object(), pattern)
+        app._scrubber = lambda **kwargs: (object(), pattern)
         root = types.SimpleNamespace(processID=app.processID, windowHandle=99)
         nvda["api"].getForegroundObject = lambda: root
         nvda["api"].getFocusObject = lambda: None
@@ -818,7 +842,7 @@ class SonosTests(unittest.TestCase):
             classes = []
             app.chooseNVDAObjectOverlayClasses(slider, classes)
             self.assertEqual(classes, expected)
-        app._scrubber = lambda: (object(), Pattern(0, 100, 41))
+        app._scrubber = lambda **kwargs: (object(), Pattern(0, 100, 41))
         nvda["ui"].messages.clear()
         app.script_reportCurrent(None)
         app.script_reportRemaining(None)
@@ -987,7 +1011,7 @@ class SonosTests(unittest.TestCase):
 
     def test_missing_slider_has_concise_message_for_all_time_commands(self):
         app = sonos.AppModule()
-        def missing(identifier, root=None):
+        def missing(identifier, root=None, **kwargs):
             raise sonos.ControlUnavailable(identifier)
         app._transport = missing
         nvda["ui"].messages.clear()
@@ -995,7 +1019,7 @@ class SonosTests(unittest.TestCase):
             command(None)
         app._run(lambda: app._seek(5))
         self.assertEqual(nvda["ui"].messages, ["No track slider"] * 4)
-        app._transport = lambda identifier, root=None: types.SimpleNamespace(UIARangeValuePattern=None)
+        app._transport = lambda identifier, root=None, **kwargs: types.SimpleNamespace(UIARangeValuePattern=None)
         app.script_reportScrub(None)
         self.assertEqual(nvda["ui"].messages[-1], "No track slider")
         app._run(lambda: missing("volume"))

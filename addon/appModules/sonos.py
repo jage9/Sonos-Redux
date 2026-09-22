@@ -264,9 +264,10 @@ class AppModule(appModuleHandler.AppModule):
             log.exception("Sonos command failed")
             ui.message(_("Sonos command failed. See the NVDA log for details."))
 
-    def _scrubber(self, root=None):
+    def _scrubber(self, root=None, *, readOnly=False):
         try:
-            slider = self._transport("PART_Scrubber", root=root)
+            # Radio scrubbers can expose valid timing even when seeking is disabled.
+            slider = self._transport("PART_Scrubber", root=root, allowDisabled=readOnly)
             pattern = slider.UIARangeValuePattern
             if not pattern:
                 raise ControlUnavailable("Scrubber has no range pattern")
@@ -278,7 +279,7 @@ class AppModule(appModuleHandler.AppModule):
     @script(description=_("Report the current track position."), gesture="kb:alt+shift+i", speakOnDemand=True)
     def script_reportScrub(self, gesture):
         def report():
-            slider, pattern = self._scrubber()
+            slider, pattern = self._scrubber(readOnly=True)
             ui.message(_("{elapsed} of {total}, {percent}%").format(
                 elapsed=_format_seconds(pattern.CurrentValue),
                 total=_format_seconds(pattern.CurrentMaximum),
@@ -314,9 +315,9 @@ class AppModule(appModuleHandler.AppModule):
             return
         self._run(action)
 
-    def _transport(self, identifier, root=None):
+    def _transport(self, identifier, root=None, *, allowDisabled=False):
         control = _find(_find(root if root is not None else self._root(), "transportBar"), identifier)
-        if controlTypes.State.UNAVAILABLE in control.states:
+        if not allowDisabled and controlTypes.State.UNAVAILABLE in control.states:
             raise ControlUnavailable(identifier)
         return control
 
@@ -352,7 +353,7 @@ class AppModule(appModuleHandler.AppModule):
         if sequence != self._seekSequence or api.getForegroundObject().windowHandle != windowHandle:
             return
         def report():
-            slider, pattern = self._scrubber()
+            slider, pattern = self._scrubber(readOnly=True)
             ui.message(_format_seconds(pattern.CurrentValue))
         self._run(report)
 
@@ -494,12 +495,12 @@ class AppModule(appModuleHandler.AppModule):
 
     @script(description=_("Report elapsed track time."), gesture="kb:alt+shift+u", speakOnDemand=True)
     def script_reportCurrent(self, gesture):
-        self._run(lambda: ui.message(_("{time} elapsed").format(time=_format_seconds(self._scrubber()[1].CurrentValue))))
+        self._run(lambda: ui.message(_("{time} elapsed").format(time=_format_seconds(self._scrubber(readOnly=True)[1].CurrentValue))))
 
     @script(description=_("Report remaining track time."), gesture="kb:alt+shift+o", speakOnDemand=True)
     def script_reportRemaining(self, gesture):
         def report():
-            slider, pattern = self._scrubber()
+            slider, pattern = self._scrubber(readOnly=True)
             ui.message(_("{time} remaining").format(time=_format_seconds(pattern.CurrentMaximum - pattern.CurrentValue)))
         self._run(report)
 
@@ -816,7 +817,7 @@ class AppModule(appModuleHandler.AppModule):
             if len(fields) > 2 and fields[2][1]:
                 metadata["album_name"] = fields[2][1]
             try:
-                duration = self._scrubber()[1].CurrentMaximum
+                duration = self._scrubber(readOnly=True)[1].CurrentMaximum
                 if 1 <= duration <= 3600:
                     metadata["duration"] = round(duration)
             except (ControlUnavailable, COMError):

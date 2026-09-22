@@ -8,7 +8,7 @@ from unittest.mock import patch
 from urllib.error import HTTPError
 from urllib.parse import parse_qs, urlparse
 
-from test_sonos import sonos, nvda
+from test_sonos import sonos, nvda, Pattern
 
 
 class LyricsTests(unittest.TestCase):
@@ -57,6 +57,20 @@ class LyricsTests(unittest.TestCase):
             self.assertNotIn("<script>", rendered)
             self.assertIn("&lt;script&gt;", rendered)
             self.assertIn('href="https://lrclib.net/"', rendered)
+
+    def test_lyrics_uses_duration_from_disabled_scrubber(self):
+        app = sonos.AppModule()
+        app._root = lambda: object()
+        app._metadataFields = lambda panel, limit: [("Song", "Title"), ("Artist", "Artist"), ("Album", "Album")]
+        slider = types.SimpleNamespace(states={nvda["controlTypes"].State.UNAVAILABLE},
+                                       UIARangeValuePattern=Pattern(0, 403, 330, read_only=True))
+        settings = types.ModuleType("globalPlugins.sonosSettings")
+        settings.lyricsUserAgent = lambda: "Test/1"
+        with patch.dict(sys.modules, {"wx": types.ModuleType("wx"), "globalPlugins.sonosSettings": settings}), \
+                patch.object(sonos, "_find", return_value=slider), patch.object(sonos, "Thread") as thread:
+            app.script_lyrics(None)
+            self.assertEqual(thread.call_args.kwargs["args"][1]["duration"], 403)
+            thread.return_value.start.assert_called_once_with()
 
     def test_worker_cooldown_and_stale_completion(self):
         app = sonos.AppModule()
