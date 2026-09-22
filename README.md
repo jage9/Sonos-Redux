@@ -87,22 +87,25 @@ Logging records the current track title and artist with a timestamp, then append
 
 ## Changelog
 
+### 2026.2
+
+- Added lyrics lookup from LRCLIB (Alt+Shift+Y), with Ctrl+S to save lyrics.
+- Added optional track announce: Off, Everywhere, or Only while Sonos is focused (Alt+Shift+K).
+- Added sleep timer status (Alt+Shift+S).
+- Added a numeric volume dialog (Ctrl+V) and an adjustable fade out with pause and volume restoration (Ctrl+Shift+V).
+- Added temporary looping bookmarks (Alt+Shift+F5–F9).
+- Added signed relative times in Jump to Time (+30, -1:15) and a configurable jump near the end of a track (Alt+Shift+J).
+- Expanded Now Playing information and improved its response time; Alt+Shift+N reports the SiriusXM channel when available.
+- Added time announcements and lyrics matching using timing from non-seekable tracks when available.
+
 ### 2026.1
 
-- Added lyrics lookup from LRCLIB (Alt+Shift+Y).
-
-- Added signed relative times in Jump to Time (+30, -1:15).
-- Added temporary looping bookmarks (Alt+Shift+F5–F9).
-
 - Added optional track logging, toggled with Alt+Shift+L.
-- Added optional track announce (Alt+Shift+K) and sleep timer status (Alt+Shift+S).
-- Expanded detailed Now Playing information; Alt+Shift+N reports the SiriusXM channel when available.
-- Added a configurable jump to the end portion of a track (Alt+Shift+J).
 - Added a Sonos settings panel. Settings are global.
 - Added Favorites feedback for Sonos Ctrl+8.
 - Added queue count reporting (Alt+Shift+Q).
 - Added adjustable track seeking (default five seconds) (Shift+Right Arrow and Shift+Left Arrow) and scrubber focus (Shift+Up Arrow).
-- Added Jump to Time (Ctrl+J), a numeric volume dialog (Ctrl+V), and an adjustable fade out with pause and volume restoration (Ctrl+Shift+V).
+- Added Jump to Time (Ctrl+J).
 - Added copying displayed album art to the clipboard (Alt+Shift+A).
 - Added next-track announcements (Alt+Shift+N) and a separate current speaker group command with room names (Alt+Shift+G).
 - Added feedback when switching speaker groups with Ctrl+Comma and Ctrl+Period.
