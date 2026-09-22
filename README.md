@@ -67,7 +67,7 @@ Time announcements and lyrics matching also use timing from non-seekable tracks 
 
 ## Lyrics
 
-Press Alt+Shift+Y to fetch lyrics from [LRCLIB](https://lrclib.net/). A matching recording opens directly; otherwise, choose from the available recordings by title, artist, album, and length. Lyrics open in an accessible window where you can read and copy them. In the lyrics window, press Control+S to save a text file. Timed lyrics are displayed as ordinary text for now.
+Press Alt+Shift+Y to fetch lyrics from [LRCLIB](https://lrclib.net/). A matching recording opens directly; otherwise, choose from the available recordings by title, artist, album, and length. Lyrics open in an accessible window where you can read and copy them. In the lyrics window, choose Save or press Control+S to save a text file. Timed lyrics are displayed as ordinary text for now.
 
 The lookup sends the current title, artist, album and track length when available, along with the add-on version and a random installation ID. This ID contains no personal or device information but lets LRCLIB recognize requests from the same installation. It is saved with NVDA's global settings. No account or API key is needed. Only requesting lyrics contacts the service; repeated requests for the same track reuse the last result while Sonos remains open.
 

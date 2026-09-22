@@ -66,6 +66,7 @@ class LyricsTests(unittest.TestCase):
         wx = types.ModuleType("wx")
         settings = types.ModuleType("globalPlugins.sonosSettings")
         settings.registerLyricsSave = Mock()
+        wx.ID_SAVE = 1
         windows = []
         wx.GetTopLevelWindows = lambda: windows[:]
         message = types.ModuleType("gui.message")
@@ -84,6 +85,11 @@ class LyricsTests(unittest.TestCase):
             with patch.object(app, "_saveLyrics") as saveLyrics:
                 save()
                 saveLyrics.assert_called_once_with(window, self.record)
+                saveLyrics.reset_mock()
+                window.addButton.call_args.kwargs["callback"](None)
+                saveLyrics.assert_called_once_with(window, self.record)
+            self.assertFalse(window.addButton.call_args.kwargs["closesDialog"])
+            window.Show.assert_called_once_with()
             window.SetAcceleratorTable.assert_not_called()
             # Reuse also skips the recording picker on a search result.
             app._showLyrics(self.metadata.copy(), [self.record], False)
