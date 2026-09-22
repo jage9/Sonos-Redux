@@ -81,43 +81,6 @@ Logging records the current track title and artist with a timestamp, then append
 
 **Advanced** opens the randomly generated lyrics key. This identifies the installation to LRCLIB; it is not an API credential. You can edit it or clear the field to generate a new key. Changes apply when you save NVDA Settings.
 
-## Changelog
-
-### 2026.2
-
-- Added lyrics lookup from LRCLIB (Alt+Shift+Y), with Ctrl+S to save lyrics.
-- Added optional track announce: Off, Everywhere, or Only while Sonos is focused (Alt+Shift+K).
-- Added sleep timer status (Alt+Shift+S).
-- Added a numeric volume dialog (Ctrl+V) and an adjustable fade out with pause and volume restoration (Ctrl+Shift+V).
-- Added temporary looping bookmarks (Alt+Shift+F5–F9).
-- Added signed relative times in Jump to Time (+30, -1:15) and a configurable jump near the end of a track (Alt+Shift+J).
-- Expanded Now Playing information and improved its response time; Alt+Shift+N reports the SiriusXM channel when available.
-- Added time announcements and lyrics matching using timing from non-seekable tracks when available.
-
-### 2026.1
-
-- Added optional track logging, toggled with Alt+Shift+L.
-- Added a Sonos settings panel. Settings are global.
-- Added Favorites feedback for Sonos Ctrl+8.
-- Added queue count reporting (Alt+Shift+Q).
-- Added adjustable track seeking (default five seconds) (Shift+Right Arrow and Shift+Left Arrow) and scrubber focus (Shift+Up Arrow).
-- Added Jump to Time (Ctrl+J).
-- Added copying displayed album art to the clipboard (Alt+Shift+A).
-- Added next-track announcements (Alt+Shift+N) and a separate current speaker group command with room names (Alt+Shift+G).
-- Added feedback when switching speaker groups with Ctrl+Comma and Ctrl+Period.
-- Updated for NVDA 2026.1 and later, using modern add-on APIs and translatable messages.
-- Made add-on shortcuts assignable through NVDA's Input Gestures dialog; enhanced native Sonos shortcuts retain their keys.
-- Made the scrubber report minutes and seconds, cleaned up duplicate control labels, and shortened speech.
-- Fixed speaker names in the Music EQ menu and labeled the alarm Enabled checkbox.
-
-### Earlier versions
-
-- 1.4: NVDA 2019.3 compatible.
-- 1.3: NVDA 2019.1 compatible.
-- 1.2: Added support for Sonos Desktop 9.2. For versions before 9.2, use add-on version 1.1.
-- 1.1: Made the keyboard shortcuts screen speak.
-- 1.0: Initial release.
-
 ## Original add-on
 
 - [Original project](https://github.com/Novalis7747/sonos)
