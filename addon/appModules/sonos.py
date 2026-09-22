@@ -822,6 +822,8 @@ class AppModule(appModuleHandler.AppModule):
                     metadata["duration"] = round(duration)
             except (ControlUnavailable, COMError):
                 pass
+            if self._focusLyrics(metadata):
+                return
             cached = getattr(self, "_lyricsCache", None)
             if cached and cached[0] == metadata:
                 wx.CallAfter(self._run, lambda: self._showLyrics(metadata, *cached[1]))
@@ -876,9 +878,21 @@ class AppModule(appModuleHandler.AppModule):
             return
         self._run(lambda: self._showLyrics(metadata, *result))
 
+    def _focusLyrics(self, metadata):
+        import wx
+        for window in wx.GetTopLevelWindows():
+            if getattr(window, "_sonosLyricsTrack", None) == metadata:
+                window.Iconize(False)
+                window.Raise()
+                window.SetFocus()
+                return True
+        return False
+
     def _showLyrics(self, metadata, records, matched):
         import wx
         from gui.message import displayDialogAsModal
+        if self._focusLyrics(metadata):
+            return
         if not records:
             ui.message(_("No lyrics found."))
             return
@@ -910,7 +924,12 @@ class AppModule(appModuleHandler.AppModule):
             content = (f"<h1>{escape(title)}</h1><p>{escape(record['albumName'])}</p>"
                        f"<pre>{escape(lyrics)}</pre>"
                        f'<p><a href="https://lrclib.net/">{escape(_("Lyrics provided by LRCLIB"))}</a></p>')
+            windowsBefore = set(wx.GetTopLevelWindows())
             ui.browseableMessage(content, title=title, isHtml=True)
+            for window in wx.GetTopLevelWindows():
+                if window not in windowsBefore and window.GetTitle() == title:
+                    window._sonosLyricsTrack = metadata.copy()
+                    break
         finally:
             if dialog is not None:
                 dialog.Destroy()

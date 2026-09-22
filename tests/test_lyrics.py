@@ -4,7 +4,7 @@ import json
 import sys
 import types
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 from urllib.error import HTTPError
 from urllib.parse import parse_qs, urlparse
 
@@ -50,13 +50,43 @@ class LyricsTests(unittest.TestCase):
         gui = types.ModuleType("gui")
         message = types.ModuleType("gui.message")
         message.displayDialogAsModal = lambda dialog: None
-        with patch.dict(sys.modules, {"wx": types.ModuleType("wx"), "gui": gui, "gui.message": message}), \
+        wx = types.ModuleType("wx")
+        wx.GetTopLevelWindows = lambda: []
+        with patch.dict(sys.modules, {"wx": wx, "gui": gui, "gui.message": message}), \
                 patch.object(sonos.ui, "browseableMessage") as show:
             app._showLyrics(self.metadata, [{**self.record, "plainLyrics": "<script>example</script> & text"}], True)
             rendered = show.call_args.args[0]
             self.assertNotIn("<script>", rendered)
             self.assertIn("&lt;script&gt;", rendered)
             self.assertIn('href="https://lrclib.net/"', rendered)
+
+    def test_open_lyrics_window_is_reused_and_closed_one_is_recreated(self):
+        app = sonos.AppModule()
+        wx = types.ModuleType("wx")
+        windows = []
+        wx.GetTopLevelWindows = lambda: windows[:]
+        message = types.ModuleType("gui.message")
+        message.displayDialogAsModal = Mock()
+        def open_window(content, title, **kwargs):
+            window = Mock()
+            window.GetTitle.return_value = title
+            windows.append(window)
+        with patch.dict(sys.modules, {"wx": wx, "gui.message": message}), \
+                patch.object(sonos.ui, "browseableMessage", side_effect=open_window) as show:
+            app._showLyrics(self.metadata, [self.record], True)
+            window = windows[0]
+            self.assertEqual(window._sonosLyricsTrack, self.metadata)
+            # Reuse also skips the recording picker on a search result.
+            app._showLyrics(self.metadata.copy(), [self.record], False)
+            self.assertEqual(show.call_count, 1)
+            window.Iconize.assert_called_once_with(False)
+            window.Raise.assert_called_once_with()
+            window.SetFocus.assert_called_once_with()
+            message.displayDialogAsModal.assert_not_called()
+            self.assertFalse(app._focusLyrics({**self.metadata, "track_name": "Other track"}))
+            windows.clear()
+            app._showLyrics(self.metadata, [self.record], True)
+            self.assertEqual(show.call_count, 2)
 
     def test_lyrics_uses_duration_from_disabled_scrubber(self):
         app = sonos.AppModule()
@@ -66,7 +96,9 @@ class LyricsTests(unittest.TestCase):
                                        UIARangeValuePattern=Pattern(0, 403, 330, read_only=True))
         settings = types.ModuleType("globalPlugins.sonosSettings")
         settings.lyricsUserAgent = lambda: "Test/1"
-        with patch.dict(sys.modules, {"wx": types.ModuleType("wx"), "globalPlugins.sonosSettings": settings}), \
+        wx = types.ModuleType("wx")
+        wx.GetTopLevelWindows = lambda: []
+        with patch.dict(sys.modules, {"wx": wx, "globalPlugins.sonosSettings": settings}), \
                 patch.object(sonos, "_find", return_value=slider), patch.object(sonos, "Thread") as thread:
             app.script_lyrics(None)
             self.assertEqual(thread.call_args.kwargs["args"][1]["duration"], 403)
