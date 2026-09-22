@@ -13,8 +13,9 @@ Aktualisiert von J.J. Meddaugh <jj@bestmidi.com>.
 | Strg+3 | Auf YouTube nach dem aktuellen Titel suchen. |
 | Strg+J | Zu einer Zeit im Titel springen. |
 | Strg+V | Lautstärke der ausgewählten Lautsprechergruppe einstellen. |
+| Strg+Umschalt+V | Lautstärke der ausgewählten Gruppe in fünf Sekunden auf null absenken. |
 | Alt+Umschalt+L | Titelprotokollierung ein- oder ausschalten. |
-| Alt+Umschalt+K | Ansage bei Titelwechseln ein- oder ausschalten. |
+| Alt+Umschalt+K | Titelansagen umschalten: Aus, Überall, Sonos im Vordergrund. |
 | Alt+Umschalt+S | Status des Schlaf-Timers ansagen. |
 | Alt+Umschalt+J | Zu den letzten 30 Sekunden eines Titels springen (einstellbar). |
 | Alt+Umschalt+G | Aktuelle Lautsprechergruppe und ihre Räume ansagen. |
@@ -46,6 +47,8 @@ Aktualisiert von J.J. Meddaugh <jj@bestmidi.com>.
 | Strg+. | Zur nächsten Gruppe wechseln und sie ansagen. |
 | Strg+K | Sonos-Hilfe zu Tastenkürzeln öffnen. |
 
+Strg+V öffnet ein Lautstärkefeld von 0 bis 100. Einen Wert eingeben oder mit Pfeil hoch und runter ändern, dann mit Eingabe übernehmen. Strg+Umschalt+V senkt die Lautstärke in fünf Sekunden auf null ab. Sonos muss dabei mit derselben ausgewählten Gruppe im Vordergrund bleiben.
+
 ## Einstellungen
 
 **Sprungweite in Sekunden** legt die Schrittweite für Umschalt+Pfeil links und Umschalt+Pfeil rechts fest: 1–999 Sekunden, standardmäßig 5. **Sekunden vor Titelende** legt den Sprung mit Alt+Umschalt+J fest: 1–999 Sekunden, standardmäßig 30. Bei kürzeren Titeln wird zum Anfang gesprungen.
@@ -54,7 +57,7 @@ In den NVDA-Einstellungen unter Sonos lässt sich **Titel protokollieren** einsc
 
 Titel und Interpret werden mit einem Zeitstempel aufgezeichnet. Bei Änderungen wird ein neuer Eintrag angehängt. Die Prüfung erfolgt alle drei Sekunden und läuft auch beim Arbeiten in anderen Anwendungen weiter, solange Sonos geöffnet bleibt. Protokolliert wird die ausgewählte Lautsprechergruppe. Start- und Endmarkierungen trennen die Protokollierungssitzungen. Alt+Umschalt+L schaltet die Protokollierung in Sonos um.
 
-**Titelwechsel ansagen** spricht den neuen Titel und Interpreten der ausgewählten Lautsprechergruppe, auch wenn eine andere Anwendung im Vordergrund ist. Die Funktion ist standardmäßig ausgeschaltet und funktioniert ohne Protokollierung. Alt+Umschalt+K schaltet sie in Sonos um. Die erste Prüfung merkt sich den aktuellen Titel; Wechsel innerhalb von drei Sekunden können übersehen werden.
+**Titelwechsel ansagen** bietet Aus (Standard), Überall und Nur wenn Sonos im Vordergrund ist. Titel und Interpret werden beim Titelwechsel in der ausgewählten Lautsprechergruppe angesagt, auch ohne Protokollierung. Alt+Umschalt+K wechselt zwischen diesen Optionen. Die erste Prüfung merkt sich den aktuellen Titel; Wechsel innerhalb von drei Sekunden können übersehen werden.
 
 ## Änderungen
 
@@ -68,7 +71,7 @@ Titel und Interpret werden mit einem Zeitstempel aufgezeichnet. Bei Änderungen 
 - Rückmeldung für den Sonos-Favoritenbefehl Strg+8 hinzugefügt.
 - Ansage der Titelanzahl in der Warteschlange hinzugefügt (Alt+Umschalt+Q).
 - Einstellbares Vor- und Zurückspringen (standardmäßig fünf Sekunden) (Umschalt+Pfeil rechts und Umschalt+Pfeil links) und den Positionsregler fokussieren (Umschalt+Pfeil hoch).
-- Zu einer Zeit im Titel springen (Strg+J) und numerischen Lautstärkedialog hinzugefügt (Strg+V).
+- Zu einer Zeit im Titel springen (Strg+J), numerischen Lautstärkedialog (Strg+V) und Absenken der Lautstärke in fünf Sekunden (Strg+Umschalt+V) hinzugefügt.
 - Angezeigtes Albumcover in die Zwischenablage kopieren (Alt+Umschalt+A).
 - Nächsten Titel ansagen (Alt+Umschalt+N) und die aktuelle Lautsprechergruppe mit Raumnamen separat ansagen (Alt+Umschalt+G).
 - Rückmeldung beim Wechseln der Lautsprechergruppe mit Strg+Komma und Strg+Punkt.

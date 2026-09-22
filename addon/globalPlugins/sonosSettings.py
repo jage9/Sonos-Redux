@@ -7,6 +7,7 @@ from pathlib import Path
 import os
 
 import addonHandler
+import api
 import appModuleHandler
 from comtypes import COMError
 import config
@@ -27,7 +28,7 @@ addonHandler.initTranslation()
 
 config.conf.spec["sonos"] = {
     "logTracks": "boolean(default=False)",
-    "announceTracks": "boolean(default=False)",
+    "announcementMode": "integer(default=0, min=0, max=2)",
     "logFile": "string(default='sonos.log')",
     "seekSeconds": "integer(default=5, min=1, max=999)",
     "endJumpSeconds": "integer(default=30, min=1, max=999)",
@@ -61,10 +62,14 @@ def toggleLogging():
 def toggleAnnouncements():
     if not shouldWriteToDisk():
         return
-    enabled = not config.conf["sonos"]["announceTracks"]
-    config.conf["sonos"]["announceTracks"] = enabled
+    mode = (config.conf["sonos"]["announcementMode"] + 1) % 3
+    config.conf["sonos"]["announcementMode"] = mode
     settingsChanged.notify()
-    ui.message(_("Track title announcements on") if enabled else _("Track title announcements off"))
+    ui.message((
+        _("Track title announcements off"),
+        _("Track title announcements everywhere"),
+        _("Track title announcements only while Sonos is focused"),
+    )[mode])
 
 
 class SonosSettingsPanel(SettingsPanel):
@@ -82,8 +87,11 @@ class SonosSettingsPanel(SettingsPanel):
         )
         self.enabled = helper.addItem(wx.CheckBox(self, label=_("&Log track titles")))
         self.enabled.SetValue(config.conf["sonos"]["logTracks"])
-        self.announce = helper.addItem(wx.CheckBox(self, label=_("&Announce track title changes")))
-        self.announce.SetValue(config.conf["sonos"]["announceTracks"])
+        self.announce = helper.addLabeledControl(
+            _("Track title &announcements:"), wx.Choice,
+            choices=[_("Off"), _("Everywhere"), _("Only while Sonos is focused")],
+        )
+        self.announce.SetSelection(config.conf["sonos"]["announcementMode"])
         self.filename = helper.addLabeledControl(_("Log &filename:"), wx.TextCtrl,
                                                 value=config.conf["sonos"]["logFile"])
         self.browse = helper.addItem(wx.Button(self, label=_("&Browse...")))
@@ -132,7 +140,7 @@ class SonosSettingsPanel(SettingsPanel):
         config.conf["sonos"]["seekSeconds"] = self.seekSeconds.GetValue()
         config.conf["sonos"]["endJumpSeconds"] = self.endJumpSeconds.GetValue()
         config.conf["sonos"]["logTracks"] = self.enabled.IsChecked()
-        config.conf["sonos"]["announceTracks"] = self.announce.IsChecked()
+        config.conf["sonos"]["announcementMode"] = self.announce.GetSelection()
         config.conf["sonos"]["logFile"] = self.filename.GetValue().strip() or "sonos.log"
         settingsChanged.notify()
 
@@ -160,7 +168,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             if state[0] and shouldWriteToDisk():
                 if not self._writeLog(state[1], "### " + _("Log started") + " ###"):
                     return
-        if state[0] or config.conf["sonos"]["announceTracks"]:
+        if state[0] or config.conf["sonos"]["announcementMode"]:
             # ponytail: Polling can miss changes shorter than three seconds; use events if needed.
             self._timer.Start(3000)
         else:
@@ -193,7 +201,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         return app._trackInfo(root=root)[1]
 
     def _poll(self):
-        if not (config.conf["sonos"]["logTracks"] or config.conf["sonos"]["announceTracks"]):
+        if not (config.conf["sonos"]["logTracks"] or config.conf["sonos"]["announcementMode"]):
             return
         if not shouldWriteToDisk() or isLockScreenModeActive():
             return
@@ -209,8 +217,16 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             return
         if config.conf["sonos"]["logTracks"] and not self._writeLog(config.conf["sonos"]["logFile"], track):
             return
-        if config.conf["sonos"]["announceTracks"] and self._lastTrack is not None:
-            ui.message(track)
+        mode = config.conf["sonos"]["announcementMode"]
+        if mode and self._lastTrack is not None:
+            if mode == 1:
+                ui.message(track)
+            else:
+                foreground = api.getForegroundObject()
+                app = (appModuleHandler.getAppModuleFromProcessID(foreground.processID)
+                       if foreground else None)
+                if getattr(app, "appName", None) == "sonos":
+                    ui.message(track)
         self._lastTrack = track
 
     def _writeLog(self, filename, text):
@@ -224,7 +240,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             self._timer.Stop()
             self._state = (False, config.conf["sonos"]["logFile"])
             self._lastTrack = None
-            if config.conf["sonos"]["announceTracks"]:
+            if config.conf["sonos"]["announcementMode"]:
                 self._timer.Start(3000)
             ui.message(_("Could not write the track log. Track logging off."))
             return False

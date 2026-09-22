@@ -43,9 +43,6 @@ msgstr "Lautstärke für {group}:"
 msgid "Set volume"
 msgstr "Lautstärke einstellen"
 
-msgid "Enter a volume from 0 to 100."
-msgstr "Eine Lautstärke von 0 bis 100 eingeben."
-
 msgid "The speaker group changed. Open Set Volume again."
 msgstr "Die Lautsprechergruppe wurde gewechselt. Lautstärkedialog erneut öffnen."
 
@@ -209,16 +206,19 @@ msgid "Track logging off"
 msgstr "Titelprotokollierung aus"
 
 msgid "Toggle track title announcements."
-msgstr "Ansage bei Titelwechseln ein- oder ausschalten."
+msgstr "Ansage bei Titelwechseln umschalten."
 
-msgid "Track title announcements on"
-msgstr "Ansage bei Titelwechseln ein"
+msgid "Track title announcements everywhere"
+msgstr "Titelwechsel überall ansagen"
+
+msgid "Track title announcements only while Sonos is focused"
+msgstr "Titelwechsel nur ansagen, wenn Sonos im Vordergrund ist"
 
 msgid "Track title announcements off"
 msgstr "Ansage bei Titelwechseln aus"
 
-msgid "&Announce track title changes"
-msgstr "Titelwechsel &ansagen"
+msgid "Track title &announcements:"
+msgstr "Titelwechsel &ansagen:"
 
 msgid "&Log track titles"
 msgstr "Titel &protokollieren"
@@ -275,3 +275,18 @@ msgstr[1] "{count} Titel in der Warteschlange"
 
 msgid "Sonos Redux"
 msgstr "Sonos Redux"
+
+msgid "Off"
+msgstr "Aus"
+
+msgid "Everywhere"
+msgstr "Überall"
+
+msgid "Only while Sonos is focused"
+msgstr "Nur wenn Sonos im Vordergrund ist"
+
+msgid "Fade the selected speaker group to zero over five seconds."
+msgstr "Lautstärke der ausgewählten Lautsprechergruppe in fünf Sekunden auf null absenken."
+
+msgid "Fading out {group}"
+msgstr "Lautstärke für {group} wird abgesenkt"

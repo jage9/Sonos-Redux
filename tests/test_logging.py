@@ -32,7 +32,7 @@ class BaseProfile(dict):
         super().__setitem__(key, Section(value))
     def validate(self, validator, section):
         section.setdefault("logTracks", False)
-        section.setdefault("announceTracks", False)
+        section.setdefault("announcementMode", 0)
         section.setdefault("logFile", "sonos.log")
         section.setdefault("seekSeconds", 5)
         section.setdefault("endJumpSeconds", 30)
@@ -68,7 +68,7 @@ class PluginBase:
         pass
 
 
-_module("config", conf=Conf(sonos={"logTracks": False, "announceTracks": False, "logFile": "sonos.log", "seekSeconds": 5, "endJumpSeconds": 30}),
+_module("config", conf=Conf(sonos={"logTracks": False, "announcementMode": 0, "logFile": "sonos.log", "seekSeconds": 5, "endJumpSeconds": 30}),
         post_configProfileSwitch=Action(), post_configReset=Action())
 _module("extensionPoints", Action=Action)
 _module("globalPluginHandler", GlobalPlugin=PluginBase)
@@ -93,7 +93,7 @@ class LoggingTests(unittest.TestCase):
             Get=lambda: types.SimpleNamespace(GetDocumentsDir=lambda: self.folder.name)), create=True)
         documents.start()
         self.addCleanup(documents.stop)
-        settings.config.conf.profiles[0]["sonos"] = {"logTracks": False, "announceTracks": False, "logFile": "sonos.log", "seekSeconds": 5, "endJumpSeconds": 30}
+        settings.config.conf.profiles[0]["sonos"] = {"logTracks": False, "announcementMode": 0, "logFile": "sonos.log", "seekSeconds": 5, "endJumpSeconds": 30}
         self.plugin = settings.GlobalPlugin()
         self.addCleanup(self.folder.cleanup)
         self.addCleanup(self.plugin.terminate)
@@ -108,7 +108,7 @@ class LoggingTests(unittest.TestCase):
             panel.seekSeconds = types.SimpleNamespace(GetValue=lambda: seconds)
             panel.endJumpSeconds = types.SimpleNamespace(GetValue=lambda: 42)
             panel.enabled = types.SimpleNamespace(IsChecked=lambda: False)
-            panel.announce = types.SimpleNamespace(IsChecked=lambda: False)
+            panel.announce = types.SimpleNamespace(GetSelection=lambda: 0)
             panel.filename = types.SimpleNamespace(GetValue=lambda: "sonos.log")
             panel.onSave()
             app.script_adjustScrubBackward(None)
@@ -182,10 +182,10 @@ class LoggingTests(unittest.TestCase):
 
     def test_track_announcements_use_background_poll_without_logging(self):
         path = Path(self.folder.name) / "sonos.log"
-        self.assertFalse(settings.config.conf["sonos"]["announceTracks"])
+        self.assertFalse(settings.config.conf["sonos"]["announcementMode"])
         settings.toggleAnnouncements()
         self.assertTrue(self.plugin._timer.running)
-        self.assertEqual(nvda["ui"].messages[-1], "Track title announcements on")
+        self.assertEqual(nvda["ui"].messages[-1], "Track title announcements everywhere")
         nvda["ui"].messages.clear()
         with patch.object(self.plugin, "_readTrack",
                           side_effect=["First - Artist", "First - Artist", "", "Second - Artist", "Third - Artist"]):
@@ -194,8 +194,37 @@ class LoggingTests(unittest.TestCase):
         self.assertEqual(nvda["ui"].messages, ["Second - Artist", "Third - Artist"])
         self.assertFalse(path.exists())
         settings.toggleAnnouncements()
+        self.assertEqual(settings.config.conf["sonos"]["announcementMode"], 2)
+        self.assertTrue(self.plugin._timer.running)
+        self.assertEqual(nvda["ui"].messages[-1], "Track title announcements only while Sonos is focused")
+        settings.toggleAnnouncements()
+        self.assertEqual(settings.config.conf["sonos"]["announcementMode"], 0)
         self.assertFalse(self.plugin._timer.running)
         self.assertEqual(nvda["ui"].messages[-1], "Track title announcements off")
+
+    def test_focused_announcements_skip_background_changes_but_logging_continues(self):
+        settings.toggleLogging()
+        settings.toggleAnnouncements()
+        settings.toggleAnnouncements()
+        nvda["ui"].messages.clear()
+        foreground = types.SimpleNamespace(processID=9)
+        app = types.SimpleNamespace(appName="sonos")
+        with patch.object(self.plugin, "_readTrack",
+                          side_effect=["First", "Second", "Third", "Third", "Fourth"]), \
+             patch.object(settings.api, "getForegroundObject", return_value=foreground), \
+             patch.object(settings.appModuleHandler, "getAppModuleFromProcessID",
+                          return_value=app, create=True):
+            self.plugin._poll()
+            self.plugin._poll()
+            app.appName = "notepad"
+            self.plugin._poll()
+            app.appName = "sonos"
+            self.plugin._poll()
+            self.plugin._poll()
+        self.assertEqual(nvda["ui"].messages, ["Second", "Fourth"])
+        entries = [line.split("\t", 1)[1] for line in
+                   (Path(self.folder.name) / "sonos.log").read_text(encoding="utf-8").splitlines()]
+        self.assertEqual(entries, ["### Log started ###", "First", "Second", "Third", "Fourth"])
 
     def test_toggling_announcements_does_not_restart_log_session(self):
         path = Path(self.folder.name) / "sonos.log"

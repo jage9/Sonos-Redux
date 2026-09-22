@@ -320,6 +320,7 @@ class AppModule(appModuleHandler.AppModule):
             percent = _percent(pattern)
             group = self._groupInfo()
             focus = api.getFocusObject()
+            self._volumeSequence = getattr(self, "_volumeSequence", 0) + 1
             self._volumeDialogOpen = True
             wx.CallAfter(self._run, lambda: self._showVolumeDialog(
                 self._root().windowHandle, group, percent, focus
@@ -332,29 +333,21 @@ class AppModule(appModuleHandler.AppModule):
 
         dialog = None
         try:
-            dialog = wx.TextEntryDialog(
-                None, _("Volume for {group}:").format(group=group), _("Set volume"), str(percent),
+            dialog = wx.NumberEntryDialog(
+                None, "", _("Volume for {group}:").format(group=group), _("Set volume"),
+                percent, 0, 100,
             )
-            target = None
-
-            def validate(event):
-                nonlocal target
-                if dialog.TransferDataFromWindow():
-                    value = dialog.GetValue().strip()
-                    if value.isdecimal() and len(value) <= 3 and 0 <= int(value) <= 100:
-                        target = int(value)
-                        event.Skip()
-                        return
-                ui.message(_("Enter a volume from 0 to 100."))
-            dialog.Bind(wx.EVT_BUTTON, validate, id=wx.ID_OK)
-            if displayDialogAsModal(dialog) == wx.ID_OK and target is not None:
-                core.callLater(100, self._run, lambda: self._setVolume(target, windowHandle, group, focus))
+            if displayDialogAsModal(dialog) == wx.ID_OK:
+                target = dialog.GetValue()
+                if 0 <= target <= 100:
+                    core.callLater(100, self._run, lambda: self._setVolume(target, windowHandle, group, focus))
         finally:
             if dialog is not None:
                 dialog.Destroy()
             self._volumeDialogOpen = False
 
     def _setVolume(self, percent, windowHandle, group, focus):
+        self._volumeSequence = getattr(self, "_volumeSequence", 0) + 1
         if self._root().windowHandle != windowHandle or self._groupInfo() != group:
             ui.message(_("The speaker group changed. Open Set Volume again."))
             return
@@ -380,6 +373,48 @@ class AppModule(appModuleHandler.AppModule):
                 raise ControlUnavailable("Volume has no range pattern")
             ui.message(_("Volume for {group}: {percent}%").format(group=group, percent=_percent(pattern)))
         self._run(report)
+
+    @script(description=_("Fade the selected speaker group to zero over five seconds."),
+            gesture="kb:control+shift+v", speakOnDemand=True)
+    def script_fadeVolume(self, gesture):
+        def fade():
+            windowHandle = self._root().windowHandle
+            group = self._groupInfo()
+            pattern = self._transport("PART_VolumeSlider").UIARangeValuePattern
+            if not pattern or pattern.CurrentIsReadOnly:
+                raise ControlUnavailable("Volume cannot be adjusted")
+            initial = _percent(pattern)
+            self._volumeSequence = getattr(self, "_volumeSequence", 0) + 1
+            sequence = self._volumeSequence
+            started = perf_counter()
+
+            def step():
+                foreground = api.getForegroundObject()
+                if (sequence != self._volumeSequence or not foreground
+                        or foreground.windowHandle != windowHandle or self._groupInfo() != group):
+                    return
+                pattern = self._transport("PART_VolumeSlider").UIARangeValuePattern
+                if not pattern or pattern.CurrentIsReadOnly:
+                    raise ControlUnavailable("Volume cannot be adjusted")
+                _percent(pattern)
+                remaining = max(0, 5 - (perf_counter() - started))
+                percent = initial * remaining / 5
+                focus = api.getFocusObject()
+                pattern.SetValue(pattern.CurrentMinimum
+                                 + (pattern.CurrentMaximum - pattern.CurrentMinimum) * percent / 100)
+                if focus and focus.processID == self.processID:
+                    try:
+                        focus.setFocus()
+                    except (COMError, RuntimeError, NotImplementedError):
+                        log.debugWarning("Could not restore Sonos focus during fade", exc_info=True)
+                if remaining:
+                    core.callLater(max(1, min(250, round(remaining * 1000))), self._run, step)
+                else:
+                    ui.message(_("Volume for {group}: {percent}%").format(group=group, percent=0))
+
+            ui.message(_("Fading out {group}").format(group=group))
+            core.callLater(250, self._run, step)
+        self._scrubGesture(gesture, fade)
 
     def _reportState(self, identifier):
         # Sonos supplies localized state text, including its repeat modes.
