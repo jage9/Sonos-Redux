@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Sonos 2026.1\n"
+"Project-Id-Version: Sonos 2026.2\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -13,8 +13,8 @@ msgstr "Sonos"
 msgid "Accessibility enhancements for the Sonos Desktop app including now playing, track scrubbing, speech feedback for Sonos hotkeys, and much more."
 msgstr "Verbesserte Zugänglichkeit für die Sonos-Desktop-Anwendung mit Informationen zum aktuellen Titel, Vor- und Zurückspringen im Titel, Sprachausgabe für Sonos-Tastenkürzel und vielem mehr."
 
-msgid "Updated for NVDA 2026.1 with many new features (see ReadMe)"
-msgstr "Für NVDA 2026.1 aktualisiert, mit vielen neuen Funktionen (siehe ReadMe)"
+msgid "Added lyrics lookup and saving, track announcements, sleep timer status, volume controls and fade out, looping bookmarks, and more flexible track seeking. Improved Now Playing information and SiriusXM channel reporting."
+msgstr ""
 
 msgid "Report the current track position."
 msgstr "Aktuelle Titelposition ansagen."

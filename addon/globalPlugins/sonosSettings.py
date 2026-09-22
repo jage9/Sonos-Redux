@@ -66,7 +66,7 @@ def lyricsUserAgent():
     except ValueError:
         identifier = str(uuid4())
         settings["lyricsInstallationId"] = identifier
-    return f"Sonos-Redux/2026.1 (https://github.com/jage9/Sonos-Redux; installation={identifier})"
+    return f"Sonos-Redux/2026.2 (https://github.com/jage9/Sonos-Redux; installation={identifier})"
 
 
 def logPath(filename):
