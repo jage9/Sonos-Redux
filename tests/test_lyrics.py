@@ -64,9 +64,8 @@ class LyricsTests(unittest.TestCase):
     def test_open_lyrics_window_is_reused_and_closed_one_is_recreated(self):
         app = sonos.AppModule()
         wx = types.ModuleType("wx")
-        wx.EVT_MENU, wx.ID_SAVE, wx.ID_CANCEL = "menu", 1, 2
-        wx.ACCEL_CTRL, wx.ACCEL_NORMAL, wx.WXK_ESCAPE = 4, 0, 27
-        wx.AcceleratorTable = lambda entries: entries
+        settings = types.ModuleType("globalPlugins.sonosSettings")
+        settings.registerLyricsSave = Mock()
         windows = []
         wx.GetTopLevelWindows = lambda: windows[:]
         message = types.ModuleType("gui.message")
@@ -75,17 +74,17 @@ class LyricsTests(unittest.TestCase):
             window = Mock()
             window.GetTitle.return_value = title
             windows.append(window)
-        with patch.dict(sys.modules, {"wx": wx, "gui.message": message}), \
+        with patch.dict(sys.modules, {"wx": wx, "gui.message": message, "globalPlugins.sonosSettings": settings}), \
                 patch.object(sonos.ui, "browseableMessage", side_effect=open_window) as show:
             app._showLyrics(self.metadata, [self.record], True)
             window = windows[0]
             self.assertEqual(window._sonosLyricsTrack, self.metadata)
-            self.assertEqual(window.SetAcceleratorTable.call_args.args[0], [(4, ord("S"), 1), (0, 27, 2)])
-            with patch.object(app, "_saveLyrics") as save:
-                window.Bind.call_args_list[0].args[1](None)
-                save.assert_called_once_with(window, self.record)
-            window.Bind.call_args_list[1].args[1](None)
-            window.Close.assert_called_once_with()
+            registeredWindow, save = settings.registerLyricsSave.call_args.args
+            self.assertIs(registeredWindow, window)
+            with patch.object(app, "_saveLyrics") as saveLyrics:
+                save()
+                saveLyrics.assert_called_once_with(window, self.record)
+            window.SetAcceleratorTable.assert_not_called()
             # Reuse also skips the recording picker on a search result.
             app._showLyrics(self.metadata.copy(), [self.record], False)
             self.assertEqual(show.call_count, 1)

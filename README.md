@@ -20,7 +20,7 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Control+V | Set the selected speaker group's volume. |
 | Control+Shift+V | Fade out, pause, and restore volume (default five seconds). |
 | Alt+Shift+L | Toggle track logging. |
-| Alt+Shift+K | Cycle track title announcements: Off, Everywhere, Sonos focused. |
+| Alt+Shift+K | Cycle track announce: Off, Everywhere, Sonos focused. |
 | Alt+Shift+S | Read sleep timer status. |
 | Alt+Shift+J | Jump to the last 30 seconds of a track (configurable). |
 | Alt+Shift+F5 | Set loop start. |
@@ -81,7 +81,7 @@ In NVDA Settings, choose Sonos to turn on **Log track titles** and choose a log 
 
 Logging records the current track title and artist with a timestamp, then appends an entry when they change. It checks every three seconds and continues while you use other apps, as long as Sonos remains open. It follows the selected speaker group. Start and end markers separate logging sessions. Press Alt+Shift+L in Sonos to toggle logging.
 
-**Track title announcements** offers Off (the default), Everywhere, and Only while Sonos is focused. It speaks the new title and artist when the selected group changes tracks and works without logging. Alt+Shift+K cycles these choices in Sonos. The first check establishes the current track; changes shorter than three seconds may be missed.
+**Track announce** offers Off (the default), Everywhere, and Only while Sonos is focused. It speaks the new title and artist when the selected group changes tracks and works without logging. Alt+Shift+K cycles these choices in Sonos. The first check establishes the current track; changes shorter than three seconds may be missed.
 
 **Advanced** opens the randomly generated lyrics key. This identifies the installation to LRCLIB; it is not an API credential. You can edit it or clear the field to generate a new key. Changes apply when you save NVDA Settings.
 
@@ -95,7 +95,7 @@ Logging records the current track title and artist with a timestamp, then append
 - Added temporary looping bookmarks (Alt+Shift+F5–F9).
 
 - Added optional track logging, toggled with Alt+Shift+L.
-- Added optional track title announcements (Alt+Shift+K) and sleep timer status (Alt+Shift+S).
+- Added optional track announce (Alt+Shift+K) and sleep timer status (Alt+Shift+S).
 - Expanded detailed Now Playing information; Alt+Shift+N reports the SiriusXM channel when available.
 - Added a configurable jump to the end portion of a track (Alt+Shift+J).
 - Added a Sonos settings panel. Settings are global.

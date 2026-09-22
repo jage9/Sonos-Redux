@@ -19,6 +19,7 @@ from gui.settingsDialogs import NVDASettingsDialog, SettingsPanel
 from logHandler import log
 from NVDAObjects.UIA import UIA
 from NVDAState import shouldWriteToDisk
+from scriptHandler import script
 import ui
 import UIAHandler
 from winAPI.sessionTracking import isLockScreenModeActive
@@ -45,6 +46,17 @@ _baseSection = _baseProfile["sonos"]
 _baseSection.configspec = config.conf.spec["sonos"]
 _baseProfile.validate(config.conf.validator, section=_baseSection)
 settingsChanged = extensionPoints.Action()
+lyricsSaveHandlers = {}
+
+
+def registerLyricsSave(window, callback):
+    handle = window.GetHandle()
+    lyricsSaveHandlers[handle] = callback
+    def destroyed(event):
+        if event.GetEventObject() is window:
+            lyricsSaveHandlers.pop(handle, None)
+        event.Skip()
+    window.Bind(wx.EVT_WINDOW_DESTROY, destroyed)
 
 
 def lyricsUserAgent():
@@ -79,9 +91,9 @@ def toggleAnnouncements():
     config.conf["sonos"]["announcementMode"] = mode
     settingsChanged.notify()
     ui.message((
-        _("Track title announcements off"),
-        _("Track title announcements everywhere"),
-        _("Track title announcements only while Sonos is focused"),
+        _("Track announce off"),
+        _("Track announce everywhere"),
+        _("Track announce only while Sonos is focused"),
     )[mode])
 
 
@@ -103,7 +115,7 @@ class SonosSettingsPanel(SettingsPanel):
             min=1, max=999, initial=config.conf["sonos"]["fadeSeconds"],
         )
         self.announce = helper.addLabeledControl(
-            _("Track title &announcements:"), wx.Choice,
+            _("Track &announce:"), wx.Choice,
             choices=[_("Off"), _("Everywhere"), _("Only while Sonos is focused")],
         )
         self.announce.SetSelection(config.conf["sonos"]["announcementMode"])
@@ -194,6 +206,18 @@ class SonosSettingsPanel(SettingsPanel):
 
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
+    def getScript(self, gesture):
+        # Handle the key before the embedded browser consumes it, only in our viewer.
+        if "kb:control+s" in gesture.normalizedIdentifiers and winUser.getForegroundWindow() in lyricsSaveHandlers:
+            return self.script_saveLyrics
+        return super().getScript(gesture)
+
+    @script(description=_("Save lyrics in the current Sonos lyrics window."), category=_("Sonos"))
+    def script_saveLyrics(self, gesture):
+        save = lyricsSaveHandlers.get(winUser.getForegroundWindow())
+        if save is not None:
+            wx.CallAfter(save)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._timer = wx.PyTimer(self._poll)
@@ -295,6 +319,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
         return True
 
     def terminate(self):
+        lyricsSaveHandlers.clear()
         self._endSession()
         settingsChanged.unregister(self._applySettings)
         config.post_configReset.unregister(self._applySettings)

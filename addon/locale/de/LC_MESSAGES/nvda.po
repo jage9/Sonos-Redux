@@ -205,19 +205,19 @@ msgstr "Titelprotokollierung ein"
 msgid "Track logging off"
 msgstr "Titelprotokollierung aus"
 
-msgid "Toggle track title announcements."
+msgid "Toggle track announce."
 msgstr "Ansage bei Titelwechseln umschalten."
 
-msgid "Track title announcements everywhere"
+msgid "Track announce everywhere"
 msgstr "Titelwechsel überall ansagen"
 
-msgid "Track title announcements only while Sonos is focused"
+msgid "Track announce only while Sonos is focused"
 msgstr "Titelwechsel nur ansagen, wenn Sonos im Vordergrund ist"
 
-msgid "Track title announcements off"
+msgid "Track announce off"
 msgstr "Ansage bei Titelwechseln aus"
 
-msgid "Track title &announcements:"
+msgid "Track &announce:"
 msgstr "Titelwechsel &ansagen:"
 
 msgid "&Log track titles"

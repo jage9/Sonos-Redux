@@ -66,6 +66,8 @@ class Timer:
 
 
 class PluginBase:
+    def getScript(self, gesture):
+        return None
     def terminate(self):
         pass
 
@@ -89,6 +91,37 @@ spec.loader.exec_module(settings)
 
 
 class LoggingTests(unittest.TestCase):
+    def test_save_shortcut_only_applies_to_registered_lyrics_windows(self):
+        window, save = Mock(), Mock()
+        window.GetHandle.return_value = 123
+        saveGesture = types.SimpleNamespace(normalizedIdentifiers=["kb:control+s"])
+        otherGesture = types.SimpleNamespace(normalizedIdentifiers=["kb:control+a"])
+        with patch.dict(settings.lyricsSaveHandlers, {}, clear=True), \
+                patch.object(settings.wx, "EVT_WINDOW_DESTROY", "destroy", create=True), \
+                patch.object(settings.wx, "CallAfter", create=True) as callAfter, \
+                patch.object(settings.winUser, "getForegroundWindow", return_value=123, create=True) as foreground:
+            settings.registerLyricsSave(window, save)
+            self.assertEqual(self.plugin.getScript(saveGesture), self.plugin.script_saveLyrics)
+            self.assertIsNone(self.plugin.getScript(otherGesture))
+            self.plugin.script_saveLyrics(saveGesture)
+            callAfter.assert_called_once_with(save)
+            foreground.return_value = 456
+            self.assertIsNone(self.plugin.getScript(saveGesture))
+            self.plugin.script_saveLyrics(saveGesture)
+            self.assertEqual(callAfter.call_count, 1)
+            destroyed = window.Bind.call_args.args[1]
+            childEvent = Mock()
+            childEvent.GetEventObject.return_value = object()
+            destroyed(childEvent)
+            self.assertIn(123, settings.lyricsSaveHandlers)
+            event = Mock()
+            event.GetEventObject.return_value = window
+            destroyed(event)
+            self.assertNotIn(123, settings.lyricsSaveHandlers)
+            event.Skip.assert_called_once_with()
+            foreground.return_value = 123
+            self.assertIsNone(self.plugin.getScript(saveGesture))
+
     def test_advanced_lyrics_key_validates_and_waits_for_settings_save(self):
         from uuid import UUID, uuid4
         panel = settings.SonosSettingsPanel()
@@ -245,7 +278,7 @@ class LoggingTests(unittest.TestCase):
         self.assertFalse(settings.config.conf["sonos"]["announcementMode"])
         settings.toggleAnnouncements()
         self.assertTrue(self.plugin._timer.running)
-        self.assertEqual(nvda["ui"].messages[-1], "Track title announcements everywhere")
+        self.assertEqual(nvda["ui"].messages[-1], "Track announce everywhere")
         nvda["ui"].messages.clear()
         with patch.object(self.plugin, "_readTrack",
                           side_effect=["First - Artist", "First - Artist", "", "Second - Artist", "Third - Artist"]):
@@ -256,11 +289,11 @@ class LoggingTests(unittest.TestCase):
         settings.toggleAnnouncements()
         self.assertEqual(settings.config.conf["sonos"]["announcementMode"], 2)
         self.assertTrue(self.plugin._timer.running)
-        self.assertEqual(nvda["ui"].messages[-1], "Track title announcements only while Sonos is focused")
+        self.assertEqual(nvda["ui"].messages[-1], "Track announce only while Sonos is focused")
         settings.toggleAnnouncements()
         self.assertEqual(settings.config.conf["sonos"]["announcementMode"], 0)
         self.assertFalse(self.plugin._timer.running)
-        self.assertEqual(nvda["ui"].messages[-1], "Track title announcements off")
+        self.assertEqual(nvda["ui"].messages[-1], "Track announce off")
 
     def test_focused_announcements_skip_background_changes_but_logging_continues(self):
         settings.toggleLogging()

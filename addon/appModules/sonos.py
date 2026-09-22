@@ -929,13 +929,8 @@ class AppModule(appModuleHandler.AppModule):
             for window in wx.GetTopLevelWindows():
                 if window not in windowsBefore and window.GetTitle() == title:
                     window._sonosLyricsTrack = metadata.copy()
-                    window.Bind(wx.EVT_MENU, lambda event: self._saveLyrics(window, record), id=wx.ID_SAVE)
-                    window.Bind(wx.EVT_MENU, lambda event: window.Close(), id=wx.ID_CANCEL)
-                    # Keep the viewer's Escape accelerator while adding Ctrl+S.
-                    window.SetAcceleratorTable(wx.AcceleratorTable([
-                        (wx.ACCEL_CTRL, ord("S"), wx.ID_SAVE),
-                        (wx.ACCEL_NORMAL, wx.WXK_ESCAPE, wx.ID_CANCEL),
-                    ]))
+                    from globalPlugins.sonosSettings import registerLyricsSave
+                    registerLyricsSave(window, lambda: self._saveLyrics(window, record))
                     break
         finally:
             if dialog is not None:
@@ -1235,7 +1230,7 @@ class AppModule(appModuleHandler.AppModule):
         track = " - ".join(value for label, value in fields[:2] if value) if fields and fields[0][1] else ""
         return info, track
 
-    @script(description=_("Toggle track title announcements."), gesture="kb:alt+shift+k", speakOnDemand=True)
+    @script(description=_("Toggle track announce."), gesture="kb:alt+shift+k", speakOnDemand=True)
     def script_toggleTrackAnnouncements(self, gesture):
         from globalPlugins.sonosSettings import toggleAnnouncements
 
