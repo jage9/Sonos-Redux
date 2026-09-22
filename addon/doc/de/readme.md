@@ -12,6 +12,7 @@ Aktualisiert von J.J. Meddaugh <jj@bestmidi.com>.
 | Strg+2 | Informationen zur aktuellen Wiedergabe anzeigen, einschließlich Senderdetails, falls vorhanden. |
 | Strg+3 | Auf YouTube nach dem aktuellen Titel suchen. |
 | Strg+J | Zu einer Zeit im Titel springen. |
+| Strg+V | Lautstärke der ausgewählten Lautsprechergruppe einstellen. |
 | Alt+Umschalt+L | Titelprotokollierung ein- oder ausschalten. |
 | Alt+Umschalt+K | Ansage bei Titelwechseln ein- oder ausschalten. |
 | Alt+Umschalt+S | Status des Schlaf-Timers ansagen. |
@@ -67,7 +68,7 @@ Titel und Interpret werden mit einem Zeitstempel aufgezeichnet. Bei Änderungen 
 - Rückmeldung für den Sonos-Favoritenbefehl Strg+8 hinzugefügt.
 - Ansage der Titelanzahl in der Warteschlange hinzugefügt (Alt+Umschalt+Q).
 - Einstellbares Vor- und Zurückspringen (standardmäßig fünf Sekunden) (Umschalt+Pfeil rechts und Umschalt+Pfeil links) und den Positionsregler fokussieren (Umschalt+Pfeil hoch).
-- Zu einer Zeit im Titel springen (Strg+J).
+- Zu einer Zeit im Titel springen (Strg+J) und numerischen Lautstärkedialog hinzugefügt (Strg+V).
 - Angezeigtes Albumcover in die Zwischenablage kopieren (Alt+Umschalt+A).
 - Nächsten Titel ansagen (Alt+Umschalt+N) und die aktuelle Lautsprechergruppe mit Raumnamen separat ansagen (Alt+Umschalt+G).
 - Rückmeldung beim Wechseln der Lautsprechergruppe mit Strg+Komma und Strg+Punkt.

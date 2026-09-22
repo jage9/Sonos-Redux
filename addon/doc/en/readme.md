@@ -12,6 +12,7 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Control+2 | Show Now Playing information, including station details when available. |
 | Control+3 | Search YouTube for the current track. |
 | Control+J | Jump to a time in the track. |
+| Control+V | Set the selected speaker group's volume. |
 | Alt+Shift+L | Toggle track logging. |
 | Alt+Shift+K | Toggle track title announcements. |
 | Alt+Shift+S | Read sleep timer status. |
@@ -67,7 +68,7 @@ Logging records the current track title and artist with a timestamp, then append
 - Added Favorites feedback for Sonos Ctrl+8.
 - Added queue count reporting (Alt+Shift+Q).
 - Added adjustable track seeking (default five seconds) (Shift+Right Arrow and Shift+Left Arrow) and scrubber focus (Shift+Up Arrow).
-- Added Jump to Time (Ctrl+J).
+- Added Jump to Time (Ctrl+J) and a numeric volume dialog (Ctrl+V).
 - Added copying displayed album art to the clipboard (Alt+Shift+A).
 - Added next-track announcements (Alt+Shift+N) and a separate current speaker group command with room names (Alt+Shift+G).
 - Added feedback when switching speaker groups with Ctrl+Comma and Ctrl+Period.

@@ -305,6 +305,82 @@ class AppModule(appModuleHandler.AppModule):
             ui.message(_("Volume {percent}%").format(percent=_percent(pattern)))
         self._run(report)
 
+    @script(description=_("Set the selected speaker group's volume."), gesture="kb:control+v", speakOnDemand=True)
+    def script_setVolume(self, gesture):
+        if getattr(self, "_volumeDialogOpen", False):
+            return
+
+        def prepare():
+            import wx
+
+            slider = self._transport("PART_VolumeSlider")
+            pattern = slider.UIARangeValuePattern
+            if not pattern or pattern.CurrentIsReadOnly:
+                raise ControlUnavailable("Volume cannot be adjusted")
+            percent = _percent(pattern)
+            group = self._groupInfo()
+            focus = api.getFocusObject()
+            self._volumeDialogOpen = True
+            wx.CallAfter(self._run, lambda: self._showVolumeDialog(
+                self._root().windowHandle, group, percent, focus
+            ))
+        self._scrubGesture(gesture, prepare)
+
+    def _showVolumeDialog(self, windowHandle, group, percent, focus):
+        import wx
+        from gui.message import displayDialogAsModal
+
+        dialog = None
+        try:
+            dialog = wx.TextEntryDialog(
+                None, _("Volume for {group}:").format(group=group), _("Set volume"), str(percent),
+            )
+            target = None
+
+            def validate(event):
+                nonlocal target
+                if dialog.TransferDataFromWindow():
+                    value = dialog.GetValue().strip()
+                    if value.isdecimal() and len(value) <= 3 and 0 <= int(value) <= 100:
+                        target = int(value)
+                        event.Skip()
+                        return
+                ui.message(_("Enter a volume from 0 to 100."))
+            dialog.Bind(wx.EVT_BUTTON, validate, id=wx.ID_OK)
+            if displayDialogAsModal(dialog) == wx.ID_OK and target is not None:
+                core.callLater(100, self._run, lambda: self._setVolume(target, windowHandle, group, focus))
+        finally:
+            if dialog is not None:
+                dialog.Destroy()
+            self._volumeDialogOpen = False
+
+    def _setVolume(self, percent, windowHandle, group, focus):
+        if self._root().windowHandle != windowHandle or self._groupInfo() != group:
+            ui.message(_("The speaker group changed. Open Set Volume again."))
+            return
+        slider = self._transport("PART_VolumeSlider")
+        pattern = slider.UIARangeValuePattern
+        if not pattern or pattern.CurrentIsReadOnly:
+            raise ControlUnavailable("Volume cannot be adjusted")
+        _percent(pattern)
+        pattern.SetValue(pattern.CurrentMinimum + (pattern.CurrentMaximum - pattern.CurrentMinimum) * percent / 100)
+        if focus and focus.processID == self.processID:
+            try:
+                focus.setFocus()
+            except (COMError, RuntimeError, NotImplementedError):
+                log.debugWarning("Could not restore Sonos focus after setting volume", exc_info=True)
+        core.callLater(250, self._reportSetVolume, windowHandle, group)
+
+    def _reportSetVolume(self, windowHandle, group):
+        def report():
+            if self._root().windowHandle != windowHandle or self._groupInfo() != group:
+                return
+            pattern = self._transport("PART_VolumeSlider").UIARangeValuePattern
+            if not pattern:
+                raise ControlUnavailable("Volume has no range pattern")
+            ui.message(_("Volume for {group}: {percent}%").format(group=group, percent=_percent(pattern)))
+        self._run(report)
+
     def _reportState(self, identifier):
         # Sonos supplies localized state text, including its repeat modes.
         control = self._transport(identifier)

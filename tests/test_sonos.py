@@ -363,6 +363,81 @@ class SonosTests(unittest.TestCase):
         app._jumpTo(90, 99, ("room", "old track"), 300)
         self.assertEqual(pattern.set_values, [])
 
+    def test_set_volume_uses_selected_group_and_range(self):
+        app = sonos.AppModule()
+        root = types.SimpleNamespace(windowHandle=99)
+        app._root = lambda: root
+        app._groupInfo = lambda: "Office + 2"
+        pattern = Pattern(10, 210, 40)
+        app._transport = lambda identifier: types.SimpleNamespace(UIARangeValuePattern=pattern)
+        nvda["core"].calls.clear()
+        nvda["ui"].messages.clear()
+        with patch.object(nvda["api"], "getFocusObject", return_value=None):
+            app._setVolume(42, 99, "Office + 2", None)
+        self.assertEqual(pattern.set_values, [94])
+        self.assertEqual(nvda["core"].calls[-1][0], 250)
+        app._setVolume(50, 99, "Other room", None)
+        self.assertEqual(pattern.set_values, [94])
+        self.assertEqual(nvda["ui"].messages[-1], "The speaker group changed. Open Set Volume again.")
+        self.assertEqual(app.script_setVolume.scriptMetadata["gesture"], "kb:control+v")
+
+    def test_set_volume_dialog_reads_typed_percent_and_rejects_invalid_value(self):
+        wx = types.ModuleType("wx")
+        wx.ID_OK, wx.ID_CANCEL, wx.EVT_BUTTON = 1, 0, object()
+        mode = {"typed": "42", "result": wx.ID_OK, "validate": True}
+        shown = []
+
+        class Dialog:
+            def __init__(self, parent, message, title, value):
+                self.value, self.callback = value, None
+                shown.append((message, title, value))
+            def Bind(self, event, callback, id=None):
+                self.callback = callback
+            def TransferDataFromWindow(self):
+                self.value = mode["typed"]
+                return True
+            def GetValue(self):
+                return self.value
+            def Destroy(self):
+                pass
+
+        class Event:
+            def Skip(self):
+                pass
+
+        wx.TextEntryDialog = Dialog
+        gui = types.ModuleType("gui")
+        gui_message = types.ModuleType("gui.message")
+        def display(dialog):
+            if mode["validate"]:
+                dialog.callback(Event())
+            return mode["result"]
+        gui_message.displayDialogAsModal = display
+        sys.modules.update({"wx": wx, "gui": gui, "gui.message": gui_message})
+        app = sonos.AppModule()
+        calls = []
+        app._setVolume = lambda *args: calls.append(args)
+        nvda["core"].calls.clear()
+        try:
+            app._showVolumeDialog(99, "Office + 2", 14, None)
+            scheduled = nvda["core"].calls[-1]
+            scheduled[1](*scheduled[2], **scheduled[3])
+            self.assertEqual(calls, [(42, 99, "Office + 2", None)])
+            self.assertEqual(shown[-1], ("Volume for Office + 2:", "Set volume", "14"))
+            mode.update(typed="101", result=wx.ID_OK, validate=True)
+            nvda["core"].calls.clear()
+            app._showVolumeDialog(99, "Office + 2", 14, None)
+            self.assertEqual(nvda["core"].calls, [])
+            mode.update(typed="9" * 5000, result=wx.ID_OK, validate=True)
+            app._showVolumeDialog(99, "Office + 2", 14, None)
+            self.assertEqual(nvda["core"].calls, [])
+            mode.update(typed="42", result=wx.ID_CANCEL, validate=False)
+            app._showVolumeDialog(99, "Office + 2", 14, None)
+            self.assertEqual(nvda["core"].calls, [])
+        finally:
+            for name in ("wx", "gui", "gui.message"):
+                sys.modules.pop(name, None)
+
     def test_format_seconds_is_readable_for_short_and_long_tracks(self):
         self.assertEqual(sonos._format_seconds(0), "0:00")
         self.assertEqual(sonos._format_seconds(65), "1:05")

@@ -34,6 +34,24 @@ msgstr "Verstrichene Titelzeit ansagen."
 msgid "Report remaining track time."
 msgstr "Verbleibende Titelzeit ansagen."
 
+msgid "Set the selected speaker group's volume."
+msgstr "Lautstärke der ausgewählten Lautsprechergruppe einstellen."
+
+msgid "Volume for {group}:"
+msgstr "Lautstärke für {group}:"
+
+msgid "Set volume"
+msgstr "Lautstärke einstellen"
+
+msgid "Enter a volume from 0 to 100."
+msgstr "Eine Lautstärke von 0 bis 100 eingeben."
+
+msgid "The speaker group changed. Open Set Volume again."
+msgstr "Die Lautsprechergruppe wurde gewechselt. Lautstärkedialog erneut öffnen."
+
+msgid "Volume for {group}: {percent}%"
+msgstr "Lautstärke für {group}: {percent}%"
+
 msgid "Report the active room volume."
 msgstr "Lautstärke des aktiven Raums ansagen."
 
