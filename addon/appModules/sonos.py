@@ -350,7 +350,7 @@ class AppModule(appModuleHandler.AppModule):
             ui.message(_("Loop on"))
         self._scrubGesture(gesture, start)
 
-    @script(description=_("Stop looping and jump to loop end."),
+    @script(description=_("Stop looping and continue playback."),
             gesture="kb:alt+shift+f8", speakOnDemand=True)
     def script_stopLoop(self, gesture):
         def stop():
@@ -358,8 +358,6 @@ class AppModule(appModuleHandler.AppModule):
             if saved is None:
                 return
             saved["active"] = False
-            if saved["end"] is not None:
-                self._setPosition(pattern, saved["end"], saved["window"], report=False)
             ui.message(_("Loop off"))
         self._scrubGesture(gesture, stop)
 

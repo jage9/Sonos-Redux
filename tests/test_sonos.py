@@ -465,7 +465,7 @@ class SonosTests(unittest.TestCase):
             self.assertEqual(nvda["core"].calls, [])
         self.assertEqual(app.script_fadeVolume.scriptMetadata["gesture"], "kb:control+shift+v")
 
-    def test_loop_commands_validate_bounds_repeat_and_exit_at_end(self):
+    def test_loop_commands_validate_bounds_repeat_and_continue_on_stop(self):
         app = sonos.AppModule()
         root, pattern = types.SimpleNamespace(windowHandle=99), Pattern(0, 300, 30)
         identity = (("Office", "Song - Artist"), 300)
@@ -494,7 +494,7 @@ class SonosTests(unittest.TestCase):
         self.assertEqual(writes, [(30, False), (30, False)])
         app.script_stopLoop(None)
         self.assertFalse(saved["active"])
-        self.assertEqual(writes[-1], (45, False))
+        self.assertEqual(writes, [(30, False), (30, False)])
         for key, command in enumerate((app.script_setLoopStart, app.script_setLoopEnd,
                                       app.script_startLoop, app.script_stopLoop, app.script_reportLoop), 5):
             self.assertEqual(command.scriptMetadata["gesture"], f"kb:alt+shift+f{key}")

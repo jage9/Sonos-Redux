@@ -21,7 +21,7 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Alt+Shift+F5 | Set loop start. |
 | Alt+Shift+F6 | Set loop end. |
 | Alt+Shift+F7 | Start looping. |
-| Alt+Shift+F8 | Stop looping and jump to loop end. |
+| Alt+Shift+F8 | Stop looping and continue playback. |
 | Alt+Shift+F9 | Read loop start, end, and duration. |
 | Alt+Shift+G | Read the current speaker group and its rooms. |
 | Alt+Shift+Q | Read the number of tracks in the queue. |
@@ -54,7 +54,7 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 
 Control+V opens a volume field from 0 to 100. Type a value or use Up and Down Arrow, then press Enter to apply it. Control+Shift+V fades to zero using the configured fade length; keep Sonos in front on the same group until it finishes.
 
-Set loop start and end on a seekable track, then press Alt+Shift+F7 to jump to the start and repeat that section. If playback is paused, use Sonos Play/Pause to resume it. Alt+Shift+F8 continues from the loop end. Leaving Sonos stops looping; changing tracks or groups clears the markers. Loop timing is approximate.
+Set loop start and end on a seekable track, then press Alt+Shift+F7 to jump to the start and repeat that section. If playback is paused, use Sonos Play/Pause to resume it. Alt+Shift+F8 turns looping off and continues from the current position. Leaving Sonos stops looping; changing tracks or groups clears the markers. Loop timing is approximate.
 
 ## Settings
 

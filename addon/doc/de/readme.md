@@ -21,7 +21,7 @@ Aktualisiert von J.J. Meddaugh <jj@bestmidi.com>.
 | Alt+Umschalt+F5 | Schleifenanfang setzen. |
 | Alt+Umschalt+F6 | Schleifenende setzen. |
 | Alt+Umschalt+F7 | Schleife starten. |
-| Alt+Umschalt+F8 | Schleife beenden und zum Schleifenende springen. |
+| Alt+Umschalt+F8 | Schleife beenden und Wiedergabe fortsetzen. |
 | Alt+Umschalt+F9 | Schleifenanfang, Ende und Dauer ansagen. |
 | Alt+Umschalt+G | Aktuelle Lautsprechergruppe und ihre Räume ansagen. |
 | Alt+Umschalt+Q | Anzahl der Titel in der Warteschlange ansagen. |
@@ -54,7 +54,7 @@ Aktualisiert von J.J. Meddaugh <jj@bestmidi.com>.
 
 Strg+V öffnet ein Lautstärkefeld von 0 bis 100. Einen Wert eingeben oder mit Pfeil hoch und runter ändern, dann mit Eingabe übernehmen. Strg+Umschalt+V senkt die Lautstärke mit der eingestellten Dauer auf null ab. Sonos muss dabei mit derselben ausgewählten Gruppe im Vordergrund bleiben.
 
-Bei einem Titel mit Positionsregler Anfang und Ende markieren. Alt+Umschalt+F7 springt zum Anfang und wiederholt den Abschnitt. Bei pausierter Wiedergabe mit Sonos Wiedergabe/Pause fortsetzen. Alt+Umschalt+F8 setzt am Schleifenende fort. Beim Verlassen von Sonos endet die Schleife; ein Titel- oder Gruppenwechsel löscht die Marken. Die Schleifenzeit ist nicht exakt.
+Bei einem Titel mit Positionsregler Anfang und Ende markieren. Alt+Umschalt+F7 springt zum Anfang und wiederholt den Abschnitt. Bei pausierter Wiedergabe mit Sonos Wiedergabe/Pause fortsetzen. Alt+Umschalt+F8 beendet die Schleife und setzt an der aktuellen Position fort. Beim Verlassen von Sonos endet die Schleife; ein Titel- oder Gruppenwechsel löscht die Marken. Die Schleifenzeit ist nicht exakt.
 
 ## Einstellungen
 

@@ -321,8 +321,8 @@ msgstr "Zuerst das Schleifenende setzen"
 msgid "Loop on"
 msgstr "Schleife ein"
 
-msgid "Stop looping and jump to loop end."
-msgstr "Schleife beenden und zum Schleifenende springen."
+msgid "Stop looping and continue playback."
+msgstr "Schleife beenden und Wiedergabe fortsetzen."
 
 msgid "Loop off"
 msgstr "Schleife aus"
