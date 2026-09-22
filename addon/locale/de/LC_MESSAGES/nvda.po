@@ -154,6 +154,15 @@ msgstr "Schlaf-Timer {time}"
 msgid "Sleep timer off"
 msgstr "Schlaf-Timer aus"
 
+msgid "Jump to the last seconds of the track."
+msgstr "Zu den letzten Sekunden des Titels springen."
+
+msgid "SiriusXM {channel}"
+msgstr "SiriusXM {channel}"
+
+msgid "No channel information is available."
+msgstr "Keine Senderinformationen verfügbar."
+
 msgid "Report the next track."
 msgstr "Nächsten Titel ansagen."
 
@@ -231,6 +240,9 @@ msgstr "Protokolldatei konnte nicht geöffnet werden."
 
 msgid "Track &seek seconds:"
 msgstr "&Sprungweite in Sekunden:"
+
+msgid "Seconds from &end of track:"
+msgstr "Sekunden vor Titel&ende:"
 
 msgid "Group {group} ({members})"
 msgstr "Gruppe {group} ({members})"

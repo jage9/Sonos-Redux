@@ -19,9 +19,10 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Alt+Shift+L | Toggle track logging. |
 | Alt+Shift+K | Toggle track title announcements. |
 | Alt+Shift+S | Read sleep timer status. |
+| Alt+Shift+J | Jump to the last 30 seconds of a track (configurable). |
 | Alt+Shift+G | Read the current speaker group and its rooms. |
 | Alt+Shift+Q | Read the number of tracks in the queue. |
-| Alt+Shift+N | Read the next track. |
+| Alt+Shift+N | Read the next track, or the SiriusXM channel when playing SiriusXM. |
 | Alt+Shift+A | Copy the displayed album artwork. |
 | Alt+Shift+V | Read volume. |
 | Alt+Shift+M | Read mute state. |
@@ -50,7 +51,7 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 
 ## Settings
 
-**Track seek seconds** sets how far Shift+Left Arrow and Shift+Right Arrow move: 1–999 seconds, default 5.
+**Track seek seconds** sets how far Shift+Left Arrow and Shift+Right Arrow move: 1–999 seconds, default 5. **Seconds from end of track** sets the Alt+Shift+J jump: 1–999 seconds, default 30. A shorter track jumps to its start.
 
 In NVDA Settings, choose Sonos to turn on **Log track titles** and choose a log filename. These settings apply across all NVDA profiles. Logging is off by default. The default file is `sonos.log` in your Documents folder. Browse lets you choose another location; Open opens the log in your default application.
 
@@ -64,7 +65,8 @@ Logging records the current track title and artist with a timestamp, then append
 
 - Added optional track logging, toggled with Alt+Shift+L.
 - Added optional track title announcements (Alt+Shift+K) and sleep timer status (Alt+Shift+S).
-- Expanded detailed Now Playing information and corrected Next Track feedback for SiriusXM.
+- Expanded detailed Now Playing information; Alt+Shift+N reports the SiriusXM channel when available.
+- Added a configurable jump to the end portion of a track (Alt+Shift+J).
 - Added a Sonos settings panel. Settings are global.
 - Added Favorites feedback for Sonos Ctrl+8.
 - Added queue count reporting (Alt+Shift+Q).

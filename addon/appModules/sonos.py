@@ -274,6 +274,16 @@ class AppModule(appModuleHandler.AppModule):
         import config
         self._scrubGesture(gesture, lambda: self._seek(config.conf["sonos"]["seekSeconds"]))
 
+    @script(description=_("Jump to the last seconds of the track."), gesture="kb:alt+shift+j", speakOnDemand=True)
+    def script_jumpNearEnd(self, gesture):
+        import config
+
+        def jump():
+            slider, pattern = self._scrubber()
+            self._setPosition(pattern, pattern.CurrentMaximum - config.conf["sonos"]["endJumpSeconds"],
+                              self._root().windowHandle)
+        self._scrubGesture(gesture, jump)
+
     @script(description=_("Report elapsed track time."), gesture="kb:alt+shift+u", speakOnDemand=True)
     def script_reportCurrent(self, gesture):
         self._run(lambda: ui.message(_("{time} elapsed").format(time=_format_seconds(self._scrubber()[1].CurrentValue))))
@@ -600,8 +610,12 @@ class AppModule(appModuleHandler.AppModule):
         def report():
             panel = _find(self._root(), "nowPlayingPanel")
             fields = self._metadataFields(panel, 4)
-            nextTrack = (fields[3][1] if len(fields) == 4
-                         and fields[3][0].casefold() != "siriusxm" else "")
+            if len(fields) == 4 and fields[3][0].casefold() == "siriusxm":
+                channel = fields[3][1]
+                ui.message(_("SiriusXM {channel}").format(channel=channel) if channel
+                           else _("No channel information is available."))
+                return
+            nextTrack = fields[3][1] if len(fields) == 4 else ""
             ui.message(_("Next {track}").format(track=nextTrack) if nextTrack
                        else _("No next track information is available."))
         self._run(report)

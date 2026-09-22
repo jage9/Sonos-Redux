@@ -30,6 +30,7 @@ config.conf.spec["sonos"] = {
     "announceTracks": "boolean(default=False)",
     "logFile": "string(default='sonos.log')",
     "seekSeconds": "integer(default=5, min=1, max=999)",
+    "endJumpSeconds": "integer(default=30, min=1, max=999)",
 }
 # Sonos settings apply globally, independent of configuration profiles.
 config.conf.BASE_ONLY_SECTIONS.add("sonos")
@@ -74,6 +75,10 @@ class SonosSettingsPanel(SettingsPanel):
         self.seekSeconds = helper.addLabeledControl(
             _("Track &seek seconds:"), nvdaControls.SelectOnFocusSpinCtrl,
             min=1, max=999, initial=config.conf["sonos"]["seekSeconds"],
+        )
+        self.endJumpSeconds = helper.addLabeledControl(
+            _("Seconds from &end of track:"), nvdaControls.SelectOnFocusSpinCtrl,
+            min=1, max=999, initial=config.conf["sonos"]["endJumpSeconds"],
         )
         self.enabled = helper.addItem(wx.CheckBox(self, label=_("&Log track titles")))
         self.enabled.SetValue(config.conf["sonos"]["logTracks"])
@@ -125,6 +130,7 @@ class SonosSettingsPanel(SettingsPanel):
 
     def onSave(self):
         config.conf["sonos"]["seekSeconds"] = self.seekSeconds.GetValue()
+        config.conf["sonos"]["endJumpSeconds"] = self.endJumpSeconds.GetValue()
         config.conf["sonos"]["logTracks"] = self.enabled.IsChecked()
         config.conf["sonos"]["announceTracks"] = self.announce.IsChecked()
         config.conf["sonos"]["logFile"] = self.filename.GetValue().strip() or "sonos.log"

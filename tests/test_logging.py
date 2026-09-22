@@ -7,7 +7,7 @@ import types
 import unittest
 from unittest.mock import patch
 
-from test_sonos import ROOT, sonos, nvda, _module
+from test_sonos import ROOT, sonos, nvda, _module, Pattern
 
 
 class Action:
@@ -35,6 +35,7 @@ class BaseProfile(dict):
         section.setdefault("announceTracks", False)
         section.setdefault("logFile", "sonos.log")
         section.setdefault("seekSeconds", 5)
+        section.setdefault("endJumpSeconds", 30)
         return True
 
 
@@ -67,7 +68,7 @@ class PluginBase:
         pass
 
 
-_module("config", conf=Conf(sonos={"logTracks": False, "announceTracks": False, "logFile": "sonos.log", "seekSeconds": 5}),
+_module("config", conf=Conf(sonos={"logTracks": False, "announceTracks": False, "logFile": "sonos.log", "seekSeconds": 5, "endJumpSeconds": 30}),
         post_configProfileSwitch=Action(), post_configReset=Action())
 _module("extensionPoints", Action=Action)
 _module("globalPluginHandler", GlobalPlugin=PluginBase)
@@ -92,7 +93,7 @@ class LoggingTests(unittest.TestCase):
             Get=lambda: types.SimpleNamespace(GetDocumentsDir=lambda: self.folder.name)), create=True)
         documents.start()
         self.addCleanup(documents.stop)
-        settings.config.conf.profiles[0]["sonos"] = {"logTracks": False, "announceTracks": False, "logFile": "sonos.log", "seekSeconds": 5}
+        settings.config.conf.profiles[0]["sonos"] = {"logTracks": False, "announceTracks": False, "logFile": "sonos.log", "seekSeconds": 5, "endJumpSeconds": 30}
         self.plugin = settings.GlobalPlugin()
         self.addCleanup(self.folder.cleanup)
         self.addCleanup(self.plugin.terminate)
@@ -105,6 +106,7 @@ class LoggingTests(unittest.TestCase):
         for seconds in (5, 1, 999, 42):
             panel = settings.SonosSettingsPanel()
             panel.seekSeconds = types.SimpleNamespace(GetValue=lambda: seconds)
+            panel.endJumpSeconds = types.SimpleNamespace(GetValue=lambda: 42)
             panel.enabled = types.SimpleNamespace(IsChecked=lambda: False)
             panel.announce = types.SimpleNamespace(IsChecked=lambda: False)
             panel.filename = types.SimpleNamespace(GetValue=lambda: "sonos.log")
@@ -114,6 +116,24 @@ class LoggingTests(unittest.TestCase):
         self.assertEqual(steps, [-5, 5, -1, 1, -999, 999, -42, 42])
         self.assertEqual(settings.config.conf.spec["sonos"]["seekSeconds"],
                          "integer(default=5, min=1, max=999)")
+        self.assertEqual(settings.config.conf["sonos"]["endJumpSeconds"], 42)
+        self.assertEqual(settings.config.conf.spec["sonos"]["endJumpSeconds"],
+                         "integer(default=30, min=1, max=999)")
+
+    def test_jump_near_end_uses_setting_and_clamps_short_tracks(self):
+        app = sonos.AppModule()
+        app._root = lambda: types.SimpleNamespace(windowHandle=99)
+        app._scrubGesture = lambda gesture, action: action()
+        pattern = Pattern(0, 100, 20)
+        app._scrubber = lambda: (None, pattern)
+        settings.config.conf["sonos"]["endJumpSeconds"] = 30
+        with patch.object(nvda["api"], "getFocusObject", return_value=None):
+            app.script_jumpNearEnd(None)
+            self.assertEqual(pattern.set_values, [70])
+            pattern = Pattern(0, 20, 10)
+            app.script_jumpNearEnd(None)
+            self.assertEqual(pattern.set_values, [0])
+        self.assertEqual(app.script_jumpNearEnd.scriptMetadata["gesture"], "kb:alt+shift+j")
 
     def test_default_log_uses_documents_and_preserves_custom_absolute_path(self):
         self.assertEqual(settings.logPath("sonos.log"), Path(self.folder.name) / "sonos.log")

@@ -509,7 +509,10 @@ class SonosTests(unittest.TestCase):
             nodes[-1].CachedName = "CH 53 - Diplo's Revolution"
             self.assertIn("SiriusXM: CH 53 - Diplo's Revolution", app._trackInfo(limit=4)[0])
             app.script_reportNext(None)
-            self.assertEqual(nvda["ui"].messages[-1], "No next track information is available.")
+            self.assertEqual(nvda["ui"].messages[-1], "SiriusXM CH 53 - Diplo's Revolution")
+            nodes[-1].CachedName = ""
+            app.script_reportNext(None)
+            self.assertEqual(nvda["ui"].messages[-1], "No channel information is available.")
             del nodes[6:]
             app.script_reportNext(None)
             self.assertEqual(nvda["ui"].messages[-1], "No next track information is available.")

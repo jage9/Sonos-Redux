@@ -15,9 +15,10 @@ Aktualisiert von J.J. Meddaugh <jj@bestmidi.com>.
 | Alt+Umschalt+L | Titelprotokollierung ein- oder ausschalten. |
 | Alt+Umschalt+K | Ansage bei Titelwechseln ein- oder ausschalten. |
 | Alt+Umschalt+S | Status des Schlaf-Timers ansagen. |
+| Alt+Umschalt+J | Zu den letzten 30 Sekunden eines Titels springen (einstellbar). |
 | Alt+Umschalt+G | Aktuelle Lautsprechergruppe und ihre Räume ansagen. |
 | Alt+Umschalt+Q | Anzahl der Titel in der Warteschlange ansagen. |
-| Alt+Umschalt+N | Nächsten Titel ansagen. |
+| Alt+Umschalt+N | Nächsten Titel oder bei SiriusXM den Sender ansagen. |
 | Alt+Umschalt+A | Angezeigtes Albumcover kopieren. |
 | Alt+Umschalt+V | Lautstärke ansagen. |
 | Alt+Umschalt+M | Stummschaltung ansagen. |
@@ -46,7 +47,7 @@ Aktualisiert von J.J. Meddaugh <jj@bestmidi.com>.
 
 ## Einstellungen
 
-**Sprungweite in Sekunden** legt die Schrittweite für Umschalt+Pfeil links und Umschalt+Pfeil rechts fest: 1–999 Sekunden, standardmäßig 5.
+**Sprungweite in Sekunden** legt die Schrittweite für Umschalt+Pfeil links und Umschalt+Pfeil rechts fest: 1–999 Sekunden, standardmäßig 5. **Sekunden vor Titelende** legt den Sprung mit Alt+Umschalt+J fest: 1–999 Sekunden, standardmäßig 30. Bei kürzeren Titeln wird zum Anfang gesprungen.
 
 In den NVDA-Einstellungen unter Sonos lässt sich **Titel protokollieren** einschalten und eine Protokolldatei auswählen. Diese Einstellungen gelten für alle NVDA-Profile. Die Protokollierung ist standardmäßig ausgeschaltet. Die Standarddatei heißt `sonos.log` und liegt im Dokumente-Ordner. Über Durchsuchen lässt sich ein anderer Speicherort wählen; Öffnen öffnet das Protokoll in der Standardanwendung.
 
@@ -60,7 +61,8 @@ Titel und Interpret werden mit einem Zeitstempel aufgezeichnet. Bei Änderungen 
 
 - Optionale Titelprotokollierung hinzugefügt, umschaltbar mit Alt+Umschalt+L.
 - Optionale Ansage bei Titelwechseln (Alt+Umschalt+K) und Status des Schlaf-Timers (Alt+Umschalt+S) hinzugefügt.
-- Ausführliche Informationen zur aktuellen Wiedergabe erweitert und die Ansage des nächsten Titels bei SiriusXM korrigiert.
+- Ausführliche Informationen zur aktuellen Wiedergabe erweitert; Alt+Umschalt+N sagt bei SiriusXM den Sender an.
+- Einstellbaren Sprung zu den letzten Sekunden eines Titels hinzugefügt (Alt+Umschalt+J).
 - Sonos-Einstellungskategorie hinzugefügt. Die Einstellungen gelten global.
 - Rückmeldung für den Sonos-Favoritenbefehl Strg+8 hinzugefügt.
 - Ansage der Titelanzahl in der Warteschlange hinzugefügt (Alt+Umschalt+Q).
