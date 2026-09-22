@@ -432,15 +432,17 @@ class SonosTests(unittest.TestCase):
             scheduled = nvda["core"].calls.pop(0)
             scheduled[1](*scheduled[2], **scheduled[3])
 
-        with patch.object(sonos, "perf_counter", return_value=0) as clock, \
+        config = types.SimpleNamespace(conf={"sonos": {"fadeSeconds": 20}})
+        with patch.dict(sys.modules, {"config": config}), \
+             patch.object(sonos, "perf_counter", return_value=0) as clock, \
              patch.object(nvda["api"], "getForegroundObject", return_value=root), \
              patch.object(nvda["api"], "getFocusObject", return_value=None):
             app.script_fadeVolume(None)
             self.assertEqual(pattern.set_values, [])
-            clock.return_value = 2.5
+            clock.return_value = 10
             tick()
             self.assertEqual(pattern.set_values, [60])
-            clock.return_value = 5
+            clock.return_value = 20
             tick()
             self.assertEqual(pattern.set_values, [60, 10])
             self.assertEqual(nvda["core"].calls, [])

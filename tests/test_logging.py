@@ -36,6 +36,7 @@ class BaseProfile(dict):
         section.setdefault("logFile", "sonos.log")
         section.setdefault("seekSeconds", 5)
         section.setdefault("endJumpSeconds", 30)
+        section.setdefault("fadeSeconds", 5)
         return True
 
 
@@ -68,7 +69,7 @@ class PluginBase:
         pass
 
 
-_module("config", conf=Conf(sonos={"logTracks": False, "announcementMode": 0, "logFile": "sonos.log", "seekSeconds": 5, "endJumpSeconds": 30}),
+_module("config", conf=Conf(sonos={"logTracks": False, "announcementMode": 0, "logFile": "sonos.log", "seekSeconds": 5, "endJumpSeconds": 30, "fadeSeconds": 5}),
         post_configProfileSwitch=Action(), post_configReset=Action())
 _module("extensionPoints", Action=Action)
 _module("globalPluginHandler", GlobalPlugin=PluginBase)
@@ -93,7 +94,7 @@ class LoggingTests(unittest.TestCase):
             Get=lambda: types.SimpleNamespace(GetDocumentsDir=lambda: self.folder.name)), create=True)
         documents.start()
         self.addCleanup(documents.stop)
-        settings.config.conf.profiles[0]["sonos"] = {"logTracks": False, "announcementMode": 0, "logFile": "sonos.log", "seekSeconds": 5, "endJumpSeconds": 30}
+        settings.config.conf.profiles[0]["sonos"] = {"logTracks": False, "announcementMode": 0, "logFile": "sonos.log", "seekSeconds": 5, "endJumpSeconds": 30, "fadeSeconds": 5}
         self.plugin = settings.GlobalPlugin()
         self.addCleanup(self.folder.cleanup)
         self.addCleanup(self.plugin.terminate)
@@ -107,12 +108,16 @@ class LoggingTests(unittest.TestCase):
             panel = settings.SonosSettingsPanel()
             panel.seekSeconds = types.SimpleNamespace(GetValue=lambda: seconds)
             panel.endJumpSeconds = types.SimpleNamespace(GetValue=lambda: 42)
+            panel.fadeSeconds = types.SimpleNamespace(GetValue=lambda: seconds)
             panel.enabled = types.SimpleNamespace(IsChecked=lambda: False)
             panel.announce = types.SimpleNamespace(GetSelection=lambda: 0)
             panel.filename = types.SimpleNamespace(GetValue=lambda: "sonos.log")
             panel.onSave()
+            self.assertEqual(settings.config.conf["sonos"]["fadeSeconds"], seconds)
             app.script_adjustScrubBackward(None)
             app.script_adjustScrubForward(None)
+        self.assertEqual(settings.config.conf.spec["sonos"]["fadeSeconds"],
+                         "integer(default=5, min=1, max=999)")
         self.assertEqual(steps, [-5, 5, -1, 1, -999, 999, -42, 42])
         self.assertEqual(settings.config.conf.spec["sonos"]["seekSeconds"],
                          "integer(default=5, min=1, max=999)")

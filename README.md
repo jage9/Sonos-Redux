@@ -17,7 +17,7 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Control+3 | Search YouTube for the current track. |
 | Control+J | Jump to a time in the track. |
 | Control+V | Set the selected speaker group's volume. |
-| Control+Shift+V | Fade the selected group to zero over five seconds. |
+| Control+Shift+V | Fade out the selected group (default five seconds). |
 | Alt+Shift+L | Toggle track logging. |
 | Alt+Shift+K | Cycle track title announcements: Off, Everywhere, Sonos focused. |
 | Alt+Shift+S | Read sleep timer status. |
@@ -51,11 +51,13 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Control+. | Switch to the next group and announce it. |
 | Control+K | Open Sonos keyboard shortcut help. |
 
-Control+V opens a volume field from 0 to 100. Type a value or use Up and Down Arrow, then press Enter to apply it. Control+Shift+V fades to zero over five seconds; keep Sonos in front on the same group until it finishes.
+Control+V opens a volume field from 0 to 100. Type a value or use Up and Down Arrow, then press Enter to apply it. Control+Shift+V fades to zero using the configured fade length; keep Sonos in front on the same group until it finishes.
 
 ## Settings
 
-**Track seek seconds** sets how far Shift+Left Arrow and Shift+Right Arrow move: 1–999 seconds, default 5. **Seconds from end of track** sets the Alt+Shift+J jump: 1–999 seconds, default 30. A shorter track jumps to its start.
+**Fade seconds** sets the fade length for Control+Shift+V: 1–999 seconds, default 5.
+
+**Track seek seconds** sets how far Shift+Left Arrow and Shift+Right Arrow move: 1–999 seconds, default 5. **Seek seconds from end of track** sets the Alt+Shift+J jump: 1–999 seconds, default 30. A shorter track jumps to its start.
 
 In NVDA Settings, choose Sonos to turn on **Log track titles** and choose a log filename. These settings apply across all NVDA profiles. Logging is off by default. The default file is `sonos.log` in your Documents folder. Browse lets you choose another location; Open opens the log in your default application.
 
@@ -75,7 +77,7 @@ Logging records the current track title and artist with a timestamp, then append
 - Added Favorites feedback for Sonos Ctrl+8.
 - Added queue count reporting (Alt+Shift+Q).
 - Added adjustable track seeking (default five seconds) (Shift+Right Arrow and Shift+Left Arrow) and scrubber focus (Shift+Up Arrow).
-- Added Jump to Time (Ctrl+J), a numeric volume dialog (Ctrl+V), and a five-second fade out (Ctrl+Shift+V).
+- Added Jump to Time (Ctrl+J), a numeric volume dialog (Ctrl+V), and an adjustable fade out (Ctrl+Shift+V).
 - Added copying displayed album art to the clipboard (Alt+Shift+A).
 - Added next-track announcements (Alt+Shift+N) and a separate current speaker group command with room names (Alt+Shift+G).
 - Added feedback when switching speaker groups with Ctrl+Comma and Ctrl+Period.

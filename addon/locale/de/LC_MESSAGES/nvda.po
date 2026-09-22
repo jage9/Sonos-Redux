@@ -259,7 +259,7 @@ msgstr "Protokolldatei konnte nicht geöffnet werden."
 msgid "Track &seek seconds:"
 msgstr "&Sprungweite in Sekunden:"
 
-msgid "Seconds from &end of track:"
+msgid "Seek seconds from &end of track:"
 msgstr "Sekunden vor Titel&ende:"
 
 msgid "Group {group} ({members})"
@@ -285,8 +285,11 @@ msgstr "Überall"
 msgid "Only while Sonos is focused"
 msgstr "Nur wenn Sonos im Vordergrund ist"
 
-msgid "Fade the selected speaker group to zero over five seconds."
-msgstr "Lautstärke der ausgewählten Lautsprechergruppe in fünf Sekunden auf null absenken."
+msgid "Fade out the selected speaker group."
+msgstr "Lautstärke der ausgewählten Lautsprechergruppe absenken."
 
 msgid "Fading out {group}"
 msgstr "Lautstärke für {group} wird abgesenkt"
+
+msgid "&Fade seconds:"
+msgstr "Absenk&dauer in Sekunden:"

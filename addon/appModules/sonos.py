@@ -374,9 +374,11 @@ class AppModule(appModuleHandler.AppModule):
             ui.message(_("Volume for {group}: {percent}%").format(group=group, percent=_percent(pattern)))
         self._run(report)
 
-    @script(description=_("Fade the selected speaker group to zero over five seconds."),
+    @script(description=_("Fade out the selected speaker group."),
             gesture="kb:control+shift+v", speakOnDemand=True)
     def script_fadeVolume(self, gesture):
+        import config
+
         def fade():
             windowHandle = self._root().windowHandle
             group = self._groupInfo()
@@ -386,6 +388,7 @@ class AppModule(appModuleHandler.AppModule):
             initial = _percent(pattern)
             self._volumeSequence = getattr(self, "_volumeSequence", 0) + 1
             sequence = self._volumeSequence
+            duration = config.conf["sonos"]["fadeSeconds"]
             started = perf_counter()
 
             def step():
@@ -397,8 +400,8 @@ class AppModule(appModuleHandler.AppModule):
                 if not pattern or pattern.CurrentIsReadOnly:
                     raise ControlUnavailable("Volume cannot be adjusted")
                 _percent(pattern)
-                remaining = max(0, 5 - (perf_counter() - started))
-                percent = initial * remaining / 5
+                remaining = max(0, duration - (perf_counter() - started))
+                percent = initial * remaining / duration
                 focus = api.getFocusObject()
                 pattern.SetValue(pattern.CurrentMinimum
                                  + (pattern.CurrentMaximum - pattern.CurrentMinimum) * percent / 100)

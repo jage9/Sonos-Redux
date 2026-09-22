@@ -32,6 +32,7 @@ config.conf.spec["sonos"] = {
     "logFile": "string(default='sonos.log')",
     "seekSeconds": "integer(default=5, min=1, max=999)",
     "endJumpSeconds": "integer(default=30, min=1, max=999)",
+    "fadeSeconds": "integer(default=5, min=1, max=999)",
 }
 # Sonos settings apply globally, independent of configuration profiles.
 config.conf.BASE_ONLY_SECTIONS.add("sonos")
@@ -82,16 +83,20 @@ class SonosSettingsPanel(SettingsPanel):
             min=1, max=999, initial=config.conf["sonos"]["seekSeconds"],
         )
         self.endJumpSeconds = helper.addLabeledControl(
-            _("Seconds from &end of track:"), nvdaControls.SelectOnFocusSpinCtrl,
+            _("Seek seconds from &end of track:"), nvdaControls.SelectOnFocusSpinCtrl,
             min=1, max=999, initial=config.conf["sonos"]["endJumpSeconds"],
         )
-        self.enabled = helper.addItem(wx.CheckBox(self, label=_("&Log track titles")))
-        self.enabled.SetValue(config.conf["sonos"]["logTracks"])
+        self.fadeSeconds = helper.addLabeledControl(
+            _("&Fade seconds:"), nvdaControls.SelectOnFocusSpinCtrl,
+            min=1, max=999, initial=config.conf["sonos"]["fadeSeconds"],
+        )
         self.announce = helper.addLabeledControl(
             _("Track title &announcements:"), wx.Choice,
             choices=[_("Off"), _("Everywhere"), _("Only while Sonos is focused")],
         )
         self.announce.SetSelection(config.conf["sonos"]["announcementMode"])
+        self.enabled = helper.addItem(wx.CheckBox(self, label=_("&Log track titles")))
+        self.enabled.SetValue(config.conf["sonos"]["logTracks"])
         self.filename = helper.addLabeledControl(_("Log &filename:"), wx.TextCtrl,
                                                 value=config.conf["sonos"]["logFile"])
         self.browse = helper.addItem(wx.Button(self, label=_("&Browse...")))
@@ -139,6 +144,7 @@ class SonosSettingsPanel(SettingsPanel):
     def onSave(self):
         config.conf["sonos"]["seekSeconds"] = self.seekSeconds.GetValue()
         config.conf["sonos"]["endJumpSeconds"] = self.endJumpSeconds.GetValue()
+        config.conf["sonos"]["fadeSeconds"] = self.fadeSeconds.GetValue()
         config.conf["sonos"]["logTracks"] = self.enabled.IsChecked()
         config.conf["sonos"]["announcementMode"] = self.announce.GetSelection()
         config.conf["sonos"]["logFile"] = self.filename.GetValue().strip() or "sonos.log"
