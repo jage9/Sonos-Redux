@@ -103,6 +103,12 @@ class LoggingTests(unittest.TestCase):
             settings.registerLyricsSave(window, save)
             self.assertEqual(self.plugin.getScript(saveGesture), self.plugin.script_saveLyrics)
             self.assertIsNone(self.plugin.getScript(otherGesture))
+            self.assertFalse(self.plugin.script_saveLyrics.__doc__)
+            self.assertTrue(self.plugin.script_saveLyrics.scriptMetadata["bypassInputHelp"])
+            with patch.object(sonos.inputCore.manager, "isInputHelpActive", True):
+                self.plugin.script_saveLyrics(saveGesture)
+                callAfter.assert_not_called()
+                self.assertEqual(nvda["ui"].messages[-1], "Save lyrics")
             self.plugin.script_saveLyrics(saveGesture)
             callAfter.assert_called_once_with(save)
             foreground.return_value = 456

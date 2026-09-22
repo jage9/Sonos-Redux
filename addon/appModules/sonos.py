@@ -930,11 +930,7 @@ class AppModule(appModuleHandler.AppModule):
                 if window not in windowsBefore and window.GetTitle() == title:
                     window._sonosLyricsTrack = metadata.copy()
                     from globalPlugins.sonosSettings import registerLyricsSave
-                    save = lambda: self._saveLyrics(window, record)
-                    registerLyricsSave(window, save)
-                    window.addButton(wx.ID_SAVE, label=_("&Save..."),
-                                     callback=lambda event: save(), closesDialog=False)
-                    window.Show()  # Realize the updated button layout.
+                    registerLyricsSave(window, lambda: self._saveLyrics(window, record))
                     break
         finally:
             if dialog is not None:

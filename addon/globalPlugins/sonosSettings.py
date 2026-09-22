@@ -212,8 +212,12 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
             return self.script_saveLyrics
         return super().getScript(gesture)
 
-    @script(description=_("Save lyrics in the current Sonos lyrics window."), category=_("Sonos"))
+    @script(bypassInputHelp=True)
     def script_saveLyrics(self, gesture):
+        import inputCore
+        if inputCore.manager.isInputHelpActive:
+            ui.message(_("Save lyrics"))
+            return
         save = lyricsSaveHandlers.get(winUser.getForegroundWindow())
         if save is not None:
             wx.CallAfter(save)
