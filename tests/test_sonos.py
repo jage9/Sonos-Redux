@@ -1046,6 +1046,7 @@ class SonosTests(unittest.TestCase):
         for identifier, name, description, shortcut in (
             ("playButton", "Play/Pause", "", "Toggle Play"),
             ("PART_OKButton", "OK", "", "\r"),
+            ("submitDiagnosticsButton_1", "Submit Diagnostics…", "", "Submit Diagnostics"),
             ("PART_CancelButton", "Cancel", "", "\x1b"),
             ("pauseAllButton_1", "Pause All", "Pause All", "Pause All"),
             ("alarmsButton_1", "Alarms", "Alarms", "Alarms"),
@@ -1162,6 +1163,38 @@ class SonosTests(unittest.TestCase):
             app.event_NVDAObject_init(obj)
             self.assertEqual(obj.name, "")
             walker.GetParentElementBuildCache.side_effect = sonos.COMError()
+            app.event_NVDAObject_init(obj)
+            self.assertEqual(obj.name, "")
+
+    def test_about_fields_use_adjacent_labels_without_changing_values(self):
+        app = sonos.AppModule()
+        client = Mock()
+        walker = client.RawViewWalker
+        parent = types.SimpleNamespace(CachedAutomationId="Window_1")
+        walker.GetParentElementBuildCache.return_value = parent
+        with patch.object(sonos.UIAHandler.handler, "clientObject", client):
+            for identifier, labelId, heading, expected in (
+                ("TextBlock_3", "TextBlock_2", "Version:", "Version"),
+                ("TextBox_2", "TextBlock_10", "Sonos OS:", "Sonos OS"),
+                ("TextBlock_5", "TextBlock_4", "Build:", "Build"),
+                ("TextBlock_7", "TextBlock_6", "Sonos ID:", "Sonos ID"),
+                ("TextBlock_3", "TextBlock_2", "Versión:", "Versión"),
+                ("TextBox_1", "TextBlock_7", "", "System information"),
+            ):
+                label = types.SimpleNamespace(CachedAutomationId=labelId, CachedName=heading)
+                walker.GetPreviousSiblingElementBuildCache.return_value = label
+                obj = sonos.UIA(role="edit", UIAAutomationId=identifier)
+                obj.value = "Original value"
+                client.reset_mock()
+                app.event_NVDAObject_init(obj)
+                self.assertEqual((obj.name, obj.value), (expected, "Original value"))
+                self.assertEqual(len(client.mock_calls), 2)
+                label.CachedAutomationId = "OtherLabel"
+                obj.name = ""
+                app.event_NVDAObject_init(obj)
+                self.assertEqual(obj.name, "")
+            parent.CachedAutomationId = "CommonDialogWindow_1"
+            label.CachedAutomationId = "TextBlock_7"
             app.event_NVDAObject_init(obj)
             self.assertEqual(obj.name, "")
 

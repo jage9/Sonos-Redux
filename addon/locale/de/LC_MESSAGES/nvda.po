@@ -410,3 +410,6 @@ msgstr "Stunde"
 
 msgid "Minute"
 msgstr "Minute"
+
+msgid "System information"
+msgstr "Systeminformationen"

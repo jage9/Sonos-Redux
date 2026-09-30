@@ -232,6 +232,7 @@ class AppModule(appModuleHandler.AppModule):
                 "muteButton", "repeatToggleButton", "shuffleToggleButton", "crossfadeToggleButton",
                 "playButton", "sleepTimerButton_1", "equalizerButton", "equalizerMenuButton",
                 "pauseAllButton_1", "alarmsButton_1", "PART_OKButton", "PART_CancelButton",
+                "submitDiagnosticsButton_1",
             )
             # Button_1 is reused elsewhere; only these confirmed action markers identify our buttons.
             or (obj.UIAAutomationId == "Button_1"
@@ -283,7 +284,7 @@ class AppModule(appModuleHandler.AppModule):
     def event_NVDAObject_init(self, obj):
         if (not isinstance(obj, UIA)
                 or obj.role not in (controlTypes.Role.EDITABLETEXT, controlTypes.Role.COMBOBOX, controlTypes.Role.SLIDER, controlTypes.Role.CHECKBOX)
-                or obj.UIAAutomationId not in ("", "TextBox_1", "PART_Hours", "PART_Minutes", "CheckBox_1", "CheckBox_11")
+                or obj.UIAAutomationId not in ("", "TextBox_1", "PART_Hours", "PART_Minutes", "CheckBox_1", "CheckBox_11", "TextBlock_3", "TextBlock_5", "TextBlock_7", "TextBox_2")
                 or (obj.role == controlTypes.Role.CHECKBOX and obj.UIAAutomationId not in ("CheckBox_1", "CheckBox_11"))
                 or (obj.name and obj.role != controlTypes.Role.CHECKBOX)):
             return
@@ -297,13 +298,23 @@ class AppModule(appModuleHandler.AppModule):
             walker = UIAHandler.handler.clientObject.RawViewWalker
             cache = UIAHandler.handler.baseCacheRequest
             parent = walker.GetParentElementBuildCache(obj.UIAElement, cache)
-            if not parent or parent.CachedAutomationId != "CommonDialogWindow_1":
+            if not parent or parent.CachedAutomationId not in ("CommonDialogWindow_1", "Window_1"):
                 return
             # The fields and section-leading checkboxes immediately follow their localized label.
             label = walker.GetPreviousSiblingElementBuildCache(obj.UIAElement, cache)
             if not label:
                 return
             labelId = label.CachedAutomationId
+            if parent.CachedAutomationId == "Window_1":
+                if obj.role == controlTypes.Role.EDITABLETEXT:
+                    if (identifier, labelId) in (
+                        ("TextBlock_3", "TextBlock_2"), ("TextBox_2", "TextBlock_10"),
+                        ("TextBlock_5", "TextBlock_4"), ("TextBlock_7", "TextBlock_6"),
+                    ):
+                        obj.name = label.CachedName.rstrip(": ")
+                    elif (identifier, labelId) == ("TextBox_1", "TextBlock_7"):
+                        obj.name = _("System information")
+                return
             if obj.role == controlTypes.Role.CHECKBOX:
                 if (identifier, labelId) in (("CheckBox_1", "Label_5"), ("CheckBox_11", "Label_7")):
                     obj.name = " ".join(filter(None, (label.CachedName.strip(), obj.name)))
