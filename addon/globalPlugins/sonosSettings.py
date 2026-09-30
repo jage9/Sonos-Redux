@@ -137,6 +137,7 @@ class SonosSettingsPanel(SettingsPanel):
         from gui.message import displayDialogAsModal
         current = self._lyricsKey if self._lyricsKey is not None else config.conf["sonos"]["lyricsInstallationId"]
         dialog = wx.TextEntryDialog(self,
+            # Translators: This key is a random UUID identifying the installation, not an API credential.
             _("Lyrics key (random installation ID). Leave blank to generate a new key:"),
             _("Advanced Sonos settings"), current or str(uuid4()))
         key = None

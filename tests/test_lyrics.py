@@ -147,6 +147,30 @@ class LyricsTests(unittest.TestCase):
             self.assertEqual(thread.call_args.kwargs["args"][1]["duration"], 403)
             thread.return_value.start.assert_called_once_with()
 
+    def test_retry_messages_use_singular_and_plural_in_both_paths(self):
+        app = sonos.AppModule()
+        app._root = lambda: object()
+        app._metadataFields = lambda panel, limit: [("Song", "Title"), ("Artist", "Artist")]
+        app._scrubber = lambda **kwargs: (None, Pattern(0, 200, 0))
+        app._focusLyrics = lambda metadata: False
+        settings = types.ModuleType("globalPlugins.sonosSettings")
+        wx = types.ModuleType("wx")
+        wx.CallAfter = Mock()
+        with patch.dict(sys.modules, {"wx": wx, "globalPlugins.sonosSettings": settings}), \
+                patch.object(sonos, "_find"), patch.object(sonos, "perf_counter", return_value=10), \
+                patch.object(sonos.ui, "message") as speak:
+            settings.lyricsUserAgent = Mock()
+            for seconds, unit in ((1, "second"), (2, "seconds")):
+                expected = f"Lyrics service is busy. Try again in {seconds} {unit}."
+                app._lyricsRetryAt = 10 + seconds
+                app.script_lyrics(None)
+                speak.assert_called_with(expected)
+                error = HTTPError("https://lrclib.net/api/get", 429, "Busy", {"Retry-After": str(seconds)}, None)
+                with patch.object(sonos, "_fetchLyrics", side_effect=error):
+                    app._fetchLyricsWorker(object(), self.metadata, "Test/1")
+                self.assertEqual(wx.CallAfter.call_args.args[-2], expected)
+            settings.lyricsUserAgent.assert_not_called()
+
     def test_worker_cooldown_and_stale_completion(self):
         app = sonos.AppModule()
         token = app._lyricsRequestToken = object()

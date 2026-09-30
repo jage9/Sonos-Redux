@@ -7,7 +7,7 @@ import importlib.util
 import sys
 import types
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
@@ -886,7 +886,7 @@ class SonosTests(unittest.TestCase):
         group[0] = "Kitchen"
         old[1](*old[2])
         self.assertEqual(nvda["ui"].messages, [])
-        from unittest.mock import patch
+        from unittest.mock import Mock, patch
         self.assertEqual(latest[0], 75)
         with patch.object(sonos, "perf_counter", return_value=latest[2][-1] + 0.22):
             latest[1](*latest[2])
@@ -1084,20 +1084,31 @@ class SonosTests(unittest.TestCase):
 
     def test_alarm_enabled_label_is_scoped_and_preserves_checkbox_state(self):
         app = sonos.AppModule()
-        checkbox = sonos.AlarmEnabledCheckbox(role="checkbox", states={"checked"})
-        checkbox.windowText = "Alarms"
-        classes = []
-        app.chooseNVDAObjectOverlayClasses(checkbox, classes)
-        self.assertEqual(classes, [sonos.AlarmEnabledCheckbox])
-        self.assertEqual(checkbox._get_name(), "Enabled")
-        checkbox.windowText = "Wecker"
-        classes = []
-        app.chooseNVDAObjectOverlayClasses(checkbox, classes)
-        self.assertEqual(classes, [sonos.AlarmEnabledCheckbox])
-        self.assertEqual((checkbox.role, checkbox.states), ("checkbox", {"checked"}))
-        for name, window, identifier in (("Repeat", "Alarms", ""), ("", "Settings", ""), ("", "Alarms", "otherCheckbox")):
-            checkbox.name, checkbox.windowText, checkbox.UIAAutomationId = name, window, identifier
+        checkbox = sonos.AlarmEnabledCheckbox(UIAElement=object(), role="checkbox", states={"checked"})
+        client = Mock()
+        walker = client.CreateTreeWalker.return_value
+        walker.GetParentElement.return_value = object()
+        with patch.object(sonos.UIAHandler.handler, "clientObject", client):
+            for title in ("Alarms", "Wecker", "Alarmes", ""):
+                checkbox.windowText = title
+                classes = []
+                app.chooseNVDAObjectOverlayClasses(checkbox, classes)
+                self.assertEqual(classes, [sonos.AlarmEnabledCheckbox])
+            client.CreatePropertyCondition.assert_called_with(30011, "AlarmList")
+            walker.GetParentElement.assert_called_with(checkbox.UIAElement)
+            self.assertEqual(checkbox._get_name(), "Enabled")
+            self.assertEqual((checkbox.role, checkbox.states), ("checkbox", {"checked"}))
+            for name, identifier in (("Repeat", ""), ("", "otherCheckbox")):
+                checkbox.name, checkbox.UIAAutomationId = name, identifier
+                classes = []
+                app.chooseNVDAObjectOverlayClasses(checkbox, classes)
+                self.assertEqual(classes, [])
+            checkbox.name = checkbox.UIAAutomationId = ""
+            walker.GetParentElement.return_value = None
             classes = []
+            app.chooseNVDAObjectOverlayClasses(checkbox, classes)
+            self.assertEqual(classes, [])
+            walker.GetParentElement.side_effect = sonos.COMError()
             app.chooseNVDAObjectOverlayClasses(checkbox, classes)
             self.assertEqual(classes, [])
         self.assertFalse(hasattr(app, "script_saveMusic"))
@@ -1115,7 +1126,7 @@ class SonosTests(unittest.TestCase):
 
 
     def test_group_members_use_selected_raw_group_and_cached_names(self):
-        from unittest.mock import patch
+        from unittest.mock import Mock, patch
         app = sonos.AppModule()
         app._root = lambda: object()
         groups = object()
@@ -1154,7 +1165,7 @@ class SonosTests(unittest.TestCase):
             self.assertEqual(nvda["ui"].messages[-1], "Group Office + 2")
 
     def test_queue_count_reports_singular_plural_and_rejects_missing_counts(self):
-        from unittest.mock import patch
+        from unittest.mock import Mock, patch
         app = sonos.AppModule()
         root, queue = object(), object()
         app._root = lambda: root

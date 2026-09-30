@@ -14,7 +14,7 @@ msgid "Accessibility enhancements for the Sonos Desktop app including now playin
 msgstr "Verbesserte Zugänglichkeit für die Sonos-Desktop-Anwendung mit Informationen zum aktuellen Titel, Vor- und Zurückspringen im Titel, Sprachausgabe für Sonos-Tastenkürzel und vielem mehr."
 
 msgid "Added lyrics lookup and saving, track announcements, sleep timer status, volume controls and fade out, looping bookmarks, and more flexible track seeking. Improved Now Playing information and SiriusXM channel reporting."
-msgstr ""
+msgstr "Ergänzt wurden die Suche und Speicherung von Songtexten, Titelansagen, der Status des Schlaf-Timers, Lautstärkeregelung und Absenkung, Schleifenmarkierungen sowie flexiblere Sprünge im Titel. Die Informationen zur aktuellen Wiedergabe und die Senderanzeige für SiriusXM wurden verbessert."
 
 msgid "Report the current track position."
 msgstr "Aktuelle Titelposition ansagen."
@@ -91,8 +91,8 @@ msgstr "Vorherige Lautsprechergruppe auswählen."
 msgid "Select the next speaker group."
 msgstr "Nächste Lautsprechergruppe auswählen."
 
-msgid "Show current track information in a browseable message."
-msgstr "Aktuelle Titelinformationen in einem lesbaren Dialog anzeigen."
+msgid "Show Now Playing information."
+msgstr "Informationen zur aktuellen Wiedergabe anzeigen."
 
 msgid "Search YouTube for the current track."
 msgstr "Auf YouTube nach dem aktuellen Titel suchen."
@@ -338,3 +338,71 @@ msgstr "Die Wiedergabe ist bereits pausiert"
 
 msgid "Could not confirm pause. Volume remains at zero."
 msgstr "Pause konnte nicht bestätigt werden. Die Lautstärke bleibt bei null."
+
+msgid "Fetch lyrics for the current track."
+msgstr "Songtexte für den aktuellen Titel abrufen."
+
+msgid "Fetching lyrics"
+msgstr "Songtexte werden abgerufen"
+
+msgid "No track title or artist is available."
+msgstr "Titelname oder Interpret sind nicht verfügbar."
+
+msgid "Lyrics service is busy. Try again in {seconds} second."
+msgid_plural "Lyrics service is busy. Try again in {seconds} seconds."
+msgstr[0] "Der Songtextdienst ist ausgelastet. Versuchen Sie es in {seconds} Sekunde erneut."
+msgstr[1] "Der Songtextdienst ist ausgelastet. Versuchen Sie es in {seconds} Sekunden erneut."
+
+msgid "Could not fetch lyrics. Try again later."
+msgstr "Songtexte konnten nicht abgerufen werden. Versuchen Sie es später erneut."
+
+msgid "Lyrics lookup finished. Press the lyrics command in Sonos to view the results."
+msgstr "Die Suche nach Songtexten ist abgeschlossen. Drücken Sie in Sonos erneut das Tastenkürzel für Songtexte, um die Ergebnisse anzuzeigen."
+
+msgid "No lyrics found."
+msgstr "Keine Songtexte gefunden."
+
+msgid "{title} - {artist} - {album} - {duration}"
+msgstr "{title} – {artist} – {album} – {duration}"
+
+msgid "Choose a recording for {title} by {artist}. Results from LRCLIB."
+msgstr "Wählen Sie eine Aufnahme für „{title}“ von {artist}. Ergebnisse von LRCLIB."
+
+msgid "Lyrics matches"
+msgstr "Songtexttreffer"
+
+msgid "This recording is marked as instrumental."
+msgstr "Diese Aufnahme ist als Instrumentalstück gekennzeichnet."
+
+msgid "No lyrics found for this recording."
+msgstr "Für diese Aufnahme wurden keine Songtexte gefunden."
+
+msgid "Lyrics for {title} by {artist}"
+msgstr "Songtexte für {title} von {artist}"
+
+msgid "Lyrics provided by LRCLIB"
+msgstr "Songtexte bereitgestellt von LRCLIB"
+
+msgid "Save lyrics"
+msgstr "Songtexte speichern"
+
+msgid "Text files (*.txt)|*.txt"
+msgstr "Textdateien (*.txt)|*.txt"
+
+msgid "Could not save lyrics. Check the filename and folder."
+msgstr "Songtexte konnten nicht gespeichert werden. Überprüfen Sie Dateinamen und Ordner."
+
+msgid "Lyrics saved"
+msgstr "Songtexte gespeichert"
+
+msgid "Ad&vanced..."
+msgstr "Er&weitert..."
+
+msgid "Lyrics key (random installation ID). Leave blank to generate a new key:"
+msgstr "Songtextschlüssel (zufällige Installations-ID). Leer lassen, um einen neuen Schlüssel zu erzeugen:"
+
+msgid "Advanced Sonos settings"
+msgstr "Erweiterte Sonos-Einstellungen"
+
+msgid "Enter a valid lyrics key, or leave it blank to generate one."
+msgstr "Geben Sie einen gültigen Songtextschlüssel ein oder lassen Sie das Feld leer, um einen neuen zu erzeugen."

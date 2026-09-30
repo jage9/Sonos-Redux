@@ -20,8 +20,7 @@ addon_info = AddonInfo(
 	addon_sourceURL="https://github.com/jage9/Sonos-Redux",
 	addon_docFileName="readme.html",
 	addon_minimumNVDAVersion="2026.1.0",
-	# Live testing used NVDA 2026.3beta1; the minimum target remains NVDA 2026.1.
-	addon_lastTestedNVDAVersion="2026.3.0",
+	addon_lastTestedNVDAVersion="2026.2",
 	addon_updateChannel="stable",
 	addon_license="GPL v2",
 	addon_licenseURL="https://www.gnu.org/licenses/old-licenses/gpl-2.0.html",

@@ -230,9 +230,15 @@ class AppModule(appModuleHandler.AppModule):
             obj.role == controlTypes.Role.CHECKBOX
             and not obj.name
             and not obj.UIAAutomationId
-            and obj.windowText in ("Alarms", "Wecker")
         ):
-            clsList.insert(0, AlarmEnabledCheckbox)
+            # The checkbox has no ID; its AlarmList ancestor identifies it in every language.
+            client = UIAHandler.handler.clientObject
+            condition = client.CreatePropertyCondition(UIAHandler.UIA_AutomationIdPropertyId, "AlarmList")
+            try:
+                if client.CreateTreeWalker(condition).GetParentElement(obj.UIAElement):
+                    clsList.insert(0, AlarmEnabledCheckbox)
+            except COMError:
+                pass  # The dialog may close while NVDA is creating the object.
         elif (
             obj.role == controlTypes.Role.DATAITEM
             and (obj.name or "").startswith("Sonos.Controller.Desktop.Main.KeyboardShortcut")
@@ -779,7 +785,7 @@ class AppModule(appModuleHandler.AppModule):
                 ui.message(info)
         self._run(report)
 
-    @script(description=_("Show current track information in a browseable message."), gesture="kb:control+2", speakOnDemand=True)
+    @script(description=_("Show Now Playing information."), gesture="kb:control+2", speakOnDemand=True)
     def script_browseInfo(self, gesture):
         def show():
             info, track = self._trackInfo(limit=4)
@@ -830,7 +836,11 @@ class AppModule(appModuleHandler.AppModule):
                 return
             wait = getattr(self, "_lyricsRetryAt", 0) - perf_counter()
             if wait > 0:
-                ui.message(_("Lyrics service is busy. Try again in {seconds} seconds.").format(seconds=math.ceil(wait)))
+                seconds = math.ceil(wait)
+                ui.message(ngettext(
+                    "Lyrics service is busy. Try again in {seconds} second.",
+                    "Lyrics service is busy. Try again in {seconds} seconds.", seconds,
+                ).format(seconds=seconds))
                 return
             userAgent = lyricsUserAgent()
             token = self._lyricsRequestToken = object()
@@ -854,7 +864,11 @@ class AppModule(appModuleHandler.AppModule):
                     except (TypeError, ValueError, OverflowError):
                         retry = 60
                 retry = max(1, retry) if math.isfinite(retry) else 60
-                errorMessage = _("Lyrics service is busy. Try again in {seconds} seconds.").format(seconds=math.ceil(retry))
+                seconds = math.ceil(retry)
+                errorMessage = ngettext(
+                    "Lyrics service is busy. Try again in {seconds} second.",
+                    "Lyrics service is busy. Try again in {seconds} seconds.", seconds,
+                ).format(seconds=seconds)
             else:
                 errorMessage = _("Could not fetch lyrics. Try again later.")
             error.close()
@@ -945,6 +959,7 @@ class AppModule(appModuleHandler.AppModule):
         name = name[:100].rstrip(" .") or "Lyrics"
         with wx.FileDialog(parent, _("Save lyrics"),
                            defaultDir=wx.StandardPaths.Get().GetDocumentsDir(), defaultFile=name + ".txt",
+                           # Translators: Keep (*.txt)|*.txt unchanged; it is file-filter syntax.
                            wildcard=_("Text files (*.txt)|*.txt"),
                            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dialog:
             if displayDialogAsModal(dialog) != wx.ID_OK:
