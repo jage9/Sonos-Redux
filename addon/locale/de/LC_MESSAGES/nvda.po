@@ -1,418 +1,585 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Sonos 2026.2\n"
-"Language: de\n"
+"Project-Id-Version: sonos-redux-for-nvda\n"
+"Report-Msgid-Bugs-To: nvda-translations@groups.io\n"
+"POT-Creation-Date: 2026-09-30 02:54+0000\n"
+"PO-Revision-Date: 2026-09-30 02:54\n"
+"Last-Translator: \n"
+"Language-Team: German\n"
+"Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: sonos-redux-for-nvda\n"
+"X-Crowdin-Project-ID: 935095\n"
+"X-Crowdin-Language: de\n"
+"X-Crowdin-File: Sonos.pot\n"
+"X-Crowdin-File-ID: 1\n"
 
-msgid "Sonos"
-msgstr "Sonos"
-
-msgid "Accessibility enhancements for the Sonos Desktop app including now playing, track scrubbing, speech feedback for Sonos hotkeys, and much more."
-msgstr "Verbesserte Zugänglichkeit für die Sonos-Desktop-Anwendung mit Informationen zum aktuellen Titel, Vor- und Zurückspringen im Titel, Sprachausgabe für Sonos-Tastenkürzel und vielem mehr."
-
-msgid "Added lyrics lookup and saving, track announcements, sleep timer status, volume controls and fade out, looping bookmarks, and more flexible track seeking. Improved Now Playing information and SiriusXM channel reporting."
-msgstr "Ergänzt wurden die Suche und Speicherung von Songtexten, Titelansagen, der Status des Schlaf-Timers, Lautstärkeregelung und Absenkung, Schleifenmarkierungen sowie flexiblere Sprünge im Titel. Die Informationen zur aktuellen Wiedergabe und die Senderanzeige für SiriusXM wurden verbessert."
-
-msgid "Report the current track position."
-msgstr "Aktuelle Titelposition ansagen."
-
-msgid "Focus the track scrubber."
-msgstr "Den Positionsregler fokussieren."
-
-msgid "Seek backward."
-msgstr "Zurückspringen."
-
-msgid "Seek forward."
-msgstr "Vorspringen."
-
-msgid "Report elapsed track time."
-msgstr "Verstrichene Titelzeit ansagen."
-
-msgid "Report remaining track time."
-msgstr "Verbleibende Titelzeit ansagen."
-
-msgid "Set the selected speaker group's volume."
-msgstr "Lautstärke der ausgewählten Lautsprechergruppe einstellen."
-
-msgid "Volume for {group}:"
-msgstr "Lautstärke für {group}:"
-
-msgid "Set volume"
-msgstr "Lautstärke einstellen"
-
-msgid "The speaker group changed. Open Set Volume again."
-msgstr "Die Lautsprechergruppe wurde gewechselt. Lautstärkedialog erneut öffnen."
-
-msgid "Volume for {group}: {percent}%"
-msgstr "Lautstärke für {group}: {percent}%"
-
-msgid "Report the active room volume."
-msgstr "Lautstärke des aktiven Raums ansagen."
-
-msgid "Report mute state."
-msgstr "Stummschaltung ansagen."
-
-msgid "Toggle mute and report its state."
-msgstr "Stummschaltung umschalten und Status ansagen."
-
-msgid "Report repeat mode."
-msgstr "Wiederholungsmodus ansagen."
-
-msgid "Toggle repeat and report its mode."
-msgstr "Wiederholungsmodus umschalten und ansagen."
-
-msgid "Report shuffle state."
-msgstr "Zufallswiedergabe ansagen."
-
-msgid "Toggle shuffle and report its state."
-msgstr "Zufallswiedergabe umschalten und Status ansagen."
-
-msgid "Report crossfade state."
-msgstr "Überblendung ansagen."
-
-msgid "Toggle crossfade and report its state."
-msgstr "Überblendung umschalten und Status ansagen."
-
-msgid "Read the current track. Press twice quickly to copy track information."
-msgstr "Aktuellen Titel vorlesen. Zweimal schnell drücken, um Titelinformationen zu kopieren."
-
-msgid "Report the current speaker group."
-msgstr "Aktuelle Lautsprechergruppe ansagen."
-
-msgid "Group {group}"
-msgstr "Gruppe {group}"
-
-msgid "Select the previous speaker group."
-msgstr "Vorherige Lautsprechergruppe auswählen."
-
-msgid "Select the next speaker group."
-msgstr "Nächste Lautsprechergruppe auswählen."
-
-msgid "Show Now Playing information."
-msgstr "Informationen zur aktuellen Wiedergabe anzeigen."
-
-msgid "Search YouTube for the current track."
-msgstr "Auf YouTube nach dem aktuellen Titel suchen."
-
-msgid "This control is unavailable in the current Sonos view."
-msgstr "Dieses Steuerelement ist in der aktuellen Sonos-Ansicht nicht verfügbar."
-
-msgid "Sonos is not responding or the control is unavailable."
-msgstr "Sonos antwortet nicht oder das Steuerelement ist nicht verfügbar."
-
-msgid "Sonos command failed. See the NVDA log for details."
-msgstr "Der Sonos-Befehl ist fehlgeschlagen. Einzelheiten stehen im NVDA-Protokoll."
-
-msgid "The track scrubber does not accept keyboard focus."
-msgstr "Der Positionsregler kann nicht mit der Tastatur fokussiert werden."
-
-msgid "Now playing"
-msgstr "Aktuelle Wiedergabe"
-
-msgid "No track information is available."
-msgstr "Es sind keine Titelinformationen verfügbar."
-
-msgid "Could not open the web browser."
-msgstr "Der Webbrowser konnte nicht geöffnet werden."
-
-msgid "Copy the displayed album artwork to the clipboard."
-msgstr "Das angezeigte Albumcover in die Zwischenablage kopieren."
-
-msgid "Could not open the clipboard."
-msgstr "Zwischenablage konnte nicht geöffnet werden."
-
-msgid "Album artwork copied."
-msgstr "Albumcover kopiert."
-
-msgid "Could not copy album artwork."
-msgstr "Albumcover konnte nicht kopiert werden."
-
-msgid "{elapsed} of {total}, {percent}%"
-msgstr "{elapsed} von {total}, {percent}%"
-
-msgid "{time} remaining"
-msgstr "{time} verbleibend"
-
-msgid "Volume {percent}%"
-msgstr "Lautstärke {percent}%"
-
-msgid "{time} elapsed"
-msgstr "{time} verstrichen"
-
-msgid "Jump to a time in the current track."
-msgstr "Zu einer Zeit im aktuellen Titel springen."
-
-msgid "Track length {length}. Jump to:"
-msgstr "Titellänge {length}. Springen zu:"
-
-msgid "Jump to time"
-msgstr "Zu einer Zeit springen"
-
-msgid "Enter seconds, minutes:seconds, or hours:minutes:seconds, up to {length}. Use + or - for a relative jump."
-msgstr "Sekunden, Minuten:Sekunden oder Stunden:Minuten:Sekunden eingeben, höchstens {length}. Mit + oder - relativ springen."
-
-msgid "The track or room changed. Open Jump to Time again."
-msgstr "Titel oder Raum wurde gewechselt. Den Dialog zum Springen erneut öffnen."
-
-msgid "Report sleep timer status."
-msgstr "Status des Schlaf-Timers ansagen."
-
-msgid "Sleep timer {time}"
-msgstr "Schlaf-Timer {time}"
-
-msgid "Sleep timer off"
-msgstr "Schlaf-Timer aus"
-
-msgid "Jump to the last seconds of the track."
-msgstr "Zu den letzten Sekunden des Titels springen."
-
-msgid "SiriusXM {channel}"
-msgstr "SiriusXM {channel}"
-
-msgid "No channel information is available."
-msgstr "Keine Senderinformationen verfügbar."
-
-msgid "Report the next track."
-msgstr "Nächsten Titel ansagen."
-
-msgid "Next {track}"
-msgstr "Als Nächstes {track}"
-
-msgid "No next track information is available."
-msgstr "Es sind keine Informationen zum nächsten Titel verfügbar."
-
-msgid "No track slider"
-msgstr "Kein Positionsregler"
-
+#: addon/appModules/sonos.py:210
 msgid "Enabled"
 msgstr "Aktiviert"
 
-msgid "Favorites"
-msgstr "Favoriten"
+#: addon/appModules/sonos.py:225 addon/globalPlugins/sonosSettings.py:101
+msgid "Sonos"
+msgstr "Sonos"
 
-msgid "Toggle track logging."
-msgstr "Titelprotokollierung ein- oder ausschalten."
+#. These time-field IDs describe the control directly; no dialog search is needed.
+#: addon/appModules/sonos.py:301
+msgid "Hour"
+msgstr "Stunde"
 
-msgid "Track logging on"
-msgstr "Titelprotokollierung ein"
+#: addon/appModules/sonos.py:301
+msgid "Minute"
+msgstr "Minute"
 
-msgid "Track logging off"
-msgstr "Titelprotokollierung aus"
+#: addon/appModules/sonos.py:324
+msgid "System information"
+msgstr "Systeminformationen"
 
-msgid "Toggle track announce."
-msgstr "Ansage bei Titelwechseln umschalten."
+#: addon/appModules/sonos.py:351
+msgid "No track slider"
+msgstr "Kein Positionsregler"
 
-msgid "Track announce everywhere"
-msgstr "Titelwechsel überall ansagen"
+#: addon/appModules/sonos.py:353
+msgid "This control is unavailable in the current Sonos view."
+msgstr "Dieses Steuerelement ist in der aktuellen Sonos-Ansicht nicht verfügbar."
 
-msgid "Track announce only while Sonos is focused"
-msgstr "Titelwechsel nur ansagen, wenn Sonos im Vordergrund ist"
+#: addon/appModules/sonos.py:356
+msgid "Sonos is not responding or the control is unavailable."
+msgstr "Sonos antwortet nicht oder das Steuerelement ist nicht verfügbar."
 
-msgid "Track announce off"
-msgstr "Ansage bei Titelwechseln aus"
+#: addon/appModules/sonos.py:359
+msgid "Sonos command failed. See the NVDA log for details."
+msgstr "Der Sonos-Befehl ist fehlgeschlagen. Einzelheiten stehen im NVDA-Protokoll."
 
-msgid "Track &announce:"
-msgstr "Titelwechsel &ansagen:"
+#: addon/appModules/sonos.py:373
+msgid "Report the current track position."
+msgstr "Aktuelle Titelposition ansagen."
 
-msgid "&Log track titles"
-msgstr "Titel &protokollieren"
+#: addon/appModules/sonos.py:377
+#, python-brace-format
+msgid "{elapsed} of {total}, {percent}%"
+msgstr "{elapsed} von {total}, {percent}%"
 
-msgid "Log f&ilename:"
-msgstr "Pr&otokolldatei:"
+#: addon/appModules/sonos.py:384
+msgid "Focus the track scrubber."
+msgstr "Den Positionsregler fokussieren."
 
-msgid "&Browse..."
-msgstr "&Durchsuchen..."
+#: addon/appModules/sonos.py:389
+msgid "The track scrubber does not accept keyboard focus."
+msgstr "Der Positionsregler kann nicht mit der Tastatur fokussiert werden."
 
-msgid "Choose track log file"
-msgstr "Protokolldatei auswählen"
+#: addon/appModules/sonos.py:454
+msgid "Seek backward."
+msgstr "Zurückspringen."
 
-msgid "Choose a log filename in an existing folder."
-msgstr "Einen Protokolldateinamen in einem vorhandenen Ordner wählen."
+#: addon/appModules/sonos.py:459
+msgid "Seek forward."
+msgstr "Vorspringen."
 
-msgid "Log filename"
-msgstr "Protokolldatei"
+#: addon/appModules/sonos.py:464
+msgid "Jump to the last seconds of the track."
+msgstr "Zu den letzten Sekunden des Titels springen."
 
-msgid "Could not write the track log. Track logging off."
-msgstr "Protokolldatei konnte nicht geschrieben werden. Titelprotokollierung aus."
-
-msgid "Log started"
-msgstr "Protokollierung gestartet"
-
-msgid "Log ended"
-msgstr "Protokollierung beendet"
-
-msgid "&Open"
-msgstr "&Öffnen"
-
-msgid "No track log file yet."
-msgstr "Noch keine Protokolldatei vorhanden."
-
-msgid "Could not open the track log."
-msgstr "Protokolldatei konnte nicht geöffnet werden."
-
-msgid "Track &seek seconds:"
-msgstr "&Sprungweite in Sekunden:"
-
-msgid "Seek seconds from &end of track:"
-msgstr "Sekunden vor Titel&ende:"
-
-msgid "Group {group} ({members})"
-msgstr "Gruppe {group} ({members})"
-
-msgid "Report the number of tracks in the queue."
-msgstr "Anzahl der Titel in der Warteschlange ansagen."
-
-msgid "{count} track in queue"
-msgid_plural "{count} tracks in queue"
-msgstr[0] "{count} Titel in der Warteschlange"
-msgstr[1] "{count} Titel in der Warteschlange"
-
-msgid "Sonos Redux"
-msgstr "Sonos Redux"
-
-msgid "Off"
-msgstr "Aus"
-
-msgid "Everywhere"
-msgstr "Überall"
-
-msgid "Only while Sonos is focused"
-msgstr "Nur wenn Sonos im Vordergrund ist"
-
-msgid "Fade out the selected speaker group."
-msgstr "Lautstärke der ausgewählten Lautsprechergruppe absenken."
-
-msgid "Fading out {group}"
-msgstr "Lautstärke für {group} wird abgesenkt"
-
-msgid "&Fade seconds:"
-msgstr "A&bsenkdauer in Sekunden:"
-
+#: addon/appModules/sonos.py:498
 msgid "No loop bookmark"
 msgstr "Kein Schleifen-Lesezeichen"
 
+#: addon/appModules/sonos.py:501
 msgid "Set loop start."
 msgstr "Schleifenanfang setzen."
 
+#: addon/appModules/sonos.py:507 addon/appModules/sonos.py:558
+#, python-brace-format
 msgid "Loop start {time}"
 msgstr "Schleifenanfang {time}"
 
+#: addon/appModules/sonos.py:511
 msgid "Set loop end."
 msgstr "Schleifenende setzen."
 
+#: addon/appModules/sonos.py:518
 msgid "Loop end must be after loop start"
 msgstr "Das Schleifenende muss nach dem Anfang liegen"
 
+#: addon/appModules/sonos.py:522
+#, python-brace-format
 msgid "Loop end {time}"
 msgstr "Schleifenende {time}"
 
+#: addon/appModules/sonos.py:525
 msgid "Start looping."
 msgstr "Schleife starten."
 
+#: addon/appModules/sonos.py:532
 msgid "Set loop end first"
 msgstr "Zuerst das Schleifenende setzen"
 
+#: addon/appModules/sonos.py:536
 msgid "Loop on"
 msgstr "Schleife ein"
 
+#: addon/appModules/sonos.py:539
 msgid "Stop looping and continue playback."
 msgstr "Schleife beenden und Wiedergabe fortsetzen."
 
+#: addon/appModules/sonos.py:547
 msgid "Loop off"
 msgstr "Schleife aus"
 
+#: addon/appModules/sonos.py:550
 msgid "Report loop start, end, and duration."
 msgstr "Schleifenanfang, Ende und Dauer ansagen."
 
+#: addon/appModules/sonos.py:560
+#, python-brace-format
 msgid "Loop start {start}, end {end}, duration {duration}"
 msgstr "Schleifenanfang {start}, Ende {end}, Dauer {duration}"
 
+#: addon/appModules/sonos.py:590
+msgid "Report elapsed track time."
+msgstr "Verstrichene Titelzeit ansagen."
+
+#: addon/appModules/sonos.py:592
+#, python-brace-format
+msgid "{time} elapsed"
+msgstr "{time} verstrichen"
+
+#: addon/appModules/sonos.py:594
+msgid "Report remaining track time."
+msgstr "Verbleibende Titelzeit ansagen."
+
+#: addon/appModules/sonos.py:598
+#, python-brace-format
+msgid "{time} remaining"
+msgstr "{time} verbleibend"
+
+#: addon/appModules/sonos.py:601
+msgid "Report the active room volume."
+msgstr "Lautstärke des aktiven Raums ansagen."
+
+#: addon/appModules/sonos.py:608
+#, python-brace-format
+msgid "Volume {percent}%"
+msgstr "Lautstärke {percent}%"
+
+#: addon/appModules/sonos.py:611
+msgid "Set the selected speaker group's volume."
+msgstr "Lautstärke der ausgewählten Lautsprechergruppe einstellen."
+
+#: addon/appModules/sonos.py:640
+#, python-brace-format
+msgid "Volume for {group}:"
+msgstr "Lautstärke für {group}:"
+
+#: addon/appModules/sonos.py:640
+msgid "Set volume"
+msgstr "Lautstärke einstellen"
+
+#: addon/appModules/sonos.py:655
+msgid "The speaker group changed. Open Set Volume again."
+msgstr "Die Lautsprechergruppe wurde gewechselt. Lautstärkedialog erneut öffnen."
+
+#: addon/appModules/sonos.py:677
+#, python-brace-format
+msgid "Volume for {group}: {percent}%"
+msgstr "Lautstärke für {group}: {percent}%"
+
+#: addon/appModules/sonos.py:724
+msgid "Fade out the selected speaker group."
+msgstr "Lautstärke der ausgewählten Lautsprechergruppe absenken."
+
+#: addon/appModules/sonos.py:737
 msgid "Playback is already paused"
 msgstr "Die Wiedergabe ist bereits pausiert"
 
+#: addon/appModules/sonos.py:768
 msgid "Could not confirm pause. Volume remains at zero."
 msgstr "Pause konnte nicht bestätigt werden. Die Lautstärke bleibt bei null."
 
+#: addon/appModules/sonos.py:792
+#, python-brace-format
+msgid "Fading out {group}"
+msgstr "Lautstärke für {group} wird abgesenkt"
+
+#: addon/appModules/sonos.py:819
+msgid "Report mute state."
+msgstr "Stummschaltung ansagen."
+
+#: addon/appModules/sonos.py:825
+msgid "Toggle mute and report its state."
+msgstr "Stummschaltung umschalten und Status ansagen."
+
+#: addon/appModules/sonos.py:827
+msgid "Report repeat mode."
+msgstr "Wiederholungsmodus ansagen."
+
+#: addon/appModules/sonos.py:833
+msgid "Toggle repeat and report its mode."
+msgstr "Wiederholungsmodus umschalten und ansagen."
+
+#: addon/appModules/sonos.py:835
+msgid "Report shuffle state."
+msgstr "Zufallswiedergabe ansagen."
+
+#: addon/appModules/sonos.py:841
+msgid "Toggle shuffle and report its state."
+msgstr "Zufallswiedergabe umschalten und Status ansagen."
+
+#: addon/appModules/sonos.py:843
+msgid "Report crossfade state."
+msgstr "Überblendung ansagen."
+
+#: addon/appModules/sonos.py:849
+msgid "Toggle crossfade and report its state."
+msgstr "Überblendung umschalten und Status ansagen."
+
+#: addon/appModules/sonos.py:857
+msgid "Favorites"
+msgstr "Favoriten"
+
+#: addon/appModules/sonos.py:860
+msgid "Read the current track. Press twice quickly to copy track information."
+msgstr "Aktuellen Titel vorlesen. Zweimal schnell drücken, um Titelinformationen zu kopieren."
+
+#: addon/appModules/sonos.py:871 addon/appModules/sonos.py:888
+#: addon/appModules/sonos.py:1329
+msgid "No track information is available."
+msgstr "Es sind keine Titelinformationen verfügbar."
+
+#: addon/appModules/sonos.py:876
+msgid "Show Now Playing information."
+msgstr "Informationen zur aktuellen Wiedergabe anzeigen."
+
+#: addon/appModules/sonos.py:880
+msgid "Now playing"
+msgstr "Aktuelle Wiedergabe"
+
+#: addon/appModules/sonos.py:883
+msgid "Search YouTube for the current track."
+msgstr "Auf YouTube nach dem aktuellen Titel suchen."
+
+#: addon/appModules/sonos.py:892
+msgid "Could not open the web browser."
+msgstr "Der Webbrowser konnte nicht geöffnet werden."
+
+#: addon/appModules/sonos.py:895
 msgid "Fetch lyrics for the current track."
 msgstr "Songtexte für den aktuellen Titel abrufen."
 
+#: addon/appModules/sonos.py:903 addon/appModules/sonos.py:935
 msgid "Fetching lyrics"
 msgstr "Songtexte werden abgerufen"
 
+#: addon/appModules/sonos.py:908
 msgid "No track title or artist is available."
 msgstr "Titelname oder Interpret sind nicht verfügbar."
 
+#: addon/appModules/sonos.py:929 addon/appModules/sonos.py:957
+#, python-brace-format
 msgid "Lyrics service is busy. Try again in {seconds} second."
 msgid_plural "Lyrics service is busy. Try again in {seconds} seconds."
 msgstr[0] "Der Songtextdienst ist ausgelastet. Versuchen Sie es in {seconds} Sekunde erneut."
 msgstr[1] "Der Songtextdienst ist ausgelastet. Versuchen Sie es in {seconds} Sekunden erneut."
 
+#: addon/appModules/sonos.py:961 addon/appModules/sonos.py:965
 msgid "Could not fetch lyrics. Try again later."
 msgstr "Songtexte konnten nicht abgerufen werden. Versuchen Sie es später erneut."
 
+#: addon/appModules/sonos.py:979
 msgid "Lyrics lookup finished. Press the lyrics command in Sonos to view the results."
 msgstr "Die Suche nach Songtexten ist abgeschlossen. Drücken Sie in Sonos erneut das Tastenkürzel für Songtexte, um die Ergebnisse anzuzeigen."
 
+#: addon/appModules/sonos.py:999
 msgid "No lyrics found."
 msgstr "Keine Songtexte gefunden."
 
+#: addon/appModules/sonos.py:1007
+#, python-brace-format
 msgid "{title} - {artist} - {album} - {duration}"
 msgstr "{title} – {artist} – {album} – {duration}"
 
+#: addon/appModules/sonos.py:1012
+#, python-brace-format
 msgid "Choose a recording for {title} by {artist}. Results from LRCLIB."
 msgstr "Wählen Sie eine Aufnahme für „{title}“ von {artist}. Ergebnisse von LRCLIB."
 
+#: addon/appModules/sonos.py:1014
 msgid "Lyrics matches"
 msgstr "Songtexttreffer"
 
+#: addon/appModules/sonos.py:1022
 msgid "This recording is marked as instrumental."
 msgstr "Diese Aufnahme ist als Instrumentalstück gekennzeichnet."
 
+#: addon/appModules/sonos.py:1023
 msgid "No lyrics found for this recording."
 msgstr "Für diese Aufnahme wurden keine Songtexte gefunden."
 
+#: addon/appModules/sonos.py:1025 addon/appModules/sonos.py:1056
+#, python-brace-format
 msgid "Lyrics for {title} by {artist}"
 msgstr "Songtexte für {title} von {artist}"
 
+#: addon/appModules/sonos.py:1026 addon/appModules/sonos.py:1057
 msgid "Lyrics provided by LRCLIB"
 msgstr "Songtexte bereitgestellt von LRCLIB"
 
+#: addon/appModules/sonos.py:1049 addon/globalPlugins/sonosSettings.py:220
 msgid "Save lyrics"
 msgstr "Songtexte speichern"
 
+#. Translators: Keep (*.txt)|*.txt unchanged; it is file-filter syntax.
+#: addon/appModules/sonos.py:1052
 msgid "Text files (*.txt)|*.txt"
 msgstr "Textdateien (*.txt)|*.txt"
 
+#: addon/appModules/sonos.py:1065
 msgid "Could not save lyrics. Check the filename and folder."
 msgstr "Songtexte konnten nicht gespeichert werden. Überprüfen Sie Dateinamen und Ordner."
 
+#: addon/appModules/sonos.py:1067
 msgid "Lyrics saved"
 msgstr "Songtexte gespeichert"
 
+#: addon/appModules/sonos.py:1069
+msgid "Jump to a time in the current track."
+msgstr "Zu einer Zeit im aktuellen Titel springen."
+
+#: addon/appModules/sonos.py:1094
+#, python-brace-format
+msgid "Track length {length}. Jump to:"
+msgstr "Titellänge {length}. Springen zu:"
+
+#: addon/appModules/sonos.py:1095
+msgid "Jump to time"
+msgstr "Zu einer Zeit springen"
+
+#: addon/appModules/sonos.py:1114
+#, python-brace-format
+msgid "Enter seconds, minutes:seconds, or hours:minutes:seconds, up to {length}. Use + or - for a relative jump."
+msgstr "Sekunden, Minuten:Sekunden oder Stunden:Minuten:Sekunden eingeben, höchstens {length}. Mit + oder - relativ springen."
+
+#: addon/appModules/sonos.py:1131
+msgid "The track or room changed. Open Jump to Time again."
+msgstr "Titel oder Raum wurde gewechselt. Den Dialog zum Springen erneut öffnen."
+
+#: addon/appModules/sonos.py:1137
+msgid "Report the current speaker group."
+msgstr "Aktuelle Lautsprechergruppe ansagen."
+
+#: addon/appModules/sonos.py:1145
+#, python-brace-format
+msgid "Group {group} ({members})"
+msgstr "Gruppe {group} ({members})"
+
+#: addon/appModules/sonos.py:1146 addon/appModules/sonos.py:1218
+#, python-brace-format
+msgid "Group {group}"
+msgstr "Gruppe {group}"
+
+#: addon/appModules/sonos.py:1149
+msgid "Select the previous speaker group."
+msgstr "Vorherige Lautsprechergruppe auswählen."
+
+#: addon/appModules/sonos.py:1153
+msgid "Select the next speaker group."
+msgstr "Nächste Lautsprechergruppe auswählen."
+
+#: addon/appModules/sonos.py:1223
+msgid "Copy the displayed album artwork to the clipboard."
+msgstr "Das angezeigte Albumcover in die Zwischenablage kopieren."
+
+#: addon/appModules/sonos.py:1256
+msgid "Could not open the clipboard."
+msgstr "Zwischenablage konnte nicht geöffnet werden."
+
+#: addon/appModules/sonos.py:1264
+msgid "Album artwork copied."
+msgstr "Albumcover kopiert."
+
+#: addon/appModules/sonos.py:1264
+msgid "Could not copy album artwork."
+msgstr "Albumcover konnte nicht kopiert werden."
+
+#: addon/appModules/sonos.py:1266
+msgid "Report sleep timer status."
+msgstr "Status des Schlaf-Timers ansagen."
+
+#: addon/appModules/sonos.py:1271
+#, python-brace-format
+msgid "Sleep timer {time}"
+msgstr "Schlaf-Timer {time}"
+
+#: addon/appModules/sonos.py:1272
+msgid "Sleep timer off"
+msgstr "Schlaf-Timer aus"
+
+#: addon/appModules/sonos.py:1275
+msgid "Report the next track."
+msgstr "Nächsten Titel ansagen."
+
+#: addon/appModules/sonos.py:1282
+#, python-brace-format
+msgid "SiriusXM {channel}"
+msgstr "SiriusXM {channel}"
+
+#: addon/appModules/sonos.py:1283
+msgid "No channel information is available."
+msgstr "Keine Senderinformationen verfügbar."
+
+#: addon/appModules/sonos.py:1286
+#, python-brace-format
+msgid "Next {track}"
+msgstr "Als Nächstes {track}"
+
+#: addon/appModules/sonos.py:1287
+msgid "No next track information is available."
+msgstr "Es sind keine Informationen zum nächsten Titel verfügbar."
+
+#: addon/appModules/sonos.py:1290
+msgid "Report the number of tracks in the queue."
+msgstr "Anzahl der Titel in der Warteschlange ansagen."
+
+#: addon/appModules/sonos.py:1298
+#, python-brace-format
+msgid "{count} track in queue"
+msgid_plural "{count} tracks in queue"
+msgstr[0] "{count} Titel in der Warteschlange"
+msgstr[1] "{count} Titel in der Warteschlange"
+
+#: addon/appModules/sonos.py:1336
+msgid "Toggle track announce."
+msgstr "Ansage bei Titelwechseln umschalten."
+
+#: addon/appModules/sonos.py:1342
+msgid "Toggle track logging."
+msgstr "Titelprotokollierung ein- oder ausschalten."
+
+#: addon/globalPlugins/sonosSettings.py:84
+msgid "Track logging on"
+msgstr "Titelprotokollierung ein"
+
+#: addon/globalPlugins/sonosSettings.py:84
+msgid "Track logging off"
+msgstr "Titelprotokollierung aus"
+
+#: addon/globalPlugins/sonosSettings.py:94
+msgid "Track announce off"
+msgstr "Ansage bei Titelwechseln aus"
+
+#: addon/globalPlugins/sonosSettings.py:95
+msgid "Track announce everywhere"
+msgstr "Titelwechsel überall ansagen"
+
+#: addon/globalPlugins/sonosSettings.py:96
+msgid "Track announce only while Sonos is focused"
+msgstr "Titelwechsel nur ansagen, wenn Sonos im Vordergrund ist"
+
+#: addon/globalPlugins/sonosSettings.py:106
+msgid "Track &seek seconds:"
+msgstr "&Sprungweite in Sekunden:"
+
+#: addon/globalPlugins/sonosSettings.py:110
+msgid "Seek seconds from &end of track:"
+msgstr "Sekunden vor Titel&ende:"
+
+#: addon/globalPlugins/sonosSettings.py:114
+msgid "&Fade seconds:"
+msgstr "A&bsenkdauer in Sekunden:"
+
+#: addon/globalPlugins/sonosSettings.py:118
+msgid "Track &announce:"
+msgstr "Titelwechsel &ansagen:"
+
+#: addon/globalPlugins/sonosSettings.py:119
+msgid "Off"
+msgstr "Aus"
+
+#: addon/globalPlugins/sonosSettings.py:119
+msgid "Everywhere"
+msgstr "Überall"
+
+#: addon/globalPlugins/sonosSettings.py:119
+msgid "Only while Sonos is focused"
+msgstr "Nur wenn Sonos im Vordergrund ist"
+
+#: addon/globalPlugins/sonosSettings.py:122
+msgid "&Log track titles"
+msgstr "Titel &protokollieren"
+
+#: addon/globalPlugins/sonosSettings.py:124
+msgid "Log f&ilename:"
+msgstr "Pr&otokolldatei:"
+
+#: addon/globalPlugins/sonosSettings.py:126
+msgid "&Browse..."
+msgstr "&Durchsuchen..."
+
+#: addon/globalPlugins/sonosSettings.py:127
+msgid "&Open"
+msgstr "&Öffnen"
+
+#: addon/globalPlugins/sonosSettings.py:132
 msgid "Ad&vanced..."
 msgstr "Er&weitert..."
 
+#. Translators: This key is a random UUID identifying the installation, not an API credential.
+#: addon/globalPlugins/sonosSettings.py:141
 msgid "Lyrics key (random installation ID). Leave blank to generate a new key:"
 msgstr "Songtextschlüssel (zufällige Installations-ID). Leer lassen, um einen neuen Schlüssel zu erzeugen:"
 
+#: addon/globalPlugins/sonosSettings.py:142
 msgid "Advanced Sonos settings"
 msgstr "Erweiterte Sonos-Einstellungen"
 
+#: addon/globalPlugins/sonosSettings.py:153
 msgid "Enter a valid lyrics key, or leave it blank to generate one."
 msgstr "Geben Sie einen gültigen Songtextschlüssel ein oder lassen Sie das Feld leer, um einen neuen zu erzeugen."
 
-#. Translators: Time input field in the Sonos alarm editor.
-msgid "Hour"
-msgstr "Stunde"
+#: addon/globalPlugins/sonosSettings.py:168
+msgid "Choose track log file"
+msgstr "Protokolldatei auswählen"
 
-msgid "Minute"
-msgstr "Minute"
+#: addon/globalPlugins/sonosSettings.py:177
+msgid "No track log file yet."
+msgstr "Noch keine Protokolldatei vorhanden."
 
-msgid "System information"
-msgstr "Systeminformationen"
+#: addon/globalPlugins/sonosSettings.py:181
+msgid "Could not open the track log."
+msgstr "Protokolldatei konnte nicht geöffnet werden."
 
+#: addon/globalPlugins/sonosSettings.py:192
+msgid "Choose a log filename in an existing folder."
+msgstr "Einen Protokolldateinamen in einem vorhandenen Ordner wählen."
+
+#: addon/globalPlugins/sonosSettings.py:193
+msgid "Log filename"
+msgstr "Protokolldatei"
+
+#: addon/globalPlugins/sonosSettings.py:246
+msgid "Log started"
+msgstr "Protokollierung gestartet"
+
+#: addon/globalPlugins/sonosSettings.py:260
+msgid "Log ended"
+msgstr "Protokollierung beendet"
+
+#: addon/globalPlugins/sonosSettings.py:322
+msgid "Could not write the track log. Track logging off."
+msgstr "Protokolldatei konnte nicht geschrieben werden. Titelprotokollierung aus."
+
+#: buildVars.py:14
+msgid "Sonos Redux"
+msgstr "Sonos Redux"
+
+#: buildVars.py:15
+msgid "Accessibility enhancements for the Sonos Desktop app including now playing, track scrubbing, speech feedback for Sonos hotkeys, and much more."
+msgstr "Verbesserte Zugänglichkeit für die Sonos-Desktop-Anwendung mit Informationen zum aktuellen Titel, Vor- und Zurückspringen im Titel, Sprachausgabe für Sonos-Tastenkürzel und vielem mehr."
+
+#: buildVars.py:17
 msgid "Added support for translations via Crowdin. Improved speech in several dialogs, including Alarms, Add Radio Station, and About."
 msgstr "Unterstützung für Übersetzungen über Crowdin hinzugefügt. Verbesserte Sprachausgabe in mehreren Dialogen, darunter Wecker, Radiosender hinzufügen und Info."
+
