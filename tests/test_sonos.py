@@ -1136,6 +1136,8 @@ class SonosTests(unittest.TestCase):
                 ("combobox", "", "Label_3", ("Room", "Raum")),
                 ("edit", "TextBox_1", "Label_4", ("Music", "Musik")),
                 ("slider", "", "Label_6", ("Volume", "Lautstärke")),
+                ("edit", "firstResultTextBox_1", "firstLabelTextBlock_1", ("Streaming URL", "Streaming-URL")),
+                ("edit", "secondResultTextBox_1", "secondLabelTextBlock_1", ("Station Name", "Sendername")),
             ):
                 for name in names:
                     label = types.SimpleNamespace(CachedAutomationId=labelId, CachedName=name)

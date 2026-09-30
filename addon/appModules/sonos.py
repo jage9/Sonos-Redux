@@ -288,7 +288,11 @@ class AppModule(appModuleHandler.AppModule):
     def event_NVDAObject_init(self, obj):
         if (not isinstance(obj, UIA)
                 or obj.role not in (controlTypes.Role.EDITABLETEXT, controlTypes.Role.COMBOBOX, controlTypes.Role.SLIDER, controlTypes.Role.CHECKBOX)
-                or obj.UIAAutomationId not in ("", "TextBox_1", "PART_Hours", "PART_Minutes", "CheckBox_1", "CheckBox_11", "TextBlock_3", "TextBlock_5", "TextBlock_7", "TextBox_2")
+                or obj.UIAAutomationId not in (
+                    "", "TextBox_1", "PART_Hours", "PART_Minutes", "CheckBox_1", "CheckBox_11",
+                    "TextBlock_3", "TextBlock_5", "TextBlock_7", "TextBox_2",
+                    "firstResultTextBox_1", "secondResultTextBox_1",
+                )
                 or (obj.role == controlTypes.Role.CHECKBOX and obj.UIAAutomationId not in ("CheckBox_1", "CheckBox_11"))
                 or (obj.name and obj.role != controlTypes.Role.CHECKBOX)):
             return
@@ -322,6 +326,11 @@ class AppModule(appModuleHandler.AppModule):
             if obj.role == controlTypes.Role.CHECKBOX:
                 if (identifier, labelId) in (("CheckBox_1", "Label_5"), ("CheckBox_11", "Label_7")):
                     obj.name = " ".join(filter(None, (label.CachedName.strip(), obj.name)))
+            elif obj.role == controlTypes.Role.EDITABLETEXT and (identifier, labelId) in (
+                ("firstResultTextBox_1", "firstLabelTextBlock_1"),
+                ("secondResultTextBox_1", "secondLabelTextBlock_1"),
+            ):
+                obj.name = label.CachedName.strip()
             elif (identifier == "TextBox_1" and labelId == "Label_4"
                     or not identifier and obj.role == controlTypes.Role.COMBOBOX and labelId == "Label_3"
                     or not identifier and obj.role == controlTypes.Role.SLIDER and labelId == "Label_6"):
