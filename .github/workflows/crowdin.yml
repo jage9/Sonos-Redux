@@ -42,6 +42,7 @@ jobs:
           upload_sources: true
           upload_translations: ${{ inputs.upload_existing_translations }}
           auto_approve_imported: false
+          import_eq_suggestions: true
           download_translations: true
           skip_untranslated_files: true
           localization_branch_name: l10n-crowdin
