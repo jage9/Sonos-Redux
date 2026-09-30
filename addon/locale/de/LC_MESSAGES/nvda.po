@@ -410,6 +410,3 @@ msgstr "Stunde"
 
 msgid "Minute"
 msgstr "Minute"
-
-msgid "AM/PM"
-msgstr "AM/PM"

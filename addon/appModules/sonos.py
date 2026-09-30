@@ -191,6 +191,18 @@ class ButtonLabels(UIA):
         return name
 
 
+class AlarmMusicButton(ButtonLabels):
+    def _get_name(self):
+        name = super()._get_name()
+        try:
+            music = self._sonosMusicField.GetCurrentPropertyValue(UIAHandler.UIA_ValueValuePropertyId)
+            if isinstance(music, str):
+                return " ".join(filter(None, (self._sonosMusicLabel, music.strip(), name)))
+        except COMError:
+            pass
+        return name
+
+
 class AlarmEnabledCheckbox(UIA):
     def _get_name(self):
         return super()._get_name() or _("Enabled")
@@ -226,6 +238,24 @@ class AppModule(appModuleHandler.AppModule):
                 and UIA._get_keyboardShortcut(obj) in ("Back", "Info", "Now Playing Button"))
         ):
             clsList.insert(0, ButtonLabels)
+        elif (obj.role == controlTypes.Role.BUTTON and obj.UIAAutomationId == "Button_1"
+                and not UIA._get_keyboardShortcut(obj)):
+            try:
+                walker = UIAHandler.handler.clientObject.RawViewWalker
+                cache = UIAHandler.handler.baseCacheRequest
+                parent = walker.GetParentElementBuildCache(obj.UIAElement, cache)
+                if not parent or parent.CachedAutomationId != "CommonDialogWindow_1":
+                    return
+                music = walker.GetPreviousSiblingElementBuildCache(obj.UIAElement, cache)
+                if not music or music.CachedAutomationId != "TextBox_1":
+                    return
+                label = walker.GetPreviousSiblingElementBuildCache(music, cache)
+                if label and label.CachedAutomationId == "Label_4":
+                    obj._sonosMusicField = music
+                    obj._sonosMusicLabel = label.CachedName.strip()
+                    clsList.insert(0, AlarmMusicButton)
+            except COMError:
+                pass
         elif (
             obj.role == controlTypes.Role.CHECKBOX
             and not obj.name
@@ -253,13 +283,13 @@ class AppModule(appModuleHandler.AppModule):
     def event_NVDAObject_init(self, obj):
         if (not isinstance(obj, UIA)
                 or obj.role not in (controlTypes.Role.EDITABLETEXT, controlTypes.Role.COMBOBOX, controlTypes.Role.SLIDER, controlTypes.Role.CHECKBOX)
-                or obj.UIAAutomationId not in ("", "TextBox_1", "PART_Hours", "PART_Minutes", "PART_AMPM", "PART_EditableTextBox", "CheckBox_1", "CheckBox_11")
+                or obj.UIAAutomationId not in ("", "TextBox_1", "PART_Hours", "PART_Minutes", "CheckBox_1", "CheckBox_11")
                 or (obj.role == controlTypes.Role.CHECKBOX and obj.UIAAutomationId not in ("CheckBox_1", "CheckBox_11"))
                 or (obj.name and obj.role != controlTypes.Role.CHECKBOX)):
             return
         identifier = obj.UIAAutomationId
         # These time-field IDs describe the control directly; no dialog search is needed.
-        names = {"PART_Hours": _("Hour"), "PART_Minutes": _("Minute"), "PART_AMPM": _("AM/PM")}
+        names = {"PART_Hours": _("Hour"), "PART_Minutes": _("Minute")}
         if identifier in names:
             obj.name = names[identifier]
             return
@@ -267,10 +297,6 @@ class AppModule(appModuleHandler.AppModule):
             walker = UIAHandler.handler.clientObject.RawViewWalker
             cache = UIAHandler.handler.baseCacheRequest
             parent = walker.GetParentElementBuildCache(obj.UIAElement, cache)
-            if identifier == "PART_EditableTextBox":
-                if parent and parent.CachedAutomationId == "PART_AMPM":
-                    obj.name = names["PART_AMPM"]
-                return
             if not parent or parent.CachedAutomationId != "CommonDialogWindow_1":
                 return
             # The fields and section-leading checkboxes immediately follow their localized label.
