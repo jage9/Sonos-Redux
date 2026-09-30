@@ -105,6 +105,10 @@ Logging records the current track title and artist with a timestamp, then append
 
 Various menus and dialogs read more cleanly. Extraneous button text is cleaned up, and dialogs like keyboard shortcuts read correctly.
 
+## Translations
+
+Help translate Sonos Redux and its help into your language on [Crowdin](https://crowdin.com/project/sonos-redux-for-nvda/).
+
 ## Changelog
 
 ### 2026.2
