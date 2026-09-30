@@ -1,0 +1,54 @@
+name: Crowdin translations
+
+on:
+  workflow_dispatch:
+    inputs:
+      upload_existing_translations:
+        description: Upload existing translations to Crowdin (use on first setup)
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: crowdin-translations
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - uses: astral-sh/setup-uv@v10.1.0
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gettext
+          uv sync
+      - name: Check source and extract strings
+        run: |
+          uv run python -m unittest discover -s tests -q
+          uv run scons pot
+      - name: Synchronize translations
+        uses: crowdin/github-action@v3
+        with:
+          upload_sources: true
+          upload_translations: ${{ inputs.upload_existing_translations }}
+          auto_approve_imported: false
+          download_translations: true
+          skip_untranslated_files: true
+          localization_branch_name: l10n-crowdin
+          create_pull_request: true
+          pull_request_base_branch_name: main
+          pull_request_title: Update translations from Crowdin
+          pull_request_body: Translation updates for review. This does not publish a release.
+        env:
+          CROWDIN_TOKEN: ${{ secrets.CROWDIN_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

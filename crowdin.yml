@@ -1,0 +1,25 @@
+project_id: 935095
+api_token_env: CROWDIN_TOKEN
+preserve_hierarchy: true
+
+files:
+  - source: /Sonos.pot
+    translation: /addon/locale/%two_letters_code%/LC_MESSAGES/nvda.po
+    languages_mapping: &nvda_languages
+      two_letters_code:
+        af: af_ZA
+        de-CH: de_CH
+        es-ES: es
+        es-CO: es_CO
+        nb: nb_NO
+        ne-NP: ne
+        nn-NO: nn_NO
+        pt-PT: pt_PT
+        pt-BR: pt_BR
+        sr-CS: sr
+        zh-CN: zh_CN
+        zh-HK: zh_HK
+        zh-TW: zh_TW
+  - source: /addon/doc/en/readme.md
+    translation: /addon/doc/%two_letters_code%/readme.md
+    languages_mapping: *nvda_languages
