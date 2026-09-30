@@ -404,12 +404,12 @@ msgstr "Erweiterte Sonos-Einstellungen"
 msgid "Enter a valid lyrics key, or leave it blank to generate one."
 msgstr "Geben Sie einen gültigen Songtextschlüssel ein oder lassen Sie das Feld leer, um einen neuen zu erzeugen."
 
-#. Translators: {label} is Sonos's localized Time or Duration label.
-msgid "{label} hours"
-msgstr "{label} Stunden"
+#. Translators: Time input field in the Sonos alarm editor.
+msgid "Hour"
+msgstr "Stunde"
 
-msgid "{label} minutes"
-msgstr "{label} Minuten"
+msgid "Minute"
+msgstr "Minute"
 
-msgid "{label} AM/PM"
-msgstr "{label} AM/PM"
+msgid "AM/PM"
+msgstr "AM/PM"

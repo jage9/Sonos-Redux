@@ -1111,69 +1111,57 @@ class SonosTests(unittest.TestCase):
             self.assertEqual(classes, [])
         self.assertFalse(hasattr(app, "script_saveMusic"))
 
-    def test_alarm_editor_uses_localized_sibling_labels_for_unnamed_fields(self):
+    def test_alarm_labels_use_ids_and_only_adjacent_cached_elements(self):
         app = sonos.AppModule()
-        root = types.SimpleNamespace(CurrentAutomationId="CommonDialogWindow_1")
-        rows = [
-            ("Label_2", "Time", None), ("PART_Hours", "", "edit"), ("", ":", None),
-            ("PART_Minutes", "", "edit"), ("PART_AMPM", "", "combobox"),
-            ("Label_3", "Room", None), ("", "", "combobox"),
-            ("Label_4", "Music", None), ("TextBox_1", "", "edit"),
-            ("Label_6", "Volume", None), ("", "", "slider"),
-            ("Label_7", "Duration", None), ("CheckBox_11", "No Limit", "checkbox"),
-            ("PART_Hours", "", "edit"), ("", ":", None), ("PART_Minutes", "", "edit"),
-            ("CheckBox_9", "Include grouped rooms", "checkbox"),
-        ]
-        elements = []
-        for identifier, name, role in rows:
-            elements.append(types.SimpleNamespace(
-                CurrentAutomationId=identifier, CurrentName=name, parent=root,
-                previous=elements[-1] if elements else None, role=role,
-            ))
-        inner = types.SimpleNamespace(CurrentAutomationId="PART_EditableTextBox", CurrentName="",
-                                      parent=elements[4], previous=None, role="edit")
         client = Mock()
-        client.RawViewWalker.GetParentElement.side_effect = lambda element: element.parent
-        client.RawViewWalker.GetPreviousSiblingElement.side_effect = lambda element: element.previous
-        marker = client.CreateTreeWalker.return_value.GetFirstChildElement
-        marker.return_value = elements[-1]
-        def make_obj(element):
-            obj = sonos.UIA(UIAElement=element, role=element.role, name=element.CurrentName,
-                            UIAAutomationId=element.CurrentAutomationId)
-            obj.value, obj.states = "unchanged value", {"editable"}
-            return obj
+        walker = client.RawViewWalker
         with patch.object(sonos.UIAHandler.handler, "clientObject", client):
-            for labels in (("Time", "Room", "Music", "Volume", "Duration"),
-                           ("Uhrzeit", "Raum", "Musik", "Lautstärke", "Dauer")):
-                for index, name in zip((0, 5, 7, 9, 11), labels):
-                    elements[index].CurrentName = name
-                expected = {1: labels[0] + " hours", 3: labels[0] + " minutes", 4: labels[0] + " AM/PM",
-                            6: labels[1], 8: labels[2], 10: labels[3],
-                            13: labels[4] + " hours", 15: labels[4] + " minutes"}
-                for index, name in expected.items():
-                    obj = make_obj(elements[index])
+            for identifier, name in (("PART_Hours", "Hour"), ("PART_Minutes", "Minute"), ("PART_AMPM", "AM/PM")):
+                obj = sonos.UIA(role="edit", UIAAutomationId=identifier)
+                obj.value, obj.states = "07", {"editable"}
+                app.event_NVDAObject_init(obj)
+                self.assertEqual((obj.name, obj.value, obj.states), (name, "07", {"editable"}))
+            self.assertEqual(client.mock_calls, [])  # Time fields must never walk the UIA tree.
+            parent = types.SimpleNamespace(CachedAutomationId="PART_AMPM")
+            walker.GetParentElementBuildCache.return_value = parent
+            obj = sonos.UIA(role="edit", UIAAutomationId="PART_EditableTextBox")
+            app.event_NVDAObject_init(obj)
+            self.assertEqual(obj.name, "AM/PM")
+            parent.CachedAutomationId = "OtherCombo"
+            obj.name = ""
+            app.event_NVDAObject_init(obj)
+            self.assertEqual(obj.name, "")
+            parent.CachedAutomationId = "CommonDialogWindow_1"
+            for role, identifier, labelId, names in (
+                ("combobox", "", "Label_3", ("Room", "Raum")),
+                ("edit", "TextBox_1", "Label_4", ("Music", "Musik")),
+                ("slider", "", "Label_6", ("Volume", "Lautstärke")),
+            ):
+                for name in names:
+                    label = types.SimpleNamespace(CachedAutomationId=labelId, CachedName=name)
+                    walker.GetPreviousSiblingElementBuildCache.return_value = label
+                    obj = sonos.UIA(UIAElement=object(), role=role, UIAAutomationId=identifier)
+                    client.reset_mock()
                     app.event_NVDAObject_init(obj)
                     self.assertEqual(obj.name, name)
-                    self.assertEqual((obj.value, obj.states), ("unchanged value", {"editable"}))
-                obj = make_obj(inner)
-                app.event_NVDAObject_init(obj)
-                self.assertEqual(obj.name, labels[0] + " AM/PM")
+                    self.assertEqual(len(client.mock_calls), 2)  # Parent and adjacent label, never a search.
             obj.name = "Native label"
+            client.reset_mock()
             app.event_NVDAObject_init(obj)
             self.assertEqual(obj.name, "Native label")
-            marker.return_value = None
-            obj = make_obj(elements[1])
+            self.assertEqual(client.mock_calls, [])
+            obj.name = ""
+            parent.CachedAutomationId = "OtherDialog"
             app.event_NVDAObject_init(obj)
             self.assertEqual(obj.name, "")
-            marker.return_value = elements[-1]
-            root.CurrentAutomationId = "OtherDialog"
+            parent.CachedAutomationId = "CommonDialogWindow_1"
+            label.CachedAutomationId = "Label_1"
             app.event_NVDAObject_init(obj)
             self.assertEqual(obj.name, "")
-            root.CurrentAutomationId = "CommonDialogWindow_1"
-            elements[0].CurrentAutomationId = "Label_1"
+            walker.GetPreviousSiblingElementBuildCache.return_value = None
             app.event_NVDAObject_init(obj)
             self.assertEqual(obj.name, "")
-            client.RawViewWalker.GetParentElement.side_effect = sonos.COMError()
+            walker.GetParentElementBuildCache.side_effect = sonos.COMError()
             app.event_NVDAObject_init(obj)
             self.assertEqual(obj.name, "")
 

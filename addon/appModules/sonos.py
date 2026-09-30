@@ -251,45 +251,36 @@ class AppModule(appModuleHandler.AppModule):
             clsList.insert(0, ShortcutItem)
 
     def event_NVDAObject_init(self, obj):
-        if (not isinstance(obj, UIA) or obj.name
+        if (not isinstance(obj, UIA)
                 or obj.role not in (controlTypes.Role.EDITABLETEXT, controlTypes.Role.COMBOBOX, controlTypes.Role.SLIDER)
-                or obj.UIAAutomationId not in ("", "TextBox_1", "PART_Hours", "PART_Minutes", "PART_AMPM", "PART_EditableTextBox")):
+                or obj.UIAAutomationId not in ("", "TextBox_1", "PART_Hours", "PART_Minutes", "PART_AMPM", "PART_EditableTextBox")
+                or obj.name):
+            return
+        identifier = obj.UIAAutomationId
+        # These time-field IDs describe the control directly; no dialog search is needed.
+        names = {"PART_Hours": _("Hour"), "PART_Minutes": _("Minute"), "PART_AMPM": _("AM/PM")}
+        if identifier in names:
+            obj.name = names[identifier]
             return
         try:
-            client = UIAHandler.handler.clientObject
-            walker = client.RawViewWalker
-            field = obj.UIAElement
-            parent = walker.GetParentElement(field)
-            # The AM/PM combo can give focus to its inner edit control.
-            if obj.UIAAutomationId == "PART_EditableTextBox":
-                if not parent or parent.CurrentAutomationId != "PART_AMPM":
-                    return
-                field, parent = parent, walker.GetParentElement(parent)
-            if not parent or parent.CurrentAutomationId != "CommonDialogWindow_1":
+            walker = UIAHandler.handler.clientObject.RawViewWalker
+            cache = UIAHandler.handler.baseCacheRequest
+            parent = walker.GetParentElementBuildCache(obj.UIAElement, cache)
+            if identifier == "PART_EditableTextBox":
+                if parent and parent.CachedAutomationId == "PART_AMPM":
+                    obj.name = names["PART_AMPM"]
                 return
-            # Include-grouped-rooms identifies the alarm editor without its translated title.
-            condition = client.CreatePropertyCondition(UIAHandler.UIA_AutomationIdPropertyId, "CheckBox_9")
-            if not client.CreateTreeWalker(condition).GetFirstChildElement(parent):
+            if not parent or parent.CachedAutomationId != "CommonDialogWindow_1":
                 return
-            identifier = field.CurrentAutomationId
-            label = walker.GetPreviousSiblingElement(field)
-            while label and not label.CurrentAutomationId.startswith("Label_"):
-                label = walker.GetPreviousSiblingElement(label)
+            # Room, Music and Volume each immediately follow their localized label.
+            label = walker.GetPreviousSiblingElementBuildCache(obj.UIAElement, cache)
             if not label:
                 return
-            labelId = label.CurrentAutomationId
-            name = label.CurrentName.strip()
-            if not name:
-                return
-            if identifier in ("PART_Hours", "PART_Minutes", "PART_AMPM") and labelId in ("Label_2", "Label_7"):
-                # Translators: {label} is Sonos's localized Time or Duration label.
-                formats = {"PART_Hours": _("{label} hours"), "PART_Minutes": _("{label} minutes"),
-                           "PART_AMPM": _("{label} AM/PM")}
-                obj.name = formats[identifier].format(label=name)
-            elif (identifier == "TextBox_1" and labelId == "Label_4"
+            labelId = label.CachedAutomationId
+            if (identifier == "TextBox_1" and labelId == "Label_4"
                     or not identifier and obj.role == controlTypes.Role.COMBOBOX and labelId == "Label_3"
                     or not identifier and obj.role == controlTypes.Role.SLIDER and labelId == "Label_6"):
-                obj.name = name
+                obj.name = label.CachedName.strip()
         except COMError:
             pass  # The dialog may close while NVDA is creating the object.
 
