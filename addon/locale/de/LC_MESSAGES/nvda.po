@@ -413,3 +413,6 @@ msgstr "Minute"
 
 msgid "System information"
 msgstr "Systeminformationen"
+
+msgid "Added support for translations via Crowdin. Improved speech in several dialogs, including Alarms, Add Radio Station, and About."
+msgstr "Unterstützung für Übersetzungen über Crowdin hinzugefügt. Verbesserte Sprachausgabe in mehreren Dialogen, darunter Wecker, Radiosender hinzufügen und Info."

@@ -1023,9 +1023,10 @@ class AppModule(appModuleHandler.AppModule):
                            else _("No lyrics found for this recording."))
                 return
             title = _("Lyrics for {title} by {artist}").format(title=record["trackName"], artist=record["artistName"])
+            attribution = _("Lyrics provided by LRCLIB")
             content = (f"<h1>{escape(title)}</h1><p>{escape(record['albumName'])}</p>"
                        f"<pre>{escape(lyrics)}</pre>"
-                       f'<p><a href="https://lrclib.net/">{escape(_("Lyrics provided by LRCLIB"))}</a></p>')
+                       f'<p><a href="https://lrclib.net/">{escape(attribution)}</a></p>')
             windowsBefore = set(wx.GetTopLevelWindows())
             ui.browseableMessage(content, title=title, isHtml=True)
             for window in wx.GetTopLevelWindows():
@@ -1053,8 +1054,9 @@ class AppModule(appModuleHandler.AppModule):
             if displayDialogAsModal(dialog) != wx.ID_OK:
                 return
             title = _("Lyrics for {title} by {artist}").format(title=record["trackName"], artist=record["artistName"])
+            attribution = _("Lyrics provided by LRCLIB")
             text = (f"{title}\n{record['albumName']}\n\n{_lyricsText(record)}\n\n"
-                    f"{_('Lyrics provided by LRCLIB')}\nhttps://lrclib.net/\n")
+                    f"{attribution}\nhttps://lrclib.net/\n")
             try:
                 with FaultTolerantFile(dialog.GetPath()) as output:
                     output.write(text.encode("utf-8"))

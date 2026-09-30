@@ -2,7 +2,7 @@
 
 Updated support and enhancements for the Sonos desktop app with NVDA. Requires NVDA 2026.1 or later.
 
-[Download the latest add-on, currently 2026.2](https://github.com/jage9/Sonos-Redux/releases/latest/download/sonos-redux.nvda-addon)
+[Download the latest add-on, currently 2026.3](https://github.com/jage9/Sonos-Redux/releases/latest/download/sonos-redux.nvda-addon)
 
 Originally by Ralf Kefferpuetz <novalis7747@live.com>.
 
@@ -107,9 +107,14 @@ Various menus and dialogs read more cleanly. Extraneous button text is cleaned u
 
 ## Translations
 
-Help translate Sonos Redux and its help into your language on [Crowdin](https://crowdin.com/project/sonos-redux-for-nvda/).
+Help translate Sonos Redux into your language on [Crowdin](https://crowdin.com/project/sonos-redux-for-nvda/).
 
 ## Changelog
+
+### 2026.3
+
+- Added support for translations via Crowdin.
+- Improved speech in several dialogs, including Alarms, Add Radio Station, and About.
 
 ### 2026.2
 
