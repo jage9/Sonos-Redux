@@ -1165,6 +1165,20 @@ class SonosTests(unittest.TestCase):
             app.event_NVDAObject_init(obj)
             self.assertEqual(obj.name, "")
 
+    def test_raw_enter_and_escape_shortcuts_are_suppressed_for_any_button(self):
+        for identifier, name, shortcut in (("cancelButton_1", "Cancel", "\x1b"),
+                                            ("nextButton_1", "Next", "\r"),
+                                            ("otherButton", "Abbrechen", "\x1b")):
+            button = sonos.UIA(role="button", name=name, UIAAutomationId=identifier)
+            button.rawShortcut, button.rawDescription = shortcut, "Useful description"
+            sonos.AppModule().chooseNVDAObjectOverlayClasses(button, [])
+            self.assertEqual(button.keyboardShortcut, "")
+            self.assertEqual((button.name, button._get_description()), (name, "Useful description"))
+        button.rawShortcut = "Alt+C"
+        del button.keyboardShortcut
+        sonos.AppModule().chooseNVDAObjectOverlayClasses(button, [])
+        self.assertFalse(hasattr(button, "keyboardShortcut"))
+
     def test_diagnostics_button_drops_trailing_ellipsis_only(self):
         for name, expected in (("Submit Diagnostics…", "Submit Diagnostics"),
                                ("Submit Diagnostics...", "Submit Diagnostics"),

@@ -227,6 +227,8 @@ class AppModule(appModuleHandler.AppModule):
     def chooseNVDAObjectOverlayClasses(self, obj, clsList):
         if not isinstance(obj, UIA):
             return
+        if obj.role == controlTypes.Role.BUTTON and UIA._get_keyboardShortcut(obj) in ("\r", "\x1b"):
+            obj.keyboardShortcut = ""
         if obj.role == controlTypes.Role.SLIDER and obj.UIAAutomationId == "PART_Scrubber":
             clsList.insert(0, Scrubber)
         elif obj.role in (controlTypes.Role.BUTTON, controlTypes.Role.TOGGLEBUTTON) and (
