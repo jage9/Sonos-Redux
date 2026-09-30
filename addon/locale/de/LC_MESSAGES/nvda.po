@@ -157,9 +157,6 @@ msgstr "Sekunden, Minuten:Sekunden oder Stunden:Minuten:Sekunden eingeben, höch
 msgid "The track or room changed. Open Jump to Time again."
 msgstr "Titel oder Raum wurde gewechselt. Den Dialog zum Springen erneut öffnen."
 
-msgid "Group {group}, {milliseconds} milliseconds"
-msgstr "Gruppe {group}, {milliseconds} Millisekunden"
-
 msgid "Report sleep timer status."
 msgstr "Status des Schlaf-Timers ansagen."
 
@@ -223,8 +220,8 @@ msgstr "Titelwechsel &ansagen:"
 msgid "&Log track titles"
 msgstr "Titel &protokollieren"
 
-msgid "Log &filename:"
-msgstr "Protokoll&datei:"
+msgid "Log f&ilename:"
+msgstr "Pr&otokolldatei:"
 
 msgid "&Browse..."
 msgstr "&Durchsuchen..."
@@ -292,7 +289,7 @@ msgid "Fading out {group}"
 msgstr "Lautstärke für {group} wird abgesenkt"
 
 msgid "&Fade seconds:"
-msgstr "Absenk&dauer in Sekunden:"
+msgstr "A&bsenkdauer in Sekunden:"
 
 msgid "No loop bookmark"
 msgstr "Kein Schleifen-Lesezeichen"

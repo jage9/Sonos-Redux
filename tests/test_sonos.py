@@ -886,11 +886,9 @@ class SonosTests(unittest.TestCase):
         group[0] = "Kitchen"
         old[1](*old[2])
         self.assertEqual(nvda["ui"].messages, [])
-        from unittest.mock import Mock, patch
         self.assertEqual(latest[0], 75)
-        with patch.object(sonos, "perf_counter", return_value=latest[2][-1] + 0.22):
-            latest[1](*latest[2])
-        self.assertEqual(nvda["ui"].messages, ["Group Kitchen, 220 milliseconds"])
+        latest[1](*latest[2])
+        self.assertEqual(nvda["ui"].messages, ["Group Kitchen"])
         nvda["ui"].messages.clear()
         app.script_nextGroup(None)
         while nvda["core"].calls:

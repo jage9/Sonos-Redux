@@ -121,7 +121,7 @@ class SonosSettingsPanel(SettingsPanel):
         self.announce.SetSelection(config.conf["sonos"]["announcementMode"])
         self.enabled = helper.addItem(wx.CheckBox(self, label=_("&Log track titles")))
         self.enabled.SetValue(config.conf["sonos"]["logTracks"])
-        self.filename = helper.addLabeledControl(_("Log &filename:"), wx.TextCtrl,
+        self.filename = helper.addLabeledControl(_("Log f&ilename:"), wx.TextCtrl,
                                                 value=config.conf["sonos"]["logFile"])
         self.browse = helper.addItem(wx.Button(self, label=_("&Browse...")))
         self.openLog = helper.addItem(wx.Button(self, label=_("&Open")))

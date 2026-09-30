@@ -1125,9 +1125,7 @@ class AppModule(appModuleHandler.AppModule):
         except (ControlUnavailable, COMError):
             group = oldGroup
         if group != oldGroup:
-            ui.message(_("Group {group}, {milliseconds} milliseconds").format(
-                group=group, milliseconds=round((perf_counter() - started) * 1000),
-            ))
+            ui.message(_("Group {group}").format(group=group))
             return
         if attempt < 11 and perf_counter() - started < 1.2:
             core.callLater(75, self._reportGroupChange, windowHandle, oldGroup, sequence, attempt + 1, started)
