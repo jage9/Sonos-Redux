@@ -188,6 +188,8 @@ class ButtonLabels(UIA):
         name = super()._get_name()
         if not name and self.UIAAutomationId == "equalizerMenuButton":
             return super()._get_description() or name
+        if name and self.UIAAutomationId == "submitDiagnosticsButton_1":
+            return name.rstrip(".… ")
         return name
 
 

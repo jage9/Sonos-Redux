@@ -1046,7 +1046,6 @@ class SonosTests(unittest.TestCase):
         for identifier, name, description, shortcut in (
             ("playButton", "Play/Pause", "", "Toggle Play"),
             ("PART_OKButton", "OK", "", "\r"),
-            ("submitDiagnosticsButton_1", "Submit Diagnostics…", "", "Submit Diagnostics"),
             ("PART_CancelButton", "Cancel", "", "\x1b"),
             ("pauseAllButton_1", "Pause All", "Pause All", "Pause All"),
             ("alarmsButton_1", "Alarms", "Alarms", "Alarms"),
@@ -1165,6 +1164,18 @@ class SonosTests(unittest.TestCase):
             walker.GetParentElementBuildCache.side_effect = sonos.COMError()
             app.event_NVDAObject_init(obj)
             self.assertEqual(obj.name, "")
+
+    def test_diagnostics_button_drops_trailing_ellipsis_only(self):
+        for name, expected in (("Submit Diagnostics…", "Submit Diagnostics"),
+                               ("Submit Diagnostics...", "Submit Diagnostics"),
+                               ("Diagnose senden…", "Diagnose senden")):
+            button = sonos.ButtonLabels(role="button", name=name, UIAAutomationId="submitDiagnosticsButton_1")
+            classes = []
+            sonos.AppModule().chooseNVDAObjectOverlayClasses(button, classes)
+            self.assertEqual(classes, [sonos.ButtonLabels])
+            self.assertEqual(button._get_name(), expected)
+            button.UIAAutomationId = "otherButton"
+            self.assertEqual(button._get_name(), name)
 
     def test_about_fields_use_adjacent_labels_without_changing_values(self):
         app = sonos.AppModule()
