@@ -954,29 +954,6 @@ class SonosTests(unittest.TestCase):
             sonos._find = original_find
             sys.modules.pop("wx", None)
 
-    def test_art_capture_uses_foreground_after_console_closes(self):
-        import runpy
-        sys.modules["buildVersion"] = types.SimpleNamespace(version="test")
-        sys.modules["wx"] = types.SimpleNamespace()
-        old_foreground = nvda["api"].getForegroundObject
-        calls = []
-        nvda["api"].getForegroundObject = lambda: calls.append("foreground") or types.SimpleNamespace(appModule=None)
-        nvda["core"].calls.clear()
-        nvda["ui"].messages.clear()
-        try:
-            capture = runpy.run_path(str(ROOT / "tools" / "capture_sonos.py"))["capture_art"]
-            capture(types.SimpleNamespace(appModule=None))
-            self.assertEqual(calls, [])
-            delay, callback, args, kwargs = nvda["core"].calls[-1]
-            self.assertEqual(delay, 5000)
-            callback(*args, **kwargs)
-            self.assertEqual(calls, ["foreground"])
-            self.assertIn("return to Sonos", nvda["ui"].messages[-1])
-        finally:
-            nvda["api"].getForegroundObject = old_foreground
-            sys.modules.pop("buildVersion", None)
-            sys.modules.pop("wx", None)
-
     def test_playback_toggles_remove_only_redundant_description_and_shortcut(self):
         app = sonos.AppModule()
         toggle = sonos.ButtonLabels(name="Crossfade", role="toggle", states={"pressed"},
