@@ -36,7 +36,7 @@ def _install_nvda_stubs():
         processID = 1
     _module("appModuleHandler", AppModule=AppModule)
     _module("comtypes", COMError=type("COMError", (Exception,), {}))
-    roles = types.SimpleNamespace(DATAITEM="dataitem", EDITABLETEXT="edit", DIALOG="dialog", SLIDER="slider", GRAPHIC="graphic", TOGGLEBUTTON="toggle", BUTTON="button", MENUITEM="menuitem", CHECKBOX="checkbox")
+    roles = types.SimpleNamespace(DATAITEM="dataitem", EDITABLETEXT="edit", DIALOG="dialog", SLIDER="slider", GRAPHIC="graphic", TOGGLEBUTTON="toggle", BUTTON="button", MENUITEM="menuitem", CHECKBOX="checkbox", COMBOBOX="combobox")
     states = types.SimpleNamespace(UNAVAILABLE="unavailable", PRESSED="pressed", CHECKED="checked", EDITABLE="editable", OFFSCREEN="offscreen")
     _module("controlTypes", Role=roles, State=states)
 
@@ -1110,6 +1110,72 @@ class SonosTests(unittest.TestCase):
             app.chooseNVDAObjectOverlayClasses(checkbox, classes)
             self.assertEqual(classes, [])
         self.assertFalse(hasattr(app, "script_saveMusic"))
+
+    def test_alarm_editor_uses_localized_sibling_labels_for_unnamed_fields(self):
+        app = sonos.AppModule()
+        root = types.SimpleNamespace(CurrentAutomationId="CommonDialogWindow_1")
+        rows = [
+            ("Label_2", "Time", None), ("PART_Hours", "", "edit"), ("", ":", None),
+            ("PART_Minutes", "", "edit"), ("PART_AMPM", "", "combobox"),
+            ("Label_3", "Room", None), ("", "", "combobox"),
+            ("Label_4", "Music", None), ("TextBox_1", "", "edit"),
+            ("Label_6", "Volume", None), ("", "", "slider"),
+            ("Label_7", "Duration", None), ("CheckBox_11", "No Limit", "checkbox"),
+            ("PART_Hours", "", "edit"), ("", ":", None), ("PART_Minutes", "", "edit"),
+            ("CheckBox_9", "Include grouped rooms", "checkbox"),
+        ]
+        elements = []
+        for identifier, name, role in rows:
+            elements.append(types.SimpleNamespace(
+                CurrentAutomationId=identifier, CurrentName=name, parent=root,
+                previous=elements[-1] if elements else None, role=role,
+            ))
+        inner = types.SimpleNamespace(CurrentAutomationId="PART_EditableTextBox", CurrentName="",
+                                      parent=elements[4], previous=None, role="edit")
+        client = Mock()
+        client.RawViewWalker.GetParentElement.side_effect = lambda element: element.parent
+        client.RawViewWalker.GetPreviousSiblingElement.side_effect = lambda element: element.previous
+        marker = client.CreateTreeWalker.return_value.GetFirstChildElement
+        marker.return_value = elements[-1]
+        def make_obj(element):
+            obj = sonos.UIA(UIAElement=element, role=element.role, name=element.CurrentName,
+                            UIAAutomationId=element.CurrentAutomationId)
+            obj.value, obj.states = "unchanged value", {"editable"}
+            return obj
+        with patch.object(sonos.UIAHandler.handler, "clientObject", client):
+            for labels in (("Time", "Room", "Music", "Volume", "Duration"),
+                           ("Uhrzeit", "Raum", "Musik", "Lautstärke", "Dauer")):
+                for index, name in zip((0, 5, 7, 9, 11), labels):
+                    elements[index].CurrentName = name
+                expected = {1: labels[0] + " hours", 3: labels[0] + " minutes", 4: labels[0] + " AM/PM",
+                            6: labels[1], 8: labels[2], 10: labels[3],
+                            13: labels[4] + " hours", 15: labels[4] + " minutes"}
+                for index, name in expected.items():
+                    obj = make_obj(elements[index])
+                    app.event_NVDAObject_init(obj)
+                    self.assertEqual(obj.name, name)
+                    self.assertEqual((obj.value, obj.states), ("unchanged value", {"editable"}))
+                obj = make_obj(inner)
+                app.event_NVDAObject_init(obj)
+                self.assertEqual(obj.name, labels[0] + " AM/PM")
+            obj.name = "Native label"
+            app.event_NVDAObject_init(obj)
+            self.assertEqual(obj.name, "Native label")
+            marker.return_value = None
+            obj = make_obj(elements[1])
+            app.event_NVDAObject_init(obj)
+            self.assertEqual(obj.name, "")
+            marker.return_value = elements[-1]
+            root.CurrentAutomationId = "OtherDialog"
+            app.event_NVDAObject_init(obj)
+            self.assertEqual(obj.name, "")
+            root.CurrentAutomationId = "CommonDialogWindow_1"
+            elements[0].CurrentAutomationId = "Label_1"
+            app.event_NVDAObject_init(obj)
+            self.assertEqual(obj.name, "")
+            client.RawViewWalker.GetParentElement.side_effect = sonos.COMError()
+            app.event_NVDAObject_init(obj)
+            self.assertEqual(obj.name, "")
 
     def test_sleep_timer_keeps_countdown_without_repeating_base_label(self):
         for label in ("Sleep Timer", "Schlummermodus"):
