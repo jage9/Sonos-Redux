@@ -219,7 +219,7 @@ class AppModule(appModuleHandler.AppModule):
             obj.UIAAutomationId in (
                 "muteButton", "repeatToggleButton", "shuffleToggleButton", "crossfadeToggleButton",
                 "playButton", "sleepTimerButton_1", "equalizerButton", "equalizerMenuButton",
-                "pauseAllButton_1", "alarmsButton_1",
+                "pauseAllButton_1", "alarmsButton_1", "PART_OKButton", "PART_CancelButton",
             )
             # Button_1 is reused elsewhere; only these confirmed action markers identify our buttons.
             or (obj.UIAAutomationId == "Button_1"
@@ -252,9 +252,10 @@ class AppModule(appModuleHandler.AppModule):
 
     def event_NVDAObject_init(self, obj):
         if (not isinstance(obj, UIA)
-                or obj.role not in (controlTypes.Role.EDITABLETEXT, controlTypes.Role.COMBOBOX, controlTypes.Role.SLIDER)
-                or obj.UIAAutomationId not in ("", "TextBox_1", "PART_Hours", "PART_Minutes", "PART_AMPM", "PART_EditableTextBox")
-                or obj.name):
+                or obj.role not in (controlTypes.Role.EDITABLETEXT, controlTypes.Role.COMBOBOX, controlTypes.Role.SLIDER, controlTypes.Role.CHECKBOX)
+                or obj.UIAAutomationId not in ("", "TextBox_1", "PART_Hours", "PART_Minutes", "PART_AMPM", "PART_EditableTextBox", "CheckBox_1", "CheckBox_11")
+                or (obj.role == controlTypes.Role.CHECKBOX and obj.UIAAutomationId not in ("CheckBox_1", "CheckBox_11"))
+                or (obj.name and obj.role != controlTypes.Role.CHECKBOX)):
             return
         identifier = obj.UIAAutomationId
         # These time-field IDs describe the control directly; no dialog search is needed.
@@ -272,12 +273,15 @@ class AppModule(appModuleHandler.AppModule):
                 return
             if not parent or parent.CachedAutomationId != "CommonDialogWindow_1":
                 return
-            # Room, Music and Volume each immediately follow their localized label.
+            # The fields and section-leading checkboxes immediately follow their localized label.
             label = walker.GetPreviousSiblingElementBuildCache(obj.UIAElement, cache)
             if not label:
                 return
             labelId = label.CachedAutomationId
-            if (identifier == "TextBox_1" and labelId == "Label_4"
+            if obj.role == controlTypes.Role.CHECKBOX:
+                if (identifier, labelId) in (("CheckBox_1", "Label_5"), ("CheckBox_11", "Label_7")):
+                    obj.name = " ".join(filter(None, (label.CachedName.strip(), obj.name)))
+            elif (identifier == "TextBox_1" and labelId == "Label_4"
                     or not identifier and obj.role == controlTypes.Role.COMBOBOX and labelId == "Label_3"
                     or not identifier and obj.role == controlTypes.Role.SLIDER and labelId == "Label_6"):
                 obj.name = label.CachedName.strip()

@@ -1044,6 +1044,8 @@ class SonosTests(unittest.TestCase):
     def test_sonos_action_labels_and_eq_name(self):
         for identifier, name, description, shortcut in (
             ("playButton", "Play/Pause", "", "Toggle Play"),
+            ("PART_OKButton", "OK", "", "\r"),
+            ("PART_CancelButton", "Cancel", "", "\x1b"),
             ("pauseAllButton_1", "Pause All", "Pause All", "Pause All"),
             ("alarmsButton_1", "Alarms", "Alarms", "Alarms"),
             ("Button_1", "Save to Your Music", "", "Now Playing Button"),
@@ -1164,6 +1166,36 @@ class SonosTests(unittest.TestCase):
             walker.GetParentElementBuildCache.side_effect = sonos.COMError()
             app.event_NVDAObject_init(obj)
             self.assertEqual(obj.name, "")
+
+    def test_alarm_section_labels_preserve_checkbox_names_and_states(self):
+        app = sonos.AppModule()
+        client = Mock()
+        walker = client.RawViewWalker
+        walker.GetParentElementBuildCache.return_value = types.SimpleNamespace(CachedAutomationId="CommonDialogWindow_1")
+        with patch.object(sonos.UIAHandler.handler, "clientObject", client):
+            for identifier, labelId, heading, name in (
+                ("CheckBox_1", "Label_5", "Schedule", "Once Only"),
+                ("CheckBox_11", "Label_7", "Duration", "No Limit"),
+                ("CheckBox_1", "Label_5", "Zeitplan", "Nur einmal"),
+                ("CheckBox_11", "Label_7", "Dauer", "Unbegrenzt"),
+            ):
+                label = types.SimpleNamespace(CachedAutomationId=labelId, CachedName=heading)
+                walker.GetPreviousSiblingElementBuildCache.return_value = label
+                obj = sonos.UIA(role="checkbox", name=name, UIAAutomationId=identifier, states={"checked"})
+                client.reset_mock()
+                app.event_NVDAObject_init(obj)
+                self.assertEqual(obj.name, heading + " " + name)
+                self.assertEqual(obj.states, {"checked"})
+                self.assertEqual(len(client.mock_calls), 2)
+                label.CachedAutomationId = "OtherLabel"
+                obj.name = name
+                app.event_NVDAObject_init(obj)
+                self.assertEqual(obj.name, name)
+            day = sonos.UIA(role="checkbox", name="Monday", UIAAutomationId="CheckBox_2")
+            client.reset_mock()
+            app.event_NVDAObject_init(day)
+            self.assertEqual(day.name, "Monday")
+            self.assertEqual(client.mock_calls, [])
 
     def test_sleep_timer_keeps_countdown_without_repeating_base_label(self):
         for label in ("Sleep Timer", "Schlummermodus"):
