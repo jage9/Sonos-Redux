@@ -945,14 +945,14 @@ class SonosTests(unittest.TestCase):
         root = types.SimpleNamespace(windowHandle=42)
         app._root = lambda: root
         app._activateButton = Mock()
-        for button in ("alarmsButton_1", "sleepTimerButton_1"):
+        for button in ("alarmsButton_1", "sleepTimerButton_1", "saveButton_1", "clearButton_1", "equalizerMenuButton"):
             with patch.object(sonos.api, "getFocusObject", return_value=original):
                 app._openReturningFocus(button)
             returned = types.SimpleNamespace(windowHandle=42, UIAAutomationId=button, role="button")
             nvda["core"].calls.clear()
             app.event_gainFocus(returned, Mock())
             self.assertFalse(nvda["core"].calls)
-            if button == "alarmsButton_1":
+            if button != "sleepTimerButton_1":
                 app.event_gainFocus(types.SimpleNamespace(role="dialog", windowHandle=99), Mock())
             else:
                 app.event_focusEntered(types.SimpleNamespace(UIAAutomationId="mainListBox", windowHandle=42), Mock())
@@ -1001,13 +1001,13 @@ class SonosTests(unittest.TestCase):
         app = sonos.AppModule()
         gesture = object()
         app._scrubGesture = Mock()
-        app._activateButton = Mock()
+        app._openReturningFocus = Mock()
         app.script_openMusicEQ(gesture)
         self.assertEqual(app.script_openMusicEQ.scriptMetadata["gesture"], "kb:control+o")
         sentGesture, action = app._scrubGesture.call_args.args
         self.assertIs(sentGesture, gesture)
         action()
-        app._activateButton.assert_called_once_with("equalizerMenuButton", "transportBar")
+        app._openReturningFocus.assert_called_once_with("equalizerMenuButton", "transportBar")
 
     def test_info_command_focuses_options_after_opening_without_stealing_focus(self):
         app = sonos.AppModule()

@@ -432,11 +432,11 @@ class AppModule(appModuleHandler.AppModule):
         button.doAction()
         return button
 
-    def _openReturningFocus(self, identifier):
+    def _openReturningFocus(self, identifier, panel="browsePanel"):
         saved = dict(focus=api.getFocusObject(), window=self._root().windowHandle, button=identifier, entered=False)
         self._dialogReturn = saved
         try:
-            return self._activateButton(identifier, "browsePanel")
+            return self._activateButton(identifier, panel)
         except Exception:
             self._dialogReturn = None
             raise
@@ -459,8 +459,7 @@ class AppModule(appModuleHandler.AppModule):
             return
         saved = getattr(self, "_dialogReturn", None)
         if saved:
-            if (saved["button"] == "alarmsButton_1" and obj.role == controlTypes.Role.DIALOG
-                    and obj.windowHandle != saved["window"]):
+            if obj.windowHandle != saved["window"]:
                 saved["entered"] = True
             elif (saved["entered"] and obj.windowHandle == saved["window"]
                     and getattr(obj, "UIAAutomationId", "") == saved["button"]):
@@ -497,11 +496,11 @@ class AppModule(appModuleHandler.AppModule):
 
     @script(description=_("Clear Queue."), gesture="kb:control+delete")
     def script_clearQueue(self, gesture):
-        self._scrubGesture(gesture, lambda: self._activateButton("clearButton_1", "queuePanel"))
+        self._scrubGesture(gesture, lambda: self._openReturningFocus("clearButton_1", "queuePanel"))
 
     @script(description=_("Save Queue."), gesture="kb:control+shift+s")
     def script_saveQueue(self, gesture):
-        self._scrubGesture(gesture, lambda: self._activateButton("saveButton_1", "queuePanel"))
+        self._scrubGesture(gesture, lambda: self._openReturningFocus("saveButton_1", "queuePanel"))
 
     @script(description=_("Pause all rooms."), gesture="kb:control+shift+p")
     def script_pauseAll(self, gesture):
@@ -509,7 +508,7 @@ class AppModule(appModuleHandler.AppModule):
 
     @script(description=_("Open Music EQ."), gesture="kb:control+o")
     def script_openMusicEQ(self, gesture):
-        self._scrubGesture(gesture, lambda: self._activateButton("equalizerMenuButton", "transportBar"))
+        self._scrubGesture(gesture, lambda: self._openReturningFocus("equalizerMenuButton", "transportBar"))
 
     @script(description=_("Open Alarms."), gesture="kb:control+a")
     def script_openAlarms(self, gesture):
