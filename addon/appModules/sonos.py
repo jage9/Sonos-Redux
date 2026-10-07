@@ -44,13 +44,16 @@ def _text(obj):
     return (obj.name or "").strip()
 
 
-def _find(root, automationId):
+def _find(root, automationId, *, childrenOnly=False):
     client = UIAHandler.handler.clientObject
     element = root.UIAElement if isinstance(root, UIA) else client.ElementFromHandle(root.windowHandle)
     condition = client.CreatePropertyCondition(UIAHandler.UIA_AutomationIdPropertyId, automationId)
-    # Sonos omits some text from bulk searches; a filtered raw-tree walker finds it.
-    walker = client.CreateTreeWalker(condition)
-    found = walker.GetFirstChildElementBuildCache(element, UIAHandler.handler.baseCacheRequest)
+    if childrenOnly:
+        found = element.FindFirstBuildCache(UIAHandler.TreeScope_Children, condition, UIAHandler.handler.baseCacheRequest)
+    else:
+        # Sonos omits some text from bulk searches; a filtered raw-tree walker finds it.
+        walker = client.CreateTreeWalker(condition)
+        found = walker.GetFirstChildElementBuildCache(element, UIAHandler.handler.baseCacheRequest)
     if not found:
         raise ControlUnavailable(automationId)
     obj = UIA(UIAElement=found)
@@ -411,18 +414,30 @@ class AppModule(appModuleHandler.AppModule):
 
     def _activateButton(self, identifier, panel=None):
         root = self._root()
-        button = _find(_find(root, panel) if panel else root, identifier)
+        button = _find(_find(root, panel, childrenOnly=True) if panel else root, identifier, childrenOnly=True)
         if button.states & {controlTypes.State.UNAVAILABLE, controlTypes.State.OFFSCREEN}:
             raise ControlUnavailable(identifier)
         button.doAction()
 
     @script(description=_("Open Info and Options."), gesture="kb:control+i")
     def script_openInfoOptions(self, gesture):
-        self._scrubGesture(gesture, lambda: self._activateButton("Button_1", "nowPlayingPanel"))
+        def openOptions():
+            root = self._root()
+            windowHandle = root.windowHandle
+            self._activateButton("Button_1", "nowPlayingPanel")
+            def focusOptions():
+                if api.getForegroundObject().windowHandle != windowHandle:
+                    return
+                options = _find(_find(root, "browsePanel", childrenOnly=True), "itemsList", childrenOnly=True)
+                if options.states & {controlTypes.State.UNAVAILABLE, controlTypes.State.OFFSCREEN}:
+                    raise ControlUnavailable("Options list is unavailable")
+                options.setFocus()
+            core.callLater(0, self._run, focusOptions)
+        self._scrubGesture(gesture, openOptions)
 
     @script(description=_("Open Alarms."), gesture="kb:control+a")
     def script_openAlarms(self, gesture):
-        self._scrubGesture(gesture, lambda: self._activateButton("alarmsButton_1"))
+        self._scrubGesture(gesture, lambda: self._activateButton("alarmsButton_1", "browsePanel"))
 
     def _transport(self, identifier, root=None, *, allowDisabled=False):
         control = _find(_find(root if root is not None else self._root(), "transportBar"), identifier)

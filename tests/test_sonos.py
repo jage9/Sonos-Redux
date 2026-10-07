@@ -102,6 +102,7 @@ def _install_nvda_stubs():
         "UIAHandler",
         handler=Handler(),
         TreeScope_Descendants=4,
+        TreeScope_Children=2,
         UIA_AutomationIdPropertyId=30011,
         UIA_SelectionItemIsSelectedPropertyId=30079,
         UIA_NamePropertyId=30005,
@@ -831,9 +832,23 @@ class SonosTests(unittest.TestCase):
             sonos._find = original_find
             nvda["api"].getFocusObject = lambda: None
 
+    def test_direct_child_lookup_does_not_walk_descendants(self):
+        client, element, found = Mock(), Mock(), object()
+        element.FindFirstBuildCache.return_value = found
+        root = sonos.UIA(UIAElement=element)
+        with patch.object(sonos.UIAHandler.handler, "clientObject", client):
+            result = sonos._find(root, "browsePanel", childrenOnly=True)
+            self.assertIs(result.UIAElement, found)
+            element.FindFirstBuildCache.assert_called_once_with(2, client.CreatePropertyCondition.return_value,
+                                                               sonos.UIAHandler.handler.baseCacheRequest)
+            client.CreateTreeWalker.assert_not_called()
+            element.FindFirstBuildCache.return_value = None
+            with self.assertRaises(sonos.ControlUnavailable):
+                sonos._find(root, "browsePanel", childrenOnly=True)
+
     def test_info_and_alarm_commands_activate_buttons_through_scrub_guard(self):
         app = sonos.AppModule()
-        root = types.SimpleNamespace(role="window", processID=1)
+        root = types.SimpleNamespace(role="window", processID=1, windowHandle=42)
         focus = types.SimpleNamespace(role="button", states=set())
         nvda["api"].getFocusObject = lambda: focus
         app._root = lambda: root
@@ -844,14 +859,15 @@ class SonosTests(unittest.TestCase):
             "Button_1": types.SimpleNamespace(states=set(), doAction=lambda: calls.append("info")),
             "alarmsButton_1": types.SimpleNamespace(states=set(), doAction=lambda: calls.append("alarms")),
         }
-        panel = object()
-        def find(parent, identifier):
+        panels = {"nowPlayingPanel": object(), "browsePanel": object()}
+        def find(parent, identifier, **kwargs):
             if identifier == "transportBar":
                 return object()
-            if identifier == "nowPlayingPanel":
+            self.assertTrue(kwargs.get("childrenOnly"))
+            if identifier in panels:
                 self.assertIs(parent, root)
-                return panel
-            self.assertIs(parent, panel if identifier == "Button_1" else root)
+                return panels[identifier]
+            self.assertIs(parent, panels["nowPlayingPanel" if identifier == "Button_1" else "browsePanel"])
             return buttons[identifier]
         sonos._find = find
         try:
@@ -875,10 +891,10 @@ class SonosTests(unittest.TestCase):
                 self.assertEqual(calls[before:], [])
                 self.assertEqual(nvda["ui"].messages[-1], "This control is unavailable in the current Sonos view.")
 
-            def missing_transport(parent, identifier):
+            def missing_transport(parent, identifier, **kwargs):
                 if identifier == "transportBar":
                     raise sonos.ControlUnavailable(identifier)
-                return find(parent, identifier)
+                return find(parent, identifier, **kwargs)
             sonos._find = missing_transport
             app.script_openInfoOptions(gesture)
             app.script_openAlarms(gesture)
@@ -886,6 +902,38 @@ class SonosTests(unittest.TestCase):
         finally:
             sonos._find = original_find
             nvda["api"].getFocusObject = lambda: None
+
+    def test_info_command_focuses_options_after_opening_without_stealing_focus(self):
+        app = sonos.AppModule()
+        root = types.SimpleNamespace(windowHandle=42)
+        panel = object()
+        options = Mock(states=set())
+        app._root = lambda: root
+        app._scrubGesture = lambda gesture, action: action()
+        app._activateButton = Mock()
+        def find(parent, identifier, *, childrenOnly=False):
+            self.assertIs(parent, root if identifier == "browsePanel" else panel)
+            self.assertIn(identifier, ("browsePanel", "itemsList"))
+            self.assertTrue(childrenOnly)
+            return panel if identifier == "browsePanel" else options
+        with patch.object(sonos, "_find", side_effect=find), \
+             patch.object(sonos.api, "getForegroundObject", return_value=root):
+            nvda["core"].calls.clear()
+            app.script_openInfoOptions(None)
+            app._activateButton.assert_called_once_with("Button_1", "nowPlayingPanel")
+            options.setFocus.assert_not_called()
+            delay, callback, args, kwargs = nvda["core"].calls[-1]
+            self.assertEqual(delay, 0)
+            callback(*args, **kwargs)
+            options.setFocus.assert_called_once_with()
+            options.setFocus.reset_mock()
+            root.windowHandle = 99
+            callback(*args, **kwargs)
+            options.setFocus.assert_not_called()
+            root.windowHandle = 42
+            options.states = {"offscreen"}
+            callback(*args, **kwargs)
+            options.setFocus.assert_not_called()
 
     def test_slider_overlay_formats_time_and_leaves_other_sliders_alone(self):
         app = sonos.AppModule()
