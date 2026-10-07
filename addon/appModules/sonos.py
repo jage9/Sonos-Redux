@@ -495,6 +495,14 @@ class AppModule(appModuleHandler.AppModule):
             core.callLater(0, self._run, focusOptions)
         self._scrubGesture(gesture, openOptions)
 
+    @script(description=_("Clear Queue."), gesture="kb:control+delete")
+    def script_clearQueue(self, gesture):
+        self._scrubGesture(gesture, lambda: self._activateButton("clearButton_1", "queuePanel"))
+
+    @script(description=_("Save Queue."), gesture="kb:control+shift+s")
+    def script_saveQueue(self, gesture):
+        self._scrubGesture(gesture, lambda: self._activateButton("saveButton_1", "queuePanel"))
+
     @script(description=_("Pause all rooms."), gesture="kb:control+shift+p")
     def script_pauseAll(self, gesture):
         self._scrubGesture(gesture, lambda: self._activateButton("pauseAllButton_1", "zonesPanel"))
