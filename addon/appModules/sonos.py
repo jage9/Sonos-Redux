@@ -413,6 +413,7 @@ class AppModule(appModuleHandler.AppModule):
         if button.states & {controlTypes.State.UNAVAILABLE, controlTypes.State.OFFSCREEN}:
             raise ControlUnavailable(identifier)
         button.doAction()
+        return button
 
     @script(description=_("Open Info and Options."), gesture="kb:control+i")
     def script_openInfoOptions(self, gesture):
@@ -436,7 +437,10 @@ class AppModule(appModuleHandler.AppModule):
 
     @script(description=_("Open Sleep Timer."), gesture="kb:control+s")
     def script_openSleepTimer(self, gesture):
-        self._scrubGesture(gesture, lambda: self._activateButton("sleepTimerButton_1", "browsePanel"))
+        def openTimer():
+            button = self._activateButton("sleepTimerButton_1", "browsePanel")
+            ui.message(_text(button))
+        self._scrubGesture(gesture, openTimer)
 
     def _transport(self, identifier, root=None, *, allowDisabled=False):
         control = _find(_find(root if root is not None else self._root(), "transportBar"), identifier)

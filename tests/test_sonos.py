@@ -873,7 +873,7 @@ class SonosTests(unittest.TestCase):
         buttons = {
             "Button_1": types.SimpleNamespace(states=set(), doAction=lambda: calls.append("info")),
             "alarmsButton_1": types.SimpleNamespace(states=set(), doAction=lambda: calls.append("alarms")),
-            "sleepTimerButton_1": types.SimpleNamespace(states=set(), doAction=lambda: calls.append("sleep")),
+            "sleepTimerButton_1": types.SimpleNamespace(name="Sleep Timer", states=set(), doAction=lambda: calls.append("sleep")),
         }
         panels = {"nowPlayingPanel": object(), "browsePanel": object()}
         def find(parent, identifier, **kwargs):
@@ -891,6 +891,10 @@ class SonosTests(unittest.TestCase):
             app.script_openSleepTimer(gesture)
             self.assertEqual(calls, ["info", "alarms", "sleep"])
             self.assertEqual(app.script_openSleepTimer.scriptMetadata["gesture"], "kb:control+s")
+            self.assertEqual(nvda["ui"].messages[-1], "Sleep Timer")
+            buttons["sleepTimerButton_1"].name = "Schlaf-Timer (0:30)"
+            app.script_openSleepTimer(gesture)
+            self.assertEqual(nvda["ui"].messages[-1], "Schlaf-Timer (0:30)")
 
             for role, states, root_role in (("edit", set(), "window"), ("button", {"editable"}, "window"), ("button", set(), "dialog")):
                 focus.role, focus.states, root.role = role, states, root_role
