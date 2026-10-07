@@ -34,6 +34,7 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Shift+Up Arrow | Focus the track scrubber. |
 | Control+I | Open Info and Options. |
 | Control+A | Open Alarms. |
+| Control+S | Open Sleep Timer. |
 | Control+J | Jump to a time or seek by an amount plus or minus. |
 | Control+V | Set the selected speaker group's volume. |
 | Control+Shift+V | Fade out, pause, and restore volume (default five seconds). Note: keep the Sonos window focused during the fade. |

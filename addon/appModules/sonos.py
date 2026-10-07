@@ -44,16 +44,11 @@ def _text(obj):
     return (obj.name or "").strip()
 
 
-def _find(root, automationId, *, childrenOnly=False):
+def _find(root, automationId):
     client = UIAHandler.handler.clientObject
     element = root.UIAElement if isinstance(root, UIA) else client.ElementFromHandle(root.windowHandle)
     condition = client.CreatePropertyCondition(UIAHandler.UIA_AutomationIdPropertyId, automationId)
-    if childrenOnly:
-        found = element.FindFirstBuildCache(UIAHandler.TreeScope_Children, condition, UIAHandler.handler.baseCacheRequest)
-    else:
-        # Sonos omits some text from bulk searches; a filtered raw-tree walker finds it.
-        walker = client.CreateTreeWalker(condition)
-        found = walker.GetFirstChildElementBuildCache(element, UIAHandler.handler.baseCacheRequest)
+    found = element.FindFirstBuildCache(UIAHandler.TreeScope_Children, condition, UIAHandler.handler.baseCacheRequest)
     if not found:
         raise ControlUnavailable(automationId)
     obj = UIA(UIAElement=found)
@@ -414,7 +409,7 @@ class AppModule(appModuleHandler.AppModule):
 
     def _activateButton(self, identifier, panel=None):
         root = self._root()
-        button = _find(_find(root, panel, childrenOnly=True) if panel else root, identifier, childrenOnly=True)
+        button = _find(_find(root, panel) if panel else root, identifier)
         if button.states & {controlTypes.State.UNAVAILABLE, controlTypes.State.OFFSCREEN}:
             raise ControlUnavailable(identifier)
         button.doAction()
@@ -428,7 +423,7 @@ class AppModule(appModuleHandler.AppModule):
             def focusOptions():
                 if api.getForegroundObject().windowHandle != windowHandle:
                     return
-                options = _find(_find(root, "browsePanel", childrenOnly=True), "itemsList", childrenOnly=True)
+                options = _find(_find(root, "browsePanel"), "itemsList")
                 if options.states & {controlTypes.State.UNAVAILABLE, controlTypes.State.OFFSCREEN}:
                     raise ControlUnavailable("Options list is unavailable")
                 options.setFocus()
@@ -438,6 +433,10 @@ class AppModule(appModuleHandler.AppModule):
     @script(description=_("Open Alarms."), gesture="kb:control+a")
     def script_openAlarms(self, gesture):
         self._scrubGesture(gesture, lambda: self._activateButton("alarmsButton_1", "browsePanel"))
+
+    @script(description=_("Open Sleep Timer."), gesture="kb:control+s")
+    def script_openSleepTimer(self, gesture):
+        self._scrubGesture(gesture, lambda: self._activateButton("sleepTimerButton_1", "browsePanel"))
 
     def _transport(self, identifier, root=None, *, allowDisabled=False):
         control = _find(_find(root if root is not None else self._root(), "transportBar"), identifier)
@@ -1185,7 +1184,7 @@ class AppModule(appModuleHandler.AppModule):
         self._changeGroup("control+.")
 
     def _groupMembers(self):
-        groups = _find(self._root(), "zoneGroupScrollViewer").UIAElement
+        groups = _find(_find(self._root(), "zonesPanel"), "zoneGroupScrollViewer").UIAElement
         client = UIAHandler.handler.clientObject
         selectedCondition = client.CreateAndCondition(
             client.CreatePropertyCondition(UIAHandler.UIA_AutomationIdPropertyId, "RadioButton_1"),
@@ -1296,7 +1295,7 @@ class AppModule(appModuleHandler.AppModule):
     @script(description=_("Report sleep timer status."), gesture="kb:alt+shift+s", speakOnDemand=True)
     def script_reportSleepTimer(self, gesture):
         def report():
-            label = _text(_find(self._root(), "sleepTimerButton_1"))
+            label = _text(_find(_find(self._root(), "browsePanel"), "sleepTimerButton_1"))
             time = re.search(r"\b\d+(?::\d{2}){1,2}\b", label)
             ui.message(_("Sleep timer {time}").format(time=time.group()) if time
                        else _("Sleep timer off"))

@@ -173,8 +173,9 @@ class SonosTests(unittest.TestCase):
         with self.assertRaises(sonos.ControlUnavailable):
             sonos._percent(Pattern(10, 10, 10))
 
-    def test_find_searches_raw_descendants_with_tree_walker(self):
-        found, element = object(), object()
+    def test_find_uses_direct_child_lookup(self):
+        found, element = object(), Mock()
+        element.FindFirstBuildCache.return_value = found
         client = Client(element, found)
         nvda["UIAHandler"].handler.clientObject = client
         root = nvda["NVDAObjects.UIA"].UIA(UIAElement=element)
@@ -184,10 +185,10 @@ class SonosTests(unittest.TestCase):
         self.assertIsInstance(result, nvda["NVDAObjects.UIA"].UIA)
         self.assertIs(result.UIAElement, found)
         self.assertEqual(client.conditions, [(30011, "PART_Scrubber")])
-        self.assertEqual(client.walker.condition, (30011, "PART_Scrubber"))
-        self.assertEqual(
-            client.walker.calls[0],
-            (element, nvda["UIAHandler"].handler.baseCacheRequest),
+        element.FindFirstBuildCache.assert_called_once_with(
+            nvda["UIAHandler"].TreeScope_Children,
+            (30011, "PART_Scrubber"),
+            nvda["UIAHandler"].handler.baseCacheRequest,
         )
 
     def test_shortcut_overlay_is_scoped_to_sonos_shortcut_items(self):
@@ -757,11 +758,12 @@ class SonosTests(unittest.TestCase):
             CreateTreeWalker=lambda condition: MetadataWalker(),
         )
         app = sonos.AppModule()
-        app._root = lambda: object()
+        root = object()
+        app._root = lambda: root
         original_find = sonos._find
         original_client = nvda["UIAHandler"].handler.clientObject
         nvda["UIAHandler"].handler.clientObject = client
-        sonos._find = lambda root, identifier: types.SimpleNamespace(
+        sonos._find = lambda root, identifier, **kwargs: types.SimpleNamespace(
             UIAElement=object(), name=dict(rows).get(identifier, ""))
         try:
             info, track = app._trackInfo()
@@ -794,9 +796,19 @@ class SonosTests(unittest.TestCase):
         app = sonos.AppModule()
         app._root = lambda: object()
         nvda["ui"].messages.clear()
-        with patch.object(sonos, "_find", return_value=types.SimpleNamespace(name="Sleep Timer")) as find:
+        root, panel = object(), object()
+        app._root = lambda: root
+        label = ["Sleep Timer"]
+        def find(parent, identifier):
+            if identifier == "browsePanel":
+                self.assertIs(parent, root)
+                return panel
+            self.assertIs(parent, panel)
+            self.assertEqual(identifier, "sleepTimerButton_1")
+            return types.SimpleNamespace(name=label[0])
+        with patch.object(sonos, "_find", side_effect=find):
             app.script_reportSleepTimer(None)
-            find.return_value.name = "Sleep Timer (04:22)"
+            label[0] = "Sleep Timer (04:22)"
             app.script_reportSleepTimer(None)
         self.assertEqual(nvda["ui"].messages, ["Sleep timer off", "Sleep timer 04:22"])
         self.assertEqual(app.script_reportSleepTimer.scriptMetadata["gesture"], "kb:alt+shift+s")
@@ -812,22 +824,25 @@ class SonosTests(unittest.TestCase):
         calls = []
         gesture = types.SimpleNamespace(send=lambda: calls.append("native"))
         app._seek = lambda seconds: calls.append(seconds)
-        sonos._find = lambda *args: object()
+        sonos._find = lambda *args, **kwargs: object()
         try:
-            app.script_adjustScrubBackward(gesture)
-            app.script_adjustScrubForward(gesture)
-            self.assertEqual(calls, [-5, 5])
-            for role, states, root_role in (("edit", set(), "window"), ("button", {"editable"}, "window"), ("button", set(), "dialog")):
-                focus.role, focus.states, root.role = role, states, root_role
-                for command in (app.script_adjustScrubBackward, app.script_adjustScrubForward, app.script_focusScrub):
-                    command(gesture)
-                    self.assertEqual(calls[-1], "native")
-            root.role = "window"
-            def missing(*args):
-                raise sonos.ControlUnavailable()
-            sonos._find = missing
-            app.script_adjustScrubForward(gesture)
-            self.assertEqual(calls[-1], "native")
+            config = types.ModuleType("config")
+            config.conf = {"sonos": {"seekSeconds": 5}}
+            with patch.dict(sys.modules, config=config):
+                app.script_adjustScrubBackward(gesture)
+                app.script_adjustScrubForward(gesture)
+                self.assertEqual(calls, [-5, 5])
+                for role, states, root_role in (("edit", set(), "window"), ("button", {"editable"}, "window"), ("button", set(), "dialog")):
+                    focus.role, focus.states, root.role = role, states, root_role
+                    for command in (app.script_adjustScrubBackward, app.script_adjustScrubForward, app.script_focusScrub):
+                        command(gesture)
+                        self.assertEqual(calls[-1], "native")
+                root.role = "window"
+                def missing(*args, **kwargs):
+                    raise sonos.ControlUnavailable()
+                sonos._find = missing
+                app.script_adjustScrubForward(gesture)
+                self.assertEqual(calls[-1], "native")
         finally:
             sonos._find = original_find
             nvda["api"].getFocusObject = lambda: None
@@ -837,16 +852,16 @@ class SonosTests(unittest.TestCase):
         element.FindFirstBuildCache.return_value = found
         root = sonos.UIA(UIAElement=element)
         with patch.object(sonos.UIAHandler.handler, "clientObject", client):
-            result = sonos._find(root, "browsePanel", childrenOnly=True)
+            result = sonos._find(root, "browsePanel")
             self.assertIs(result.UIAElement, found)
             element.FindFirstBuildCache.assert_called_once_with(2, client.CreatePropertyCondition.return_value,
                                                                sonos.UIAHandler.handler.baseCacheRequest)
             client.CreateTreeWalker.assert_not_called()
             element.FindFirstBuildCache.return_value = None
             with self.assertRaises(sonos.ControlUnavailable):
-                sonos._find(root, "browsePanel", childrenOnly=True)
+                sonos._find(root, "browsePanel")
 
-    def test_info_and_alarm_commands_activate_buttons_through_scrub_guard(self):
+    def test_button_commands_activate_through_shared_guard(self):
         app = sonos.AppModule()
         root = types.SimpleNamespace(role="window", processID=1, windowHandle=42)
         focus = types.SimpleNamespace(role="button", states=set())
@@ -858,12 +873,12 @@ class SonosTests(unittest.TestCase):
         buttons = {
             "Button_1": types.SimpleNamespace(states=set(), doAction=lambda: calls.append("info")),
             "alarmsButton_1": types.SimpleNamespace(states=set(), doAction=lambda: calls.append("alarms")),
+            "sleepTimerButton_1": types.SimpleNamespace(states=set(), doAction=lambda: calls.append("sleep")),
         }
         panels = {"nowPlayingPanel": object(), "browsePanel": object()}
         def find(parent, identifier, **kwargs):
             if identifier == "transportBar":
                 return object()
-            self.assertTrue(kwargs.get("childrenOnly"))
             if identifier in panels:
                 self.assertIs(parent, root)
                 return panels[identifier]
@@ -873,21 +888,26 @@ class SonosTests(unittest.TestCase):
         try:
             app.script_openInfoOptions(gesture)
             app.script_openAlarms(gesture)
-            self.assertEqual(calls, ["info", "alarms"])
+            app.script_openSleepTimer(gesture)
+            self.assertEqual(calls, ["info", "alarms", "sleep"])
+            self.assertEqual(app.script_openSleepTimer.scriptMetadata["gesture"], "kb:control+s")
 
             for role, states, root_role in (("edit", set(), "window"), ("button", {"editable"}, "window"), ("button", set(), "dialog")):
                 focus.role, focus.states, root.role = role, states, root_role
                 app.script_openInfoOptions(gesture)
                 app.script_openAlarms(gesture)
-                self.assertEqual(calls[-2:], ["native", "native"])
+                app.script_openSleepTimer(gesture)
+                self.assertEqual(calls[-3:], ["native", "native", "native"])
 
             focus.role, focus.states, root.role = "button", set(), "window"
             for state in ("unavailable", "offscreen"):
                 buttons["Button_1"].states = {state}
                 buttons["alarmsButton_1"].states = {state}
+                buttons["sleepTimerButton_1"].states = {state}
                 before = len(calls)
                 app.script_openInfoOptions(gesture)
                 app.script_openAlarms(gesture)
+                app.script_openSleepTimer(gesture)
                 self.assertEqual(calls[before:], [])
                 self.assertEqual(nvda["ui"].messages[-1], "This control is unavailable in the current Sonos view.")
 
@@ -898,7 +918,8 @@ class SonosTests(unittest.TestCase):
             sonos._find = missing_transport
             app.script_openInfoOptions(gesture)
             app.script_openAlarms(gesture)
-            self.assertEqual(calls[-2:], ["native", "native"])
+            app.script_openSleepTimer(gesture)
+            self.assertEqual(calls[-3:], ["native", "native", "native"])
         finally:
             sonos._find = original_find
             nvda["api"].getFocusObject = lambda: None
@@ -911,10 +932,9 @@ class SonosTests(unittest.TestCase):
         app._root = lambda: root
         app._scrubGesture = lambda gesture, action: action()
         app._activateButton = Mock()
-        def find(parent, identifier, *, childrenOnly=False):
+        def find(parent, identifier):
             self.assertIs(parent, root if identifier == "browsePanel" else panel)
             self.assertIn(identifier, ("browsePanel", "itemsList"))
-            self.assertTrue(childrenOnly)
             return panel if identifier == "browsePanel" else options
         with patch.object(sonos, "_find", side_effect=find), \
              patch.object(sonos.api, "getForegroundObject", return_value=root):
@@ -1037,7 +1057,7 @@ class SonosTests(unittest.TestCase):
             Close=lambda: calls.append("closed"),
         )
         original_find = sonos._find
-        sonos._find = lambda *args: panel
+        sonos._find = lambda *args, **kwargs: panel
         sys.modules["wx"] = wx
         nvda["ui"].messages.clear()
         try:
@@ -1381,7 +1401,8 @@ class SonosTests(unittest.TestCase):
     def test_group_members_use_selected_raw_group_and_cached_names(self):
         from unittest.mock import Mock, patch
         app = sonos.AppModule()
-        app._root = lambda: object()
+        root = object()
+        app._root = lambda: root
         groups = object()
         names = ["Office", "Bedroom", "Lounge", "Office", "Bedroom", "Lounge", ""]
         cacheProperties = []
@@ -1404,7 +1425,15 @@ class SonosTests(unittest.TestCase):
             CreateTreeWalker=makeWalker,
             CreateCacheRequest=lambda: cache,
         )
-        with patch.object(sonos, "_find", return_value=types.SimpleNamespace(UIAElement=groups)), \
+        zone_panel = types.SimpleNamespace(UIAElement=groups)
+        def find(parent, identifier):
+            if identifier == "zonesPanel":
+                self.assertIs(parent, root)
+                return zone_panel
+            self.assertEqual(identifier, "zoneGroupScrollViewer")
+            self.assertIs(parent, zone_panel)
+            return types.SimpleNamespace(UIAElement=groups)
+        with patch.object(sonos, "_find", side_effect=find), \
              patch.object(nvda["UIAHandler"].handler, "clientObject", client), \
              patch.object(sonos, "UIA", side_effect=AssertionError("Do not wrap room elements")):
             self.assertEqual(app._groupMembers(), "Office, Bedroom, Lounge")
@@ -1423,7 +1452,7 @@ class SonosTests(unittest.TestCase):
         root, queue = object(), object()
         app._root = lambda: root
         label = ["0 songs"]
-        def find(parent, identifier):
+        def find(parent, identifier, **kwargs):
             if identifier == "queuePanel":
                 self.assertIs(parent, root)
                 return queue
