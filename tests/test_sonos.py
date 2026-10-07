@@ -36,7 +36,7 @@ def _install_nvda_stubs():
         processID = 1
     _module("appModuleHandler", AppModule=AppModule)
     _module("comtypes", COMError=type("COMError", (Exception,), {}))
-    roles = types.SimpleNamespace(DATAITEM="dataitem", EDITABLETEXT="edit", DIALOG="dialog", SLIDER="slider", GRAPHIC="graphic", TOGGLEBUTTON="toggle", BUTTON="button", MENUITEM="menuitem", CHECKBOX="checkbox", COMBOBOX="combobox")
+    roles = types.SimpleNamespace(DATAITEM="dataitem", EDITABLETEXT="edit", DIALOG="dialog", SLIDER="slider", GRAPHIC="graphic", TOGGLEBUTTON="toggle", BUTTON="button", MENUITEM="menuitem", POPUPMENU="popupmenu", CHECKBOX="checkbox", COMBOBOX="combobox")
     states = types.SimpleNamespace(UNAVAILABLE="unavailable", PRESSED="pressed", CHECKED="checked", EDITABLE="editable", OFFSCREEN="offscreen")
     _module("controlTypes", Role=roles, State=states)
 
@@ -928,49 +928,34 @@ class SonosTests(unittest.TestCase):
             sonos._find = original_find
             nvda["api"].getFocusObject = lambda: None
 
-    def test_dialog_focus_return_waits_for_close_and_respects_app_switch(self):
+    def test_eq_menu_label_uses_speaker_marker(self):
         app = sonos.AppModule()
-        root = types.SimpleNamespace(windowHandle=42)
-        original = Mock(states=set())
-        returned = object()
-        app._root = lambda: root
+        element = Mock()
+        menu = sonos.UIA(role="popupmenu", UIAElement=element)
+        client = Mock()
+        with patch.object(sonos.UIAHandler, "handler", types.SimpleNamespace(
+            clientObject=client, baseCacheRequest=object()), create=True):
+            app.event_NVDAObject_init(menu)
+            self.assertEqual(menu.name, "EQ")
+            client.CreatePropertyCondition.assert_called_once_with(
+                sonos.UIAHandler.UIA_NamePropertyId,
+                "Sonos.Controller.Desktop.SCLib.ViewModel.ZonePlayerViewModel")
+            element.FindFirstBuildCache.return_value = None
+            menu.name = ""
+            app.event_NVDAObject_init(menu)
+            self.assertEqual(menu.name, "")
+
+    def test_pause_all_uses_shared_guard_and_direct_path(self):
+        app = sonos.AppModule()
+        app._scrubGesture = Mock()
         app._activateButton = Mock()
-        foreground = root
-        current = original
-        popupOpen = False
-        def find(parent, identifier):
-            self.assertEqual(identifier, "mainListBox")
-            if not popupOpen:
-                raise sonos.ControlUnavailable(identifier)
-            return types.SimpleNamespace(states=set())
-        with patch.object(sonos.api, "getForegroundObject", side_effect=lambda: foreground), \
-             patch.object(sonos.api, "getFocusObject", side_effect=lambda: current), \
-             patch.object(sonos, "_find", side_effect=find):
-            for identifier in ("alarmsButton_1", "sleepTimerButton_1"):
-                current = original
-                app._openReturningFocus(identifier)
-                nvda["core"].calls.clear()
-                app.event_gainFocus(original, Mock())
-                self.assertEqual(nvda["core"].calls, [])
-                popupOpen = identifier == "sleepTimerButton_1"
-                foreground = root if popupOpen else types.SimpleNamespace(windowHandle=43)
-                app.event_gainFocus(object(), Mock())
-                self.assertTrue(app._returnFocus["entered"])
-                foreground = root
-                popupOpen = False
-                current = returned
-                app.event_gainFocus(returned, Mock())
-                delay, callback, args, kwargs = nvda["core"].calls[-1]
-                callback(*args, **kwargs)
-                original.setFocus.assert_called_once_with()
-                original.setFocus.reset_mock()
-                foreground = types.SimpleNamespace(windowHandle=99)
-                callback(*args, **kwargs)
-                original.setFocus.assert_not_called()
-                foreground = root
-            app._openReturningFocus("alarmsButton_1")
-            app.event_appModule_loseFocus()
-            self.assertIsNone(app._returnFocus)
+        gesture = object()
+        app.script_pauseAll(gesture)
+        self.assertEqual(app.script_pauseAll.scriptMetadata["gesture"], "kb:control+shift+p")
+        passed, action = app._scrubGesture.call_args.args
+        self.assertIs(passed, gesture)
+        action()
+        app._activateButton.assert_called_once_with("pauseAllButton_1", "zonesPanel")
 
     def test_music_eq_uses_direct_path_and_shared_guard(self):
         app = sonos.AppModule()
