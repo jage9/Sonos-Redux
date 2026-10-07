@@ -453,6 +453,11 @@ class AppModule(appModuleHandler.AppModule):
         nextHandler()
 
     def event_gainFocus(self, obj, nextHandler):
+        if (getattr(self, "_openingInfoWindow", None) is not None
+                and obj.windowHandle == self._openingInfoWindow
+                and getattr(obj, "UIAAutomationId", "") == "Button_1"
+                and obj.role == controlTypes.Role.BUTTON):
+            return
         previous = getattr(self, "_lastEQFocus", None)
         self._lastEQFocus = obj if getattr(obj, "_sonosEQMenu", False) else None
         if self._lastEQFocus is not None and obj == previous:
@@ -483,8 +488,14 @@ class AppModule(appModuleHandler.AppModule):
         def openOptions():
             root = self._root()
             windowHandle = root.windowHandle
-            self._activateButton("Button_1", "nowPlayingPanel")
+            self._openingInfoWindow = windowHandle
+            try:
+                self._activateButton("Button_1", "nowPlayingPanel")
+            except Exception:
+                self._openingInfoWindow = None
+                raise
             def focusOptions():
+                self._openingInfoWindow = None
                 if api.getForegroundObject().windowHandle != windowHandle:
                     return
                 options = _find(_find(root, "browsePanel"), "itemsList")
