@@ -465,7 +465,9 @@ class AppModule(appModuleHandler.AppModule):
             elif (saved["entered"] and obj.windowHandle == saved["window"]
                     and getattr(obj, "UIAAutomationId", "") == saved["button"]):
                 self._dialogReturn = None
-                core.callLater(0, self._restoreDialogFocus, saved["focus"], saved["window"], obj)
+                if saved["focus"] != obj:
+                    core.callLater(0, self._restoreDialogFocus, saved["focus"], saved["window"], obj)
+                    return  # Do not announce the button on the way back to the original control.
         nextHandler()
 
     def _restoreDialogFocus(self, original, windowHandle, returned):
