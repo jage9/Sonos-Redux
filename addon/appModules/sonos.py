@@ -406,7 +406,7 @@ class AppModule(appModuleHandler.AppModule):
             slider.setFocus()
         self._scrubGesture(gesture, focus)
 
-    def _scrubGesture(self, gesture, action):
+    def _scrubGesture(self, gesture, action, *, allowDialogs=False):
         focus = api.getFocusObject()
         try:
             root = self._root()
@@ -414,7 +414,11 @@ class AppModule(appModuleHandler.AppModule):
                 not focus
                 or focus.role == controlTypes.Role.EDITABLETEXT
                 or controlTypes.State.EDITABLE in focus.states
-                or root.role == controlTypes.Role.DIALOG
+                or (not allowDialogs and any(
+                    obj.role in (controlTypes.Role.DIALOG, controlTypes.Role.POPUPMENU)
+                    or getattr(obj, "UIAAutomationId", "") == "mainListBox"
+                    for obj in (root, focus, *api.getFocusAncestors())
+                ))
             ):
                 gesture.send()
                 return
@@ -515,7 +519,7 @@ class AppModule(appModuleHandler.AppModule):
 
     @script(description=_("Pause all rooms."), gesture="kb:control+shift+p")
     def script_pauseAll(self, gesture):
-        self._scrubGesture(gesture, lambda: self._activateButton("pauseAllButton_1", "zonesPanel"))
+        self._scrubGesture(gesture, lambda: self._activateButton("pauseAllButton_1", "zonesPanel"), allowDialogs=True)
 
     @script(description=_("Open Music EQ."), gesture="kb:control+o")
     def script_openMusicEQ(self, gesture):

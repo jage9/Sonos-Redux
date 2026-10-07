@@ -26,7 +26,7 @@ def _install_nvda_stubs():
     builtins._ = lambda text: text
     builtins.ngettext = lambda singular, plural, count: singular if count == 1 else plural
     addon = _module("addonHandler", initTranslation=lambda: None)
-    api = _module("api", getForegroundObject=lambda: None, getFocusObject=lambda: None, copy_calls=[])
+    api = _module("api", getForegroundObject=lambda: None, getFocusObject=lambda: None, getFocusAncestors=lambda: [], copy_calls=[])
     def copy_to_clip(text, notify=False):
         api.copy_calls.append((text, notify))
         return True
@@ -928,6 +928,34 @@ class SonosTests(unittest.TestCase):
             sonos._find = original_find
             nvda["api"].getFocusObject = lambda: None
 
+    def test_main_commands_block_dialog_and_popup_focus_with_main_foreground(self):
+        app = sonos.AppModule()
+        root = types.SimpleNamespace(role="window", windowHandle=42)
+        button = types.SimpleNamespace(role="button", states=set())
+        gesture, action = Mock(), Mock()
+        app._root = lambda: root
+        with patch.object(sonos.api, "getFocusObject", return_value=button), \
+             patch.object(sonos, "_find", return_value=object()):
+            for ancestor in (
+                types.SimpleNamespace(role="dialog"),
+                types.SimpleNamespace(role="popupmenu"),
+                types.SimpleNamespace(role="list", UIAAutomationId="mainListBox"),
+            ):
+                with patch.object(sonos.api, "getFocusAncestors", return_value=[root, ancestor]):
+                    app._scrubGesture(gesture, action)
+                    action.assert_not_called()
+                    gesture.send.assert_called_once_with()
+                    gesture.reset_mock()
+                    app._scrubGesture(gesture, action, allowDialogs=True)
+                    action.assert_called_once_with()
+                    action.reset_mock()
+            with patch.object(sonos.api, "getFocusObject", return_value=types.SimpleNamespace(role="dialog", states=set())):
+                app._scrubGesture(gesture, action)
+                action.assert_not_called()
+            with patch.object(sonos.api, "getFocusAncestors", return_value=[root]):
+                app._scrubGesture(gesture, action)
+                action.assert_called_once_with()
+
     def test_eq_repeated_focus_only_suppresses_consecutive_same_menu(self):
         app = sonos.AppModule()
         menu = types.SimpleNamespace(_sonosEQMenu=True)
@@ -992,6 +1020,7 @@ class SonosTests(unittest.TestCase):
         gesture = object()
         app.script_pauseAll(gesture)
         self.assertEqual(app.script_pauseAll.scriptMetadata["gesture"], "kb:control+shift+p")
+        self.assertEqual(app._scrubGesture.call_args.kwargs, {"allowDialogs": True})
         passed, action = app._scrubGesture.call_args.args
         self.assertIs(passed, gesture)
         action()
