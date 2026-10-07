@@ -32,6 +32,8 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Shift+Left Arrow | Seek backward (default five seconds). |
 | Shift+Right Arrow | Seek forward (default five seconds). |
 | Shift+Up Arrow | Focus the track scrubber. |
+| Control+I | Open Info and Options. |
+| Control+A | Open Alarms. |
 | Control+J | Jump to a time or seek by an amount plus or minus. |
 | Control+V | Set the selected speaker group's volume. |
 | Control+Shift+V | Fade out, pause, and restore volume (default five seconds). Note: keep the Sonos window focused during the fade. |

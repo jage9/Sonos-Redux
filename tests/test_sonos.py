@@ -831,6 +831,62 @@ class SonosTests(unittest.TestCase):
             sonos._find = original_find
             nvda["api"].getFocusObject = lambda: None
 
+    def test_info_and_alarm_commands_activate_buttons_through_scrub_guard(self):
+        app = sonos.AppModule()
+        root = types.SimpleNamespace(role="window", processID=1)
+        focus = types.SimpleNamespace(role="button", states=set())
+        nvda["api"].getFocusObject = lambda: focus
+        app._root = lambda: root
+        original_find = sonos._find
+        calls = []
+        gesture = types.SimpleNamespace(send=lambda: calls.append("native"))
+        buttons = {
+            "Button_1": types.SimpleNamespace(states=set(), doAction=lambda: calls.append("info")),
+            "alarmsButton_1": types.SimpleNamespace(states=set(), doAction=lambda: calls.append("alarms")),
+        }
+        panel = object()
+        def find(parent, identifier):
+            if identifier == "transportBar":
+                return object()
+            if identifier == "nowPlayingPanel":
+                self.assertIs(parent, root)
+                return panel
+            self.assertIs(parent, panel if identifier == "Button_1" else root)
+            return buttons[identifier]
+        sonos._find = find
+        try:
+            app.script_openInfoOptions(gesture)
+            app.script_openAlarms(gesture)
+            self.assertEqual(calls, ["info", "alarms"])
+
+            for role, states, root_role in (("edit", set(), "window"), ("button", {"editable"}, "window"), ("button", set(), "dialog")):
+                focus.role, focus.states, root.role = role, states, root_role
+                app.script_openInfoOptions(gesture)
+                app.script_openAlarms(gesture)
+                self.assertEqual(calls[-2:], ["native", "native"])
+
+            focus.role, focus.states, root.role = "button", set(), "window"
+            for state in ("unavailable", "offscreen"):
+                buttons["Button_1"].states = {state}
+                buttons["alarmsButton_1"].states = {state}
+                before = len(calls)
+                app.script_openInfoOptions(gesture)
+                app.script_openAlarms(gesture)
+                self.assertEqual(calls[before:], [])
+                self.assertEqual(nvda["ui"].messages[-1], "This control is unavailable in the current Sonos view.")
+
+            def missing_transport(parent, identifier):
+                if identifier == "transportBar":
+                    raise sonos.ControlUnavailable(identifier)
+                return find(parent, identifier)
+            sonos._find = missing_transport
+            app.script_openInfoOptions(gesture)
+            app.script_openAlarms(gesture)
+            self.assertEqual(calls[-2:], ["native", "native"])
+        finally:
+            sonos._find = original_find
+            nvda["api"].getFocusObject = lambda: None
+
     def test_slider_overlay_formats_time_and_leaves_other_sliders_alone(self):
         app = sonos.AppModule()
         slider = sonos.Scrubber(role="slider", UIAAutomationId="PART_Scrubber")

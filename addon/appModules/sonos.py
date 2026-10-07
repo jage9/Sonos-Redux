@@ -409,6 +409,21 @@ class AppModule(appModuleHandler.AppModule):
             return
         self._run(action)
 
+    def _activateButton(self, identifier, panel=None):
+        root = self._root()
+        button = _find(_find(root, panel) if panel else root, identifier)
+        if button.states & {controlTypes.State.UNAVAILABLE, controlTypes.State.OFFSCREEN}:
+            raise ControlUnavailable(identifier)
+        button.doAction()
+
+    @script(description=_("Open Info and Options."), gesture="kb:control+i")
+    def script_openInfoOptions(self, gesture):
+        self._scrubGesture(gesture, lambda: self._activateButton("Button_1", "nowPlayingPanel"))
+
+    @script(description=_("Open Alarms."), gesture="kb:control+a")
+    def script_openAlarms(self, gesture):
+        self._scrubGesture(gesture, lambda: self._activateButton("alarmsButton_1"))
+
     def _transport(self, identifier, root=None, *, allowDisabled=False):
         control = _find(_find(root if root is not None else self._root(), "transportBar"), identifier)
         if not allowDisabled and controlTypes.State.UNAVAILABLE in control.states:
