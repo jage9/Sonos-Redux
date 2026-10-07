@@ -415,6 +415,56 @@ class AppModule(appModuleHandler.AppModule):
         button.doAction()
         return button
 
+    def _openReturningFocus(self, identifier):
+        saved = {
+            "focus": api.getFocusObject(),
+            "root": self._root(),
+            "popup": identifier == "sleepTimerButton_1",
+            "entered": False,
+        }
+        self._returnFocus = saved
+        try:
+            return self._activateButton(identifier, "browsePanel")
+        except Exception:
+            self._returnFocus = None
+            raise
+
+    def event_appModule_loseFocus(self):
+        self._returnFocus = None
+
+    def event_gainFocus(self, obj, nextHandler):
+        saved = getattr(self, "_returnFocus", None)
+        if saved:
+            try:
+                foreground = api.getForegroundObject()
+                inside = foreground.windowHandle != saved["root"].windowHandle
+                if saved["popup"] and not inside:
+                    try:
+                        popup = _find(saved["root"], "mainListBox")
+                        inside = controlTypes.State.OFFSCREEN not in popup.states
+                    except ControlUnavailable:
+                        inside = False
+                if inside:
+                    saved["entered"] = True
+                elif saved["entered"]:
+                    self._returnFocus = None
+                    core.callLater(0, self._restoreDialogFocus, saved, obj)
+            except (COMError, RuntimeError):
+                self._returnFocus = None
+        nextHandler()
+
+    def _restoreDialogFocus(self, saved, returnedFocus):
+        try:
+            if (
+                api.getForegroundObject().windowHandle != saved["root"].windowHandle
+                or api.getFocusObject() != returnedFocus
+                or saved["focus"].states & {controlTypes.State.UNAVAILABLE, controlTypes.State.OFFSCREEN}
+            ):
+                return
+            saved["focus"].setFocus()
+        except (COMError, RuntimeError):
+            log.debugWarning("Sonos original focus is no longer available", exc_info=True)
+
     @script(description=_("Open Info and Options."), gesture="kb:control+i")
     def script_openInfoOptions(self, gesture):
         def openOptions():
@@ -431,14 +481,18 @@ class AppModule(appModuleHandler.AppModule):
             core.callLater(0, self._run, focusOptions)
         self._scrubGesture(gesture, openOptions)
 
+    @script(description=_("Open Music EQ."), gesture="kb:control+o")
+    def script_openMusicEQ(self, gesture):
+        self._scrubGesture(gesture, lambda: self._activateButton("equalizerMenuButton", "transportBar"))
+
     @script(description=_("Open Alarms."), gesture="kb:control+a")
     def script_openAlarms(self, gesture):
-        self._scrubGesture(gesture, lambda: self._activateButton("alarmsButton_1", "browsePanel"))
+        self._scrubGesture(gesture, lambda: self._openReturningFocus("alarmsButton_1"))
 
     @script(description=_("Open Sleep Timer."), gesture="kb:control+s")
     def script_openSleepTimer(self, gesture):
         def openTimer():
-            button = self._activateButton("sleepTimerButton_1", "browsePanel")
+            button = self._openReturningFocus("sleepTimerButton_1")
             ui.message(_text(button))
         self._scrubGesture(gesture, openTimer)
 

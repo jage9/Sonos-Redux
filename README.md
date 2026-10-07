@@ -37,6 +37,7 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Shift+Right Arrow | Seek forward (default five seconds). |
 | Shift+Up Arrow | Focus the track scrubber. |
 | Control+I | Open Info and Options. |
+| Control+O | Open Music EQ. |
 | Control+A | Open Alarms. |
 | Control+S | Open Sleep Timer. |
 | Control+J | Jump to a time or seek by an amount plus or minus. |
