@@ -32,13 +32,6 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Shift+Left Arrow | Seek backward (default five seconds). |
 | Shift+Right Arrow | Seek forward (default five seconds). |
 | Shift+Up Arrow | Focus the track scrubber. |
-| Control+I | Open Info and Options. |
-| Control+O | Open Music EQ. |
-| Control+Shift+P | Pause all rooms. |
-| Control+Delete | Clear Queue. |
-| Control+Shift+S | Save Queue. |
-| Control+A | Open Alarms. |
-| Control+S | Open Sleep Timer. |
 | Control+J | Jump to a time or seek by an amount plus or minus. |
 | Control+V | Set the selected speaker group's volume. |
 | Control+Shift+V | Fade out, pause, and restore volume (default five seconds). Note: keep the Sonos window focused during the fade. |
@@ -48,6 +41,18 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Control+3 | Search YouTube for the current track. |
 | Alt+Shift+Y | Fetch lyrics for the current track. |
 | Alt+Shift+A | Copy the displayed album artwork. |
+
+### Sonos controls
+
+| Shortcut | Action |
+| --- | --- |
+| Control+I | Open Info and Options. |
+| Control+A | Open Alarms. |
+| Control+S | Open Sleep Timer. |
+| Control+O | Open Music EQ. |
+| Control+Shift+P | Pause all rooms. |
+| Control+Delete | Clear Queue. |
+| Control+Shift+S | Save Queue. |
 
 ### Looping
 
