@@ -928,6 +928,46 @@ class SonosTests(unittest.TestCase):
             sonos._find = original_find
             nvda["api"].getFocusObject = lambda: None
 
+    def test_eq_repeated_focus_only_suppresses_consecutive_same_menu(self):
+        app = sonos.AppModule()
+        menu = types.SimpleNamespace(_sonosEQMenu=True)
+        handler = Mock()
+        app.event_gainFocus(menu, handler)
+        app.event_gainFocus(menu, handler)
+        self.assertEqual(handler.call_count, 1)
+        app.event_gainFocus(object(), handler)
+        app.event_gainFocus(menu, handler)
+        self.assertEqual(handler.call_count, 3)
+
+    def test_dialog_return_uses_focus_events_not_foreground_dialog(self):
+        app = sonos.AppModule()
+        original = Mock(states=set())
+        root = types.SimpleNamespace(windowHandle=42)
+        app._root = lambda: root
+        app._activateButton = Mock()
+        for button in ("alarmsButton_1", "sleepTimerButton_1"):
+            with patch.object(sonos.api, "getFocusObject", return_value=original):
+                app._openReturningFocus(button)
+            returned = types.SimpleNamespace(windowHandle=42, UIAAutomationId=button, role="button")
+            nvda["core"].calls.clear()
+            app.event_gainFocus(returned, Mock())
+            self.assertFalse(nvda["core"].calls)
+            if button == "alarmsButton_1":
+                app.event_gainFocus(types.SimpleNamespace(role="dialog", windowHandle=99), Mock())
+            else:
+                app.event_focusEntered(types.SimpleNamespace(UIAAutomationId="mainListBox", windowHandle=42), Mock())
+            app.event_gainFocus(returned, Mock())
+            _, callback, args, kwargs = nvda["core"].calls[-1]
+            with patch.object(sonos.api, "getForegroundObject", return_value=root), \
+                 patch.object(sonos.api, "getFocusObject", return_value=returned):
+                callback(*args, **kwargs)
+                original.setFocus.assert_called_once_with()
+                original.setFocus.reset_mock()
+                with patch.object(sonos.api, "getForegroundObject", return_value=types.SimpleNamespace(windowHandle=88)):
+                    callback(*args, **kwargs)
+                original.setFocus.assert_not_called()
+            self.assertIsNone(app._dialogReturn)
+
     def test_eq_menu_label_uses_speaker_marker(self):
         app = sonos.AppModule()
         element = Mock()
