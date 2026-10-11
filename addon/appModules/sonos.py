@@ -222,6 +222,66 @@ class Scrubber(UIA):
 class AppModule(appModuleHandler.AppModule):
     scriptCategory = _("Sonos")
 
+    def _browseList(self):
+        focus = api.getFocusObject()
+        if not focus or focus.role not in (controlTypes.Role.LIST, controlTypes.Role.LISTITEM):
+            return None
+        chain = [*api.getFocusAncestors(), focus]
+        for parent, obj in zip(chain, chain[1:]):
+            if (getattr(obj, "UIAAutomationId", "") == "itemsList"
+                    and getattr(parent, "UIAAutomationId", "") == "browsePanel"):
+                return obj
+        return None
+
+    def getScript(self, gesture):
+        existing = super().getScript(gesture)
+        if (not existing and isinstance(gesture, keyboardHandler.KeyboardInputGesture)
+                and gesture.isCharacter and len(gesture.mainKeyName) == 1
+                and gesture.mainKeyName.isalnum() and self._browseList() is not None):
+            return self.script_browsePrefix
+        self._browsePrefix = ""
+        return existing
+
+    @script(description=_("Find a browse item by typing its name."))
+    def script_browsePrefix(self, gesture):
+        def find():
+            listing = self._browseList()
+            if listing is None:
+                gesture.send()
+                return
+            now = perf_counter()
+            previous = getattr(self, "_browsePrefix", "")
+            if (now - getattr(self, "_browseTypedAt", 0) > 1
+                    or listing != getattr(self, "_browseSearchList", None)):
+                previous = ""
+            letter = gesture.mainKeyName.casefold()
+            prefix = letter if previous == letter else previous + letter
+            self._browsePrefix, self._browseTypedAt, self._browseSearchList = prefix, now, listing
+            client = UIAHandler.handler.clientObject
+            cache = UIAHandler.handler.baseCacheRequest.Clone()
+            cache.AddProperty(UIAHandler.UIA_SelectionItemIsSelectedPropertyId)
+            condition = client.CreatePropertyCondition(
+                UIAHandler.UIA_ControlTypePropertyId, UIAHandler.UIA_ListItemControlTypeId)
+            # shortcut: search exposed rows only; add ItemContainer support if a provider virtualizes names.
+            items = listing.UIAElement.FindAllBuildCache(UIAHandler.TreeScope_Children, condition, cache)
+            rows = [items.GetElement(i) for i in range(items.Length)]
+            current = next((i for i, row in enumerate(rows)
+                            if row.GetCachedPropertyValue(UIAHandler.UIA_SelectionItemIsSelectedPropertyId)), -1)
+            start = current if previous and prefix != letter else current + 1
+            for offset in range(len(rows)):
+                row = rows[(max(0, start) + offset) % len(rows)]
+                if not (row.CachedName or "").strip().casefold().startswith(prefix):
+                    continue
+                scroll = row.GetCurrentPattern(UIAHandler.UIA_ScrollItemPatternId)
+                if scroll:
+                    scroll.QueryInterface(UIAHandler.IUIAutomationScrollItemPattern).ScrollIntoView()
+                row.GetCurrentPattern(UIAHandler.UIA_SelectionItemPatternId).QueryInterface(
+                    UIAHandler.IUIAutomationSelectionItemPattern).Select()
+                row.SetFocus()
+                return
+            ui.message(_("No matching item"))
+        self._run(find)
+
     def chooseNVDAObjectOverlayClasses(self, obj, clsList):
         if not isinstance(obj, UIA):
             return

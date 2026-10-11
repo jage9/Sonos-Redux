@@ -34,9 +34,11 @@ def _install_nvda_stubs():
 
     class AppModule:
         processID = 1
+        def getScript(self, gesture):
+            return None
     _module("appModuleHandler", AppModule=AppModule)
     _module("comtypes", COMError=type("COMError", (Exception,), {}))
-    roles = types.SimpleNamespace(DATAITEM="dataitem", EDITABLETEXT="edit", DIALOG="dialog", SLIDER="slider", GRAPHIC="graphic", TOGGLEBUTTON="toggle", BUTTON="button", MENUITEM="menuitem", POPUPMENU="popupmenu", CHECKBOX="checkbox", COMBOBOX="combobox")
+    roles = types.SimpleNamespace(LIST="list", LISTITEM="listitem", DATAITEM="dataitem", EDITABLETEXT="edit", DIALOG="dialog", SLIDER="slider", GRAPHIC="graphic", TOGGLEBUTTON="toggle", BUTTON="button", MENUITEM="menuitem", POPUPMENU="popupmenu", CHECKBOX="checkbox", COMBOBOX="combobox")
     states = types.SimpleNamespace(UNAVAILABLE="unavailable", PRESSED="pressed", CHECKED="checked", EDITABLE="editable", OFFSCREEN="offscreen")
     _module("controlTypes", Role=roles, State=states)
 
@@ -860,6 +862,53 @@ class SonosTests(unittest.TestCase):
             element.FindFirstBuildCache.return_value = None
             with self.assertRaises(sonos.ControlUnavailable):
                 sonos._find(root, "browsePanel")
+
+    def test_browse_typing_is_scoped_to_browse_list(self):
+        app = sonos.AppModule()
+        panel = types.SimpleNamespace(UIAAutomationId="browsePanel")
+        listing = types.SimpleNamespace(UIAAutomationId="itemsList", role="list")
+        item = types.SimpleNamespace(role="listitem")
+        gesture = nvda["keyboardHandler"].KeyboardInputGesture("b")
+        gesture.isCharacter, gesture.mainKeyName = True, "b"
+        with patch.object(sonos.api, "getFocusObject", return_value=item), \
+             patch.object(sonos.api, "getFocusAncestors", return_value=[panel, listing]):
+            self.assertEqual(app.getScript(gesture), app.script_browsePrefix)
+            gesture.isCharacter = False
+            self.assertIsNone(app.getScript(gesture))
+            gesture.isCharacter = True
+            panel.UIAAutomationId = "queuePanel"
+            self.assertIsNone(app.getScript(gesture))
+            panel.UIAAutomationId = "browsePanel"
+            item.role = "edit"
+            self.assertIsNone(app.getScript(gesture))
+
+    def test_browse_prefix_cycles_extends_wraps_and_times_out(self):
+        app = sonos.AppModule()
+        selected = [0]
+        names = ["Alpha", "Beta", "Bravo", "Charlie"]
+        rows = []
+        for index, name in enumerate(names):
+            row = Mock(CachedName=name)
+            row.GetCachedPropertyValue.side_effect = lambda prop, i=index: selected[0] == i
+            row.SetFocus.side_effect = lambda i=index: selected.__setitem__(0, i)
+            rows.append(row)
+        items = Mock(Length=len(rows))
+        items.GetElement.side_effect = rows.__getitem__
+        listing = Mock()
+        listing.UIAElement.FindAllBuildCache.return_value = items
+        app._browseList = lambda: listing
+        constants = dict(UIA_SelectionItemIsSelectedPropertyId=1, UIA_ControlTypePropertyId=2,
+                         UIA_ListItemControlTypeId=3, UIA_ScrollItemPatternId=4,
+                         IUIAutomationScrollItemPattern=object(), UIA_SelectionItemPatternId=5,
+                         IUIAutomationSelectionItemPattern=object())
+        with patch.multiple(sonos.UIAHandler, create=True, **constants), \
+             patch.object(sonos.UIAHandler.handler, "baseCacheRequest", Mock()), \
+             patch.object(sonos.UIAHandler.handler, "clientObject", Mock()), \
+             patch.object(sonos, "perf_counter", side_effect=[10, 10.2, 10.4, 12, 12.2, 14]):
+            for letter, expected in [("b",1), ("r",2), ("a",2), ("b",1), ("b",2), ("z",2)]:
+                app.script_browsePrefix(types.SimpleNamespace(mainKeyName=letter))
+                self.assertEqual(selected[0], expected)
+            self.assertEqual(nvda["ui"].messages[-1], "No matching item")
 
     def test_button_commands_activate_through_shared_guard(self):
         app = sonos.AppModule()

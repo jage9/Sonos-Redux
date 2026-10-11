@@ -54,6 +54,10 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Control+Delete | Clear Queue. |
 | Control+Shift+S | Save Queue. |
 
+### Browse navigation
+
+While focused in the browse list, type letters or numbers to move to a matching item. Type within one second to match a longer prefix; repeat a single letter to cycle through matches. Navigation wraps at the end and does not start playback. Matches use the displayed name, including any channel prefix.
+
 ### Looping
 
 You can loop a portion of a track to hear it on repeat. Due to the nature of Sonos, loops are approximate, and will have a gap between loops. Looping only works for seekable tracks. Keep Sonos focused while looping. Changing tracks or speaker groups clears your loop.
