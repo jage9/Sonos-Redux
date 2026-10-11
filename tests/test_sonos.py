@@ -905,10 +905,11 @@ class SonosTests(unittest.TestCase):
              patch.object(sonos.UIAHandler.handler, "baseCacheRequest", Mock()), \
              patch.object(sonos.UIAHandler.handler, "clientObject", Mock()), \
              patch.object(sonos, "perf_counter", side_effect=[10, 10.2, 10.4, 12, 12.2, 14]):
+            messages = list(nvda["ui"].messages)
             for letter, expected in [("b",1), ("r",2), ("a",2), ("b",1), ("b",2), ("z",2)]:
                 app.script_browsePrefix(types.SimpleNamespace(mainKeyName=letter))
                 self.assertEqual(selected[0], expected)
-            self.assertEqual(nvda["ui"].messages[-1], "No matching item")
+            self.assertEqual(nvda["ui"].messages, messages)
 
     def test_button_commands_activate_through_shared_guard(self):
         app = sonos.AppModule()

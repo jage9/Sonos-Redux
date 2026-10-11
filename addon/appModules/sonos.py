@@ -279,7 +279,6 @@ class AppModule(appModuleHandler.AppModule):
                     UIAHandler.IUIAutomationSelectionItemPattern).Select()
                 row.SetFocus()
                 return
-            ui.message(_("No matching item"))
         self._run(find)
 
     def chooseNVDAObjectOverlayClasses(self, obj, clsList):
