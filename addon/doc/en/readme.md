@@ -56,7 +56,7 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 
 ### Browse navigation
 
-While focused in the browse list, type letters or numbers to move to a matching item. Type within one second to match a longer prefix; repeat a single letter to cycle through matches. Navigation wraps at the end and does not start playback. Matches use the displayed name, including any channel prefix.
+While focused in the browse list, type letters or numbers to move to a matching item. Type within one second to match a longer prefix; repeat a single letter to cycle through matches. Navigation wraps at the end and does not start playback. Matches use the displayed name, including any channel prefix. If no exposed item matches, the add-on searches further pages for up to three seconds. Typing another key cancels that search; an unsuccessful search returns to the original scroll position.
 
 ### Looping
 

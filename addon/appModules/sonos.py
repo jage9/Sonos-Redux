@@ -240,11 +240,13 @@ class AppModule(appModuleHandler.AppModule):
                 and gesture.mainKeyName.isalnum() and self._browseList() is not None):
             return self.script_browsePrefix
         self._browsePrefix = ""
+        self._browseScan = None
         return existing
 
     @script(description=_("Find a browse item by typing its name."))
     def script_browsePrefix(self, gesture):
         def find():
+            self._browseScan = None
             listing = self._browseList()
             if listing is None:
                 gesture.send()
@@ -257,29 +259,77 @@ class AppModule(appModuleHandler.AppModule):
             letter = gesture.mainKeyName.casefold()
             prefix = letter if previous == letter else previous + letter
             self._browsePrefix, self._browseTypedAt, self._browseSearchList = prefix, now, listing
-            client = UIAHandler.handler.clientObject
-            cache = UIAHandler.handler.baseCacheRequest.Clone()
-            cache.AddProperty(UIAHandler.UIA_SelectionItemIsSelectedPropertyId)
-            condition = client.CreatePropertyCondition(
-                UIAHandler.UIA_ControlTypePropertyId, UIAHandler.UIA_ListItemControlTypeId)
-            # shortcut: search exposed rows only; add ItemContainer support if a provider virtualizes names.
-            items = listing.UIAElement.FindAllBuildCache(UIAHandler.TreeScope_Children, condition, cache)
-            rows = [items.GetElement(i) for i in range(items.Length)]
+            rows = self._browseRows(listing)
             current = next((i for i, row in enumerate(rows)
                             if row.GetCachedPropertyValue(UIAHandler.UIA_SelectionItemIsSelectedPropertyId)), -1)
             start = current if previous and prefix != letter else current + 1
-            for offset in range(len(rows)):
-                row = rows[(max(0, start) + offset) % len(rows)]
-                if not (row.CachedName or "").strip().casefold().startswith(prefix):
-                    continue
-                scroll = row.GetCurrentPattern(UIAHandler.UIA_ScrollItemPatternId)
-                if scroll:
-                    scroll.QueryInterface(UIAHandler.IUIAutomationScrollItemPattern).ScrollIntoView()
-                row.GetCurrentPattern(UIAHandler.UIA_SelectionItemPatternId).QueryInterface(
-                    UIAHandler.IUIAutomationSelectionItemPattern).Select()
-                row.SetFocus()
+            if self._selectBrowseMatch(rows, prefix, max(0, start)):
                 return
+            raw = listing.UIAElement.GetCurrentPattern(UIAHandler.UIA_ScrollPatternId)
+            if not raw:
+                return
+            scroll = raw.QueryInterface(UIAHandler.IUIAutomationScrollPattern)
+            if not scroll.CurrentVerticallyScrollable:
+                return
+            scan = dict(listing=listing, prefix=prefix, scroll=scroll,
+                        start=scroll.CurrentVerticalScrollPercent, wrapped=False,
+                        deadline=perf_counter() + 3)
+            self._browseScan = scan
+            self._scanBrowsePage(scan)
         self._run(find)
+
+    def _browseRows(self, listing):
+        client = UIAHandler.handler.clientObject
+        cache = UIAHandler.handler.baseCacheRequest.Clone()
+        cache.AddProperty(UIAHandler.UIA_SelectionItemIsSelectedPropertyId)
+        condition = client.CreatePropertyCondition(
+            UIAHandler.UIA_ControlTypePropertyId, UIAHandler.UIA_ListItemControlTypeId)
+        items = listing.UIAElement.FindAllBuildCache(UIAHandler.TreeScope_Children, condition, cache)
+        return [items.GetElement(i) for i in range(items.Length)]
+
+    def _selectBrowseMatch(self, rows, prefix, start=0):
+        for offset in range(len(rows)):
+            row = rows[(start + offset) % len(rows)]
+            if not (row.CachedName or "").strip().casefold().startswith(prefix):
+                continue
+            scroll = row.GetCurrentPattern(UIAHandler.UIA_ScrollItemPatternId)
+            if scroll:
+                scroll.QueryInterface(UIAHandler.IUIAutomationScrollItemPattern).ScrollIntoView()
+            row.GetCurrentPattern(UIAHandler.UIA_SelectionItemPatternId).QueryInterface(
+                UIAHandler.IUIAutomationSelectionItemPattern).Select()
+            row.SetFocus()
+            return True
+        return False
+
+    def _scanBrowsePage(self, scan, readPage=False):
+        if (getattr(self, "_browseScan", None) is not scan
+                or self._browseList() != scan["listing"]):
+            return
+        scroll = scan["scroll"]
+        try:
+            position = scroll.CurrentVerticalScrollPercent
+            if (perf_counter() >= scan["deadline"]
+                    or (scan["wrapped"] and position >= scan["start"])):
+                self._browseScan = None
+                scroll.SetScrollPercent(-1, scan["start"])
+                return
+            if readPage and self._selectBrowseMatch(self._browseRows(scan["listing"]), scan["prefix"]):
+                self._browseScan = None
+                return
+            if position >= 100:
+                scan["wrapped"] = True
+                scroll.SetScrollPercent(-1, 0)
+            else:
+                scroll.Scroll(UIAHandler.ScrollAmount_NoAmount, UIAHandler.ScrollAmount_LargeIncrement)
+            # Let Sonos realize the new page and NVDA process queued keys between page moves.
+            core.callLater(40, self._run, lambda: self._scanBrowsePage(scan, readPage=True))
+        except COMError:
+            self._browseScan = None
+            try:
+                scroll.SetScrollPercent(-1, scan["start"])
+            except COMError:
+                pass
+            raise
 
     def chooseNVDAObjectOverlayClasses(self, obj, clsList):
         if not isinstance(obj, UIA):
@@ -506,6 +556,7 @@ class AppModule(appModuleHandler.AppModule):
 
     def event_appModule_loseFocus(self):
         self._lastEQFocus = None
+        self._browseScan = None
 
     def event_focusEntered(self, obj, nextHandler):
         saved = getattr(self, "_dialogReturn", None)

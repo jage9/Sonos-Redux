@@ -896,9 +896,10 @@ class SonosTests(unittest.TestCase):
         items.GetElement.side_effect = rows.__getitem__
         listing = Mock()
         listing.UIAElement.FindAllBuildCache.return_value = items
+        listing.UIAElement.GetCurrentPattern.return_value = None
         app._browseList = lambda: listing
         constants = dict(UIA_SelectionItemIsSelectedPropertyId=1, UIA_ControlTypePropertyId=2,
-                         UIA_ListItemControlTypeId=3, UIA_ScrollItemPatternId=4,
+                         UIA_ListItemControlTypeId=3, UIA_ScrollItemPatternId=4, UIA_ScrollPatternId=6,
                          IUIAutomationScrollItemPattern=object(), UIA_SelectionItemPatternId=5,
                          IUIAutomationSelectionItemPattern=object())
         with patch.multiple(sonos.UIAHandler, create=True, **constants), \
@@ -910,6 +911,43 @@ class SonosTests(unittest.TestCase):
                 app.script_browsePrefix(types.SimpleNamespace(mainKeyName=letter))
                 self.assertEqual(selected[0], expected)
             self.assertEqual(nvda["ui"].messages, messages)
+
+    def test_browse_fallback_pages_matches_restores_and_cancels(self):
+        app = sonos.AppModule()
+        listing = object()
+        app._browseList = lambda: listing
+        app._browseRows = Mock(return_value=[object()])
+        app._selectBrowseMatch = Mock(return_value=False)
+        scroll = Mock(CurrentVerticalScrollPercent=0)
+        scan = dict(listing=listing, prefix="z", scroll=scroll, start=0, wrapped=False, deadline=100)
+        app._browseScan = scan
+        with patch.object(sonos, "perf_counter", return_value=10), \
+             patch.multiple(sonos.UIAHandler, create=True, ScrollAmount_NoAmount=2, ScrollAmount_LargeIncrement=3):
+            app._scanBrowsePage(scan)
+            scroll.Scroll.assert_called_once_with(2, 3)
+            app._selectBrowseMatch.assert_not_called()
+            scroll.CurrentVerticalScrollPercent = 50
+            app._selectBrowseMatch.return_value = True
+            app._scanBrowsePage(scan, readPage=True)
+            self.assertIsNone(app._browseScan)
+            scroll.SetScrollPercent.assert_not_called()
+            app._browseScan = scan
+            app._selectBrowseMatch.return_value = False
+            scroll.CurrentVerticalScrollPercent = 100
+            app._scanBrowsePage(scan, readPage=True)
+            scroll.SetScrollPercent.assert_called_with(-1, 0)
+            self.assertTrue(scan["wrapped"])
+            scroll.CurrentVerticalScrollPercent = 0
+            app._scanBrowsePage(scan, readPage=True)
+            self.assertIsNone(app._browseScan)
+            app._browseScan = scan
+            scan["wrapped"], scan["deadline"] = False, 9
+            app._scanBrowsePage(scan, readPage=True)
+            self.assertIsNone(app._browseScan)
+            scroll.reset_mock()
+            app._scanBrowsePage(scan, readPage=True)
+            scroll.Scroll.assert_not_called()
+            scroll.SetScrollPercent.assert_not_called()
 
     def test_button_commands_activate_through_shared_guard(self):
         app = sonos.AppModule()
