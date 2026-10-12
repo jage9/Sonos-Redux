@@ -234,6 +234,7 @@ class AppModule(appModuleHandler.AppModule):
         return None
 
     def getScript(self, gesture):
+        self._browseQuietList = None
         existing = super().getScript(gesture)
         if (not existing and isinstance(gesture, keyboardHandler.KeyboardInputGesture)
                 and gesture.isCharacter and len(gesture.mainKeyName) == 1
@@ -275,6 +276,7 @@ class AppModule(appModuleHandler.AppModule):
                         start=scroll.CurrentVerticalScrollPercent, wrapped=False,
                         deadline=perf_counter() + 3)
             self._browseScan = scan
+            self._browseQuietList = listing
             self._scanBrowsePage(scan)
         self._run(find)
 
@@ -555,10 +557,13 @@ class AppModule(appModuleHandler.AppModule):
             raise
 
     def event_appModule_loseFocus(self):
+        self._browseQuietList = None
         self._lastEQFocus = None
         self._browseScan = None
 
     def event_focusEntered(self, obj, nextHandler):
+        if obj == getattr(self, "_browseQuietList", None):
+            return
         saved = getattr(self, "_dialogReturn", None)
         if (saved and saved["button"] == "sleepTimerButton_1"
                 and getattr(obj, "UIAAutomationId", "") == "mainListBox"
@@ -567,6 +572,9 @@ class AppModule(appModuleHandler.AppModule):
         nextHandler()
 
     def event_gainFocus(self, obj, nextHandler):
+        if obj == getattr(self, "_browseQuietList", None):
+            return
+        self._browseQuietList = None
         if (getattr(self, "_openingInfoWindow", None) is not None
                 and obj.windowHandle == self._openingInfoWindow
                 and getattr(obj, "UIAAutomationId", "") == "Button_1"

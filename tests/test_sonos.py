@@ -912,6 +912,27 @@ class SonosTests(unittest.TestCase):
                 self.assertEqual(selected[0], expected)
             self.assertEqual(nvda["ui"].messages, messages)
 
+    def test_browse_scroll_speech_is_scoped_and_clears_for_normal_navigation(self):
+        app = sonos.AppModule()
+        listing = object()
+        other = object()
+        handler = Mock()
+        app._browseQuietList = listing
+        app.event_focusEntered(listing, handler)
+        app.event_gainFocus(listing, handler)
+        handler.assert_not_called()
+        app.event_gainFocus(other, handler)
+        handler.assert_called_once_with()
+        self.assertIsNone(app._browseQuietList)
+        app._browseQuietList = listing
+        app.getScript(object())
+        self.assertIsNone(app._browseQuietList)
+        app.event_gainFocus(listing, handler)
+        self.assertEqual(handler.call_count, 2)
+        app._browseQuietList = listing
+        app.event_appModule_loseFocus()
+        self.assertIsNone(app._browseQuietList)
+
     def test_browse_fallback_pages_matches_restores_and_cancels(self):
         app = sonos.AppModule()
         listing = object()
