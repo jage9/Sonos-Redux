@@ -268,12 +268,15 @@ class AppModule(appModuleHandler.AppModule):
                 return
             raw = listing.UIAElement.GetCurrentPattern(UIAHandler.UIA_ScrollPatternId)
             if not raw:
+                self._selectBrowseMatch(rows[:max(0, start)], prefix)
                 return
             scroll = raw.QueryInterface(UIAHandler.IUIAutomationScrollPattern)
             if not scroll.CurrentVerticallyScrollable:
+                self._selectBrowseMatch(rows[:max(0, start)], prefix)
                 return
             scan = dict(listing=listing, prefix=prefix, scroll=scroll,
                         start=scroll.CurrentVerticalScrollPercent, wrapped=False,
+                        seen={tuple(row.GetRuntimeId()) for row in rows},
                         deadline=perf_counter() + 3)
             self._browseScan = scan
             self._browseQuietList = listing
@@ -290,8 +293,7 @@ class AppModule(appModuleHandler.AppModule):
         return [items.GetElement(i) for i in range(items.Length)]
 
     def _selectBrowseMatch(self, rows, prefix, start=0):
-        for offset in range(len(rows)):
-            row = rows[(start + offset) % len(rows)]
+        for row in rows[start:]:
             if not (row.CachedName or "").strip().casefold().startswith(prefix):
                 continue
             scroll = row.GetCurrentPattern(UIAHandler.UIA_ScrollItemPatternId)
@@ -310,16 +312,27 @@ class AppModule(appModuleHandler.AppModule):
         scroll = scan["scroll"]
         try:
             position = scroll.CurrentVerticalScrollPercent
-            if (perf_counter() >= scan["deadline"]
-                    or (scan["wrapped"] and position >= scan["start"])):
+            if perf_counter() >= scan["deadline"]:
                 self._browseScan = None
                 scroll.SetScrollPercent(-1, scan["start"])
                 return
-            if readPage and self._selectBrowseMatch(self._browseRows(scan["listing"]), scan["prefix"]):
-                self._browseScan = None
-                return
+            if readPage:
+                rows = []
+                for row in self._browseRows(scan["listing"]):
+                    identity = tuple(row.GetRuntimeId())
+                    if identity not in scan["seen"]:
+                        scan["seen"].add(identity)
+                        rows.append(row)
+                if self._selectBrowseMatch(rows, scan["prefix"]):
+                    self._browseScan = None
+                    return
+                if scan["wrapped"] and position >= scan["start"]:
+                    self._browseScan = None
+                    scroll.SetScrollPercent(-1, scan["start"])
+                    return
             if position >= 100:
                 scan["wrapped"] = True
+                scan["seen"].clear()
                 scroll.SetScrollPercent(-1, 0)
             else:
                 scroll.Scroll(UIAHandler.ScrollAmount_NoAmount, UIAHandler.ScrollAmount_LargeIncrement)

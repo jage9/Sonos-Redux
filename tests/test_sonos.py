@@ -912,6 +912,45 @@ class SonosTests(unittest.TestCase):
                 self.assertEqual(selected[0], expected)
             self.assertEqual(nvda["ui"].messages, messages)
 
+    def test_repeated_letter_searches_later_pages_before_wrapping(self):
+        app = sonos.AppModule()
+        selected = [0]
+        rows = []
+        for i, name in enumerate(("Sonos Music", "Sonos Favorites", "SiriusXM", "Spotify")):
+            row = Mock(CachedName=name)
+            row.GetRuntimeId.return_value = [i]
+            row.GetCachedPropertyValue.side_effect = lambda prop, i=i: selected[0] == i
+            row.SetFocus.side_effect = lambda i=i: selected.__setitem__(0, i)
+            rows.append(row)
+        listing = Mock()
+        scroll = Mock(CurrentVerticallyScrollable=True, CurrentVerticalScrollPercent=0)
+        listing.UIAElement.GetCurrentPattern.return_value.QueryInterface.return_value = scroll
+        scroll.Scroll.side_effect = lambda *args: setattr(scroll, "CurrentVerticalScrollPercent", 100)
+        scroll.SetScrollPercent.side_effect = lambda horizontal, vertical: setattr(scroll, "CurrentVerticalScrollPercent", vertical)
+        app._browseList = lambda: listing
+        # Later pages overlap earlier rows, as Sonos's realized item cache does.
+        app._browseRows = lambda listing: rows[:2] if scroll.CurrentVerticalScrollPercent == 0 else rows
+        constants = dict(UIA_SelectionItemIsSelectedPropertyId=1, UIA_ScrollPatternId=2,
+                         IUIAutomationScrollPattern=object(), UIA_ScrollItemPatternId=3,
+                         IUIAutomationScrollItemPattern=object(), UIA_SelectionItemPatternId=4,
+                         IUIAutomationSelectionItemPattern=object(), ScrollAmount_NoAmount=2,
+                         ScrollAmount_LargeIncrement=3)
+        with patch.multiple(sonos.UIAHandler, create=True, **constants), \
+             patch.object(sonos, "perf_counter", return_value=10):
+            gesture = types.SimpleNamespace(mainKeyName="s")
+            app.script_browsePrefix(gesture)
+            self.assertEqual(selected[0], 1)
+            app.script_browsePrefix(gesture)
+            self.assertEqual(selected[0], 1)  # No premature return to Sonos Music.
+            app._scanBrowsePage(app._browseScan, readPage=True)
+            self.assertEqual(selected[0], 2)
+            app.script_browsePrefix(gesture)
+            self.assertEqual(selected[0], 3)
+            app.script_browsePrefix(gesture)
+            self.assertEqual(selected[0], 3)
+            app._scanBrowsePage(app._browseScan, readPage=True)
+            self.assertEqual(selected[0], 0)
+
     def test_browse_scroll_speech_is_scoped_and_clears_for_normal_navigation(self):
         app = sonos.AppModule()
         listing = object()
@@ -937,10 +976,12 @@ class SonosTests(unittest.TestCase):
         app = sonos.AppModule()
         listing = object()
         app._browseList = lambda: listing
-        app._browseRows = Mock(return_value=[object()])
+        row = Mock()
+        row.GetRuntimeId.return_value = [1]
+        app._browseRows = Mock(return_value=[row])
         app._selectBrowseMatch = Mock(return_value=False)
         scroll = Mock(CurrentVerticalScrollPercent=0)
-        scan = dict(listing=listing, prefix="z", scroll=scroll, start=0, wrapped=False, deadline=100)
+        scan = dict(listing=listing, prefix="z", scroll=scroll, start=0, wrapped=False, seen=set(), deadline=100)
         app._browseScan = scan
         with patch.object(sonos, "perf_counter", return_value=10), \
              patch.multiple(sonos.UIAHandler, create=True, ScrollAmount_NoAmount=2, ScrollAmount_LargeIncrement=3):
