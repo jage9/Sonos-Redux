@@ -127,6 +127,10 @@ Help translate Sonos Redux into your language on [Crowdin](https://crowdin.com/p
 
 ## Changelog
 
+### 2026.10.3
+
+- Fixed missing German translations.
+
 ### 2026.10.2
 
 - Added first-letter navigation in browse lists. Type several letters quickly to narrow the match; navigation searches later pages and wraps at the end.

@@ -612,3 +612,6 @@ msgstr "Schlaf-Timer öffnen."
 
 msgid "Added first-letter and multi-letter navigation in browse lists."
 msgstr "Navigation durch Eingabe eines oder mehrerer Anfangsbuchstaben in Listen hinzugefügt."
+
+msgid "Fixed missing German translations."
+msgstr "Fehlende deutsche Übersetzungen ergänzt."
