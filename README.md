@@ -60,7 +60,7 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 
 ### First-letter navigation
 
-In the browse list, type a letter or number to find the next matching item. Repeat it to cycle through matches, or type several characters within one second to narrow the match. Navigation searches later pages before wrapping and does not start playback. Matches use the displayed name, including channel prefixes. Searches stop after three seconds; press another key to cancel.
+In the browse list, type a letter or number to find the next matching item. Repeat it to cycle through matches, or type several characters within one second to narrow the match. Navigation searches later pages before wrapping. Matches use the displayed name, including channel prefixes. Searches stop after three seconds; press another key to cancel.
 
 ### Looping
 
