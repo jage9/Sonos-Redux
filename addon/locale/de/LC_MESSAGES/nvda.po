@@ -583,3 +583,32 @@ msgstr "Verbesserte Zugänglichkeit für die Sonos-Desktop-Anwendung mit Informa
 msgid "Added support for translations via Crowdin. Improved speech in several dialogs, including Alarms, Add Radio Station, and About."
 msgstr "Unterstützung für Übersetzungen über Crowdin hinzugefügt. Verbesserte Sprachausgabe in mehreren Dialogen, darunter Wecker, Radiosender hinzufügen und Info."
 
+msgid "Find a browse item by typing its name."
+msgstr "Ein Listenelement durch Eingabe seines Namens suchen."
+
+msgid "EQ"
+msgstr "EQ"
+
+msgid "Open Info and Options."
+msgstr "Info und Optionen öffnen."
+
+msgid "Clear Queue."
+msgstr "Warteschlange leeren."
+
+msgid "Save Queue."
+msgstr "Warteschlange speichern."
+
+msgid "Pause all rooms."
+msgstr "Wiedergabe in allen Räumen pausieren."
+
+msgid "Open Music EQ."
+msgstr "Musik-Equalizer öffnen."
+
+msgid "Open Alarms."
+msgstr "Wecker öffnen."
+
+msgid "Open Sleep Timer."
+msgstr "Schlaf-Timer öffnen."
+
+msgid "Added first-letter and multi-letter navigation in browse lists."
+msgstr "Navigation durch Eingabe eines oder mehrerer Anfangsbuchstaben in Listen hinzugefügt."
