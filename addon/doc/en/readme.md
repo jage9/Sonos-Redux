@@ -54,9 +54,9 @@ Updated by J.J. Meddaugh <jj@bestmidi.com>.
 | Control+Delete | Clear Queue. |
 | Control+Shift+S | Save Queue. |
 
-### Browse navigation
+### First-letter navigation
 
-While focused in the browse list, type letters or numbers to move to a matching item. Type within one second to match a longer prefix; repeat a single letter to cycle through matches. Navigation wraps at the end and does not start playback. Matches use the displayed name, including any channel prefix. If no later exposed item matches, the add-on searches further pages before wrapping to the top, for up to three seconds. Typing another key cancels that search; an unsuccessful search returns to the original scroll position.
+In the browse list, type a letter or number to find the next matching item. Repeat it to cycle through matches, or type several characters within one second to narrow the match. Navigation searches later pages before wrapping and does not start playback. Matches use the displayed name, including channel prefixes. Searches stop after three seconds; press another key to cancel.
 
 ### Looping
 
