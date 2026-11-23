@@ -33,6 +33,15 @@ class LyricsTests(unittest.TestCase):
             self.assertEqual(query, {"track_name": ["Test & track"], "artist_name": ["Artist"]})
             sleep.assert_called_once_with(.5)
 
+    def test_empty_search_retries_without_guest_credit(self):
+        metadata = {"artist_name": "Ed Sheeran", "track_name": "I Don't Care (w/ Justin Bieber)"}
+        missing = HTTPError("https://lrclib.net/api/get", 404, "Missing", {}, None)
+        with patch.object(sonos, "urlopen", side_effect=[missing, self.response([]), self.response([self.record])]) as request, patch.object(sonos, "sleep"):
+            self.assertEqual(sonos._fetchLyrics(metadata, "Test/1"), ([self.record], False))
+            queries = [parse_qs(urlparse(call.args[0].full_url).query) for call in request.call_args_list]
+            self.assertEqual(queries[1]["track_name"], [metadata["track_name"]])
+            self.assertEqual(queries[2], {"artist_name": ["Ed Sheeran"], "track_name": ["I Don't Care"]})
+
     def test_invalid_response_and_rate_limit(self):
         for value in ({}, {**self.record, "duration": float("nan")}, {**self.record, "plainLyrics": []}):
             with self.subTest(value=value), patch.object(sonos, "urlopen", return_value=self.response(value)):

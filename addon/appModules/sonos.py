@@ -149,7 +149,13 @@ def _fetchLyrics(metadata, userAgent):
             raise
         error.close()
         sleep(.5)
-        records = request("search", {key: metadata[key] for key in ("track_name", "artist_name")})
+        query = {key: metadata[key] for key in ("track_name", "artist_name")}
+        records = request("search", query)
+        if records == []:
+            title = re.sub(r"\s*\((?:w/|feat\.?|ft\.?)\s+[^()]+\)\s*$", "", query["track_name"], flags=re.I)
+            if title and title != query["track_name"]:
+                sleep(.5)
+                records = request("search", {**query, "track_name": title})
         matched = False
     if not isinstance(records, list) or len(records) > 20:
         raise ValueError("Invalid lyrics results")
