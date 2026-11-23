@@ -794,6 +794,16 @@ class SonosTests(unittest.TestCase):
         self.assertEqual(info, "Song [19/50]: Video\nArtist: India.Arie\nAlbum: Acoustic Soul")
         self.assertEqual(track, "Video - India.Arie")
 
+    def test_station_information_drives_track_changes(self):
+        app = sonos.AppModule()
+        fields = [("Station", "The Plague"), ("On Now", ""), ("Information", "LL Cool J - Around The Way Girl")]
+        with patch.object(sonos, "_find"), patch.object(app, "_metadataFields", return_value=fields):
+            self.assertEqual(app._trackInfo(root=object())[1], "LL Cool J - Around The Way Girl")
+            fields[2] = ("Information", "Next artist - Next song")
+            self.assertEqual(app._trackInfo(root=object())[1], "Next artist - Next song")
+            fields[0] = ("Song", "Song without an artist")
+            self.assertIsNone(sonos._radioSong(fields))
+
     def test_sleep_timer_reports_off_or_displayed_time(self):
         app = sonos.AppModule()
         app._root = lambda: object()

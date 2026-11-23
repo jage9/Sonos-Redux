@@ -147,6 +147,20 @@ class LyricsTests(unittest.TestCase):
             self.assertEqual(thread.call_args.kwargs["args"][1]["duration"], 403)
             thread.return_value.start.assert_called_once_with()
 
+    def test_radio_lyrics_request_uses_information_artist_and_title(self):
+        app = sonos.AppModule()
+        app._root = lambda: object()
+        fields = [("Station", "The Plague"), ("On Now", ""), ("Information", "LL Cool J - Around The Way Girl")]
+        app._metadataFields = lambda panel, limit: fields
+        app._scrubber = Mock(side_effect=sonos.ControlUnavailable())
+        app._focusLyrics = Mock(return_value=True)
+        with patch.dict(sys.modules, {"wx": Mock(), "globalPlugins.sonosSettings": Mock()}), patch.object(sonos, "_find"):
+            app.script_lyrics(None)
+            app._focusLyrics.assert_called_once_with({"artist_name": "LL Cool J", "track_name": "Around The Way Girl"})
+            fields[2] = ("Information", "Station identification")
+            app.script_lyrics(None)
+            self.assertEqual(nvda["ui"].messages[-1], "No track title or artist is available.")
+
     def test_retry_messages_use_singular_and_plural_in_both_paths(self):
         app = sonos.AppModule()
         app._root = lambda: object()

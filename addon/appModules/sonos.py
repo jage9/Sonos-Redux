@@ -40,6 +40,13 @@ class NoTrackSlider(ControlUnavailable):
     pass
 
 
+def _radioSong(fields):
+    # Sonos radio layout: station name, empty On Now, then stream information.
+    if len(fields) >= 3 and fields[0][1] and not fields[1][1] and fields[0][0] == "Station":
+        return fields[2][1]
+    return None
+
+
 def _text(obj):
     return (obj.name or "").strip()
 
@@ -1162,12 +1169,18 @@ class AppModule(appModuleHandler.AppModule):
                 return
             panel = _find(self._root(), "nowPlayingPanel")
             fields = self._metadataFields(panel, 3)
-            if len(fields) < 2 or not fields[0][1] or not fields[1][1]:
+            radio = _radioSong(fields)
+            if radio is not None:
+                artist, separator, title = radio.partition(" - ")
+                metadata = {"artist_name": artist.strip(), "track_name": title.strip()}
+            else:
+                metadata = {
+                    key: value for key, (label, value) in zip(("track_name", "artist_name", "album_name"), fields)
+                    if value
+                }
+            if not metadata.get("track_name") or not metadata.get("artist_name"):
                 ui.message(_("No track title or artist is available."))
                 return
-            metadata = {"track_name": fields[0][1], "artist_name": fields[1][1]}
-            if len(fields) > 2 and fields[2][1]:
-                metadata["album_name"] = fields[2][1]
             try:
                 duration = self._scrubber(readOnly=True)[1].CurrentMaximum
                 if 1 <= duration <= 3600:
@@ -1589,6 +1602,9 @@ class AppModule(appModuleHandler.AppModule):
             details.insert(0, self._groupInfo(panel))
         info = "\n".join(details)
         track = " - ".join(value for label, value in fields[:2] if value) if fields and fields[0][1] else ""
+        radio = _radioSong(fields)
+        if radio:
+            track = radio
         return info, track
 
     @script(description=_("Toggle track announce."), gesture="kb:alt+shift+k", speakOnDemand=True)
