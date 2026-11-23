@@ -615,3 +615,6 @@ msgstr "Navigation durch Eingabe eines oder mehrerer Anfangsbuchstaben in Listen
 
 msgid "Fixed missing German translations."
 msgstr "Fehlende deutsche Übersetzungen ergänzt."
+
+msgid "Improved lyrics lookup, track announcements, and logging for radio stations that show the artist and song title under Information. Lyrics lookup now retries without a guest artist credit if the full title returns no matches."
+msgstr "Verbesserte Songtextsuche, Titelansage und Protokollierung bei Radiosendern, die Interpret und Titel unter Information anzeigen. Wenn die Suche nach dem vollständigen Titel keine Treffer ergibt, wird sie ohne den Zusatz zum Gastinterpreten wiederholt."

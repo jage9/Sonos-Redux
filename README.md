@@ -2,7 +2,7 @@
 
 Updated support and enhancements for the Sonos desktop app with NVDA. Requires NVDA 2026.1 or later.
 
-[Download the latest add-on, currently 2026.10.3](https://github.com/jage9/Sonos-Redux/releases/latest/download/sonos-redux.nvda-addon)
+[Download the latest add-on, currently 2026.11.1](https://github.com/jage9/Sonos-Redux/releases/latest/download/sonos-redux.nvda-addon)
 
 Originally by Ralf Kefferpuetz <novalis7747@live.com>.
 
@@ -126,6 +126,11 @@ Various menus and dialogs read more cleanly. Extraneous button text is cleaned u
 Help translate Sonos Redux into your language on [Crowdin](https://crowdin.com/project/sonos-redux-for-nvda/).
 
 ## Changelog
+
+### 2026.11.1
+
+- Improved lyrics lookup, track announcements, and logging for radio stations that show the artist and song title under Information.
+- Lyrics lookup now retries without a guest artist credit if the full title returns no matches.
 
 ### 2026.10.3
 
